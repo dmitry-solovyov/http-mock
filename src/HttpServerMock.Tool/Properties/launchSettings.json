@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "HttpServerMock.Tool": {
+      "commandName": "Project"
+    }
+  }
+}

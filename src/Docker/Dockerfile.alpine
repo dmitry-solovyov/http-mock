@@ -1,0 +1,5 @@
+FROM microsoft/dotnet:latest AS runtime
+WORKDIR /app
+COPY publish/ /app/
+EXPOSE 80/tcp
+ENTRYPOINT ["dotnet", "HttpServerMock.dll"]

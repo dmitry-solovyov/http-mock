@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{ADF642E9-D1AF-4E95-84B1-803B418D35BF}"
+	ProjectSection(SolutionItems) = preProject
+		Docker\Dockerfile.alpine = Docker\Dockerfile.alpine
+		Docker\prepare_files.bat = Docker\prepare_files.bat
+		Docker\publish_docker.bat = Docker\publish_docker.bat
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tests", "HttpServerMock.Tests\HttpServerMock.Tests.csproj", "{13F8826D-B34C-4F1B-90F3-7B901320C7CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Server", "HttpServerMock.Server\HttpServerMock.Server.csproj", "{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestDefinitions", "HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj", "{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestProcessing.Yaml", "HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestProcessing.Yaml.csproj", "{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tool", "HttpServerMock.Tool\HttpServerMock.Tool.csproj", "{E06FE8F2-C529-4295-9127-92FF88F6FC80}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8302417F-A92E-43C4-BC20-FD7F8AF3AD9A}
+	EndGlobalSection
+EndGlobal

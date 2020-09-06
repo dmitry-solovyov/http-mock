@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.14.0" />-->
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
+    <PackageReference Include="System.IO.Pipelines" Version="4.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestProcessing.Yaml.csproj" />
+    <ProjectReference Include="..\HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj" />
+  </ItemGroup>
+
+</Project>
