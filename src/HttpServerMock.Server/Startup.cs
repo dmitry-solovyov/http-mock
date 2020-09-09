@@ -22,8 +22,6 @@ namespace HttpServerMock.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-            
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IRequestHistoryStorage, RequestHistoryStorage>();
             services.AddSingleton<IRequestDefinitionProvider, RequestDefinitionProvider>();
@@ -35,19 +33,17 @@ namespace HttpServerMock.Server
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.EnvironmentName != Environments.Development)
+            {
                 app.UseUnhandledExceptionHandler();
+            }
             else
+            {
                 app.UseDeveloperExceptionPage();
+            }
 
             app.UseRequestLogger();
             app.UseConfigurationHandler();
             app.UseMockedRequestHandler();
-
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
         }
     }
 }
