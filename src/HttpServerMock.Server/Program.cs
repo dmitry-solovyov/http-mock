@@ -9,9 +9,6 @@ namespace HttpServerMock.Server
 {
     public class Program
     {
-        private const int DefaultHttpPort = 8888;
-        private const int DefaultHttpsPort = 8899;
-
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -53,32 +50,22 @@ namespace HttpServerMock.Server
             var configurationBuilder = new ConfigurationBuilder()
                 .Add(new CommandLineConfigurationSource { Args = args });
 
-            var (port, server, schema) = GetStartupParameters(configurationBuilder.Build());
-            var url = $"{schema}://{server}:{port}";
+            var urls = GetUrlParameters(configurationBuilder.Build());
+            Console.WriteLine($"Binding urls: {string.Join(',', urls)}");
 
-            return new[] { url };
+            return urls;
         }
 
-        private static (int port, string server, string schema) GetStartupParameters(IConfiguration configuration)
+        private static string[] GetUrlParameters(IConfiguration configuration)
         {
-            if (!int.TryParse(configuration["port"], out var port) || port <= 1000 || port > 65000)
+            var urls = configuration["urls"];
+            if (string.IsNullOrWhiteSpace(urls))
             {
-                port = DefaultHttpPort;
+                return Array.Empty<string>();
             }
 
-            string server;
-            if (string.IsNullOrWhiteSpace(server = configuration["server"]))
-            {
-                server = "*";
-            }
-
-            string schema;
-            if (string.IsNullOrWhiteSpace(schema = configuration["schema"]))
-            {
-                schema = "http";
-            }
-
-            return (port, server, schema);
+            var urlParts = urls.Split(',').Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            return urlParts;
         }
     }
 }
