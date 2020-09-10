@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using HttpServerMock.RequestDefinitions;
+using System.Collections.Generic;
 using System.IO;
-using HttpServerMock.RequestDefinitions;
 
 namespace HttpServerMock.RequestProcessing.Yaml
 {

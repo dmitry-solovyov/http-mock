@@ -1,5 +1,4 @@
-﻿using System;
-using HttpServerMock.RequestDefinitions;
+﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Models;
 using System.Collections.Generic;
 using System.Linq;

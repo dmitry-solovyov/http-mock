@@ -1,13 +1,13 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using HttpServerMock.Server.Infrastructure;
+﻿using HttpServerMock.Server.Infrastructure;
 using HttpServerMock.Server.Infrastructure.Extensions;
 using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Middleware
 {

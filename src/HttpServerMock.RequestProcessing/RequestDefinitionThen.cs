@@ -10,6 +10,6 @@ namespace HttpServerMock.RequestDefinitions
         public int StatusCode { get; set; }
         public int? Delay { get; set; }
         public string? ProxyUrl { get; set; } = null;
-        public Dictionary<string,string>? Headers { get; set; }
+        public Dictionary<string, string>? Headers { get; set; }
     }
 }

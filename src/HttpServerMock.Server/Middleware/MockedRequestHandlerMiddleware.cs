@@ -1,4 +1,7 @@
-﻿using HttpServerMock.Server.Infrastructure;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure;
+using HttpServerMock.Server.Infrastructure.Extensions;
+using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -9,9 +12,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure.Extensions;
-using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Middleware
 {

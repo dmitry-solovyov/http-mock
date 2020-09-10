@@ -1,10 +1,10 @@
-﻿using System;
+﻿using HttpServerMock.RequestDefinitions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
-using HttpServerMock.RequestDefinitions;
 using YamlDotNet.RepresentationModel;
 
 namespace HttpServerMock.RequestProcessing.Yaml
