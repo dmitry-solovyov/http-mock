@@ -1,5 +1,4 @@
-﻿using HttpServerMock.RequestRuntime;
-using HttpServerMock.Server.Models;
+﻿using HttpServerMock.Server.Models;
 using System.Collections.Concurrent;
 
 namespace HttpServerMock.Server.Infrastructure

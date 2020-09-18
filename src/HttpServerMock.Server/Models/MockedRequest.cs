@@ -1,5 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using HttpServerMock.RequestRuntime;
+using HttpServerMock.Server.Infrastructure;
 
 namespace HttpServerMock.Server.Models
 {
