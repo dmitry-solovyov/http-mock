@@ -19,6 +19,7 @@ namespace HttpServerMock.Server.Infrastructure
 
         public void AddRange(IEnumerable<RequestDefinition> definitions)
         {
+            _requestDefinitions.Clear();
             _requestDefinitions.AddRange(definitions);
         }
 
