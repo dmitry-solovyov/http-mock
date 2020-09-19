@@ -25,7 +25,7 @@ namespace HttpServerMock.Server.Middleware
             catch
             {
                 httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-                httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
                 if (!httpContext.Response.HasStarted)
                 {
