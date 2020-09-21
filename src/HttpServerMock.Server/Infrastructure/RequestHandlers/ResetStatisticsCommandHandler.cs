@@ -18,7 +18,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         public bool CanHandle(IRequestDetails requestDetails) =>
             requestDetails.IsCommandRequest(out var commandName) &&
             Constants.HeaderValues.ResetStatisticsCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) &&
-            requestDetails.HttpMethod == HttpMethods.Put;
+            requestDetails.HttpMethod == HttpMethods.Post;
 
         public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
         {

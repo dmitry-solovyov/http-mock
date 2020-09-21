@@ -14,7 +14,6 @@ namespace HttpServerMock.Server.Infrastructure
         private readonly ConcurrentDictionary<string, MockedRequest> _requestHistory = new ConcurrentDictionary<string, MockedRequest>();
 
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
-        private MockedRequest? _mockedRequest;
 
         public RequestHistoryStorage(IRequestDefinitionProvider requestDefinitionProvider)
         {
@@ -28,22 +27,22 @@ namespace HttpServerMock.Server.Infrastructure
 
         public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails)
         {
-            _mockedRequest ??= _requestHistory.AddOrUpdate(
+            var mockedRequest = _requestHistory.AddOrUpdate(
                 MockedRequest.GetKey(requestDetails),
                 new MockedRequest(requestDetails),
                 (k, existingRequestData) => existingRequestData);
 
-            var foundItems = _requestDefinitionProvider.FindItems(_mockedRequest);
+            var foundItems = _requestDefinitionProvider.FindItems(mockedRequest);
             if (foundItems.Length <= 0)
-                return new MockedRequestDefinition(_mockedRequest, null);
+                return new MockedRequestDefinition(mockedRequest, null);
 
-            var index = _mockedRequest.Counter <= 0 ? 0 : _mockedRequest.Counter - 1;
+            var index = mockedRequest.Counter <= 0 ? 0 : mockedRequest.Counter - 1;
             if (index >= foundItems.Length)
             {
                 index %= foundItems.Length;
             }
 
-            return new MockedRequestDefinition(_mockedRequest, foundItems[index]);
+            return new MockedRequestDefinition(mockedRequest, foundItems[index]);
         }
     }
 }

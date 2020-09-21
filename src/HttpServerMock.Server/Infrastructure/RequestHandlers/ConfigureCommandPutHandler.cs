@@ -11,13 +11,16 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
     {
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
         private readonly IRequestDefinitionReader _requestDefinitionReader;
+        private readonly IRequestHistoryStorage _requestHistoryStorage;
 
         public ConfigureCommandPutHandler(
             IRequestDefinitionProvider requestDefinitionProvider,
-            IRequestDefinitionReader requestDefinitionReader)
+            IRequestDefinitionReader requestDefinitionReader,
+            IRequestHistoryStorage requestHistoryStorage)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
             _requestDefinitionReader = requestDefinitionReader;
+            _requestHistoryStorage = requestHistoryStorage;
         }
 
         public bool CanHandle(IRequestDetails requestDetails) =>
@@ -34,9 +37,17 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         private IResponseDetails? ProcessPutCommand(IRequestDetails requestDetails)
         {
+            if (string.IsNullOrWhiteSpace(requestDetails.Content))
+                return new ResponseDetails
+                {
+                    StatusCode = StatusCodes.Status400BadRequest
+                };
+
             var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content));
 
             _requestDefinitionProvider.AddRange(requestDefinitions);
+
+            _requestHistoryStorage.Clear();
 
             return new ResponseDetails
             {
