@@ -1,5 +1,6 @@
 ﻿using HttpServerMock.Server.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Net.Mime;
@@ -10,10 +11,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
     public class ConfigureCommandGetHandler : IRequestDetailsHandler
     {
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
+        private readonly ILogger<ConfigureCommandGetHandler> _logger;
 
-        public ConfigureCommandGetHandler(IRequestDefinitionProvider requestDefinitionProvider)
+        public ConfigureCommandGetHandler(
+            IRequestDefinitionProvider requestDefinitionProvider,
+            ILogger<ConfigureCommandGetHandler> logger)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
+            _logger = logger;
         }
 
         public bool CanHandle(IRequestDetails requestDetails) =>
@@ -23,7 +28,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
         {
-            Console.WriteLine("| Set configuration");
+            _logger.LogInformation("Set configuration");
             return Task.FromResult(ProcessGetCommand(requestDetails));
         }
 

@@ -26,7 +26,7 @@ namespace HttpServerMock.Server
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IRequestDefinitionReader, YamlRequestDefinitionReader>();
             services.AddTransient<IRequestDefinitionWriter, YamlRequestDefinitionWriter>();
-           
+
             services.AddTransient<IRequestDetailsHandler, ConfigureCommandGetHandler>();
             services.AddTransient<IRequestDetailsHandler, ConfigureCommandPutHandler>();
             services.AddTransient<IRequestDetailsHandler, ResetStatisticsCommandHandler>();

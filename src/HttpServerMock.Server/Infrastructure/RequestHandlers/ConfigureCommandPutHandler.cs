@@ -1,8 +1,10 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
@@ -12,15 +14,18 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
         private readonly IRequestDefinitionReader _requestDefinitionReader;
         private readonly IRequestHistoryStorage _requestHistoryStorage;
+        private readonly ILogger<ConfigureCommandPutHandler> _logger;
 
         public ConfigureCommandPutHandler(
             IRequestDefinitionProvider requestDefinitionProvider,
             IRequestDefinitionReader requestDefinitionReader,
-            IRequestHistoryStorage requestHistoryStorage)
+            IRequestHistoryStorage requestHistoryStorage,
+            ILogger<ConfigureCommandPutHandler> logger)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
             _requestDefinitionReader = requestDefinitionReader;
             _requestHistoryStorage = requestHistoryStorage;
+            _logger = logger;
         }
 
         public bool CanHandle(IRequestDetails requestDetails) =>
@@ -31,8 +36,8 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
         {
-            Console.WriteLine("| Set configuration");
-            return Task.FromResult(ProcessPutCommand(requestDetails));
+            var result = ProcessPutCommand(requestDetails);
+            return Task.FromResult(result);
         }
 
         private IResponseDetails? ProcessPutCommand(IRequestDetails requestDetails)
@@ -43,7 +48,9 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                     StatusCode = StatusCodes.Status400BadRequest
                 };
 
-            var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content));
+            var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content)).ToArray();
+
+            _logger.LogInformation($"Setup configuration: {requestDefinitions.Count()}");
 
             _requestDefinitionProvider.AddRange(requestDefinitions);
 

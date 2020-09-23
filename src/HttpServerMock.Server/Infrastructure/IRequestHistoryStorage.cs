@@ -6,6 +6,7 @@ namespace HttpServerMock.Server.Infrastructure
     public interface IRequestHistoryStorage
     {
         void Clear();
+        int CurrentItemsCount { get; }
         MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails);
     }
 
@@ -19,6 +20,8 @@ namespace HttpServerMock.Server.Infrastructure
         {
             _requestDefinitionProvider = requestDefinitionProvider;
         }
+
+        public int CurrentItemsCount => _requestHistory.Count;
 
         public void Clear()
         {

@@ -1,7 +1,9 @@
+using HttpServerMock.Server.Infrastructure.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -16,10 +18,17 @@ namespace HttpServerMock.Server
 
         public static void StartServer(string listenUri)
         {
-            Console.WriteLine("Application starts");
+            var (loggerProvider, logger) = CreateLoggers();
+
+            logger.LogInformation("Application starts");
 
             Host
                 .CreateDefaultBuilder()
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddProvider(loggerProvider);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseUrls(listenUri);
@@ -31,18 +40,35 @@ namespace HttpServerMock.Server
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            Console.WriteLine("Application starts");
+            var (loggerProvider, logger) = CreateLoggers();
+
+            logger.LogInformation("Application starts");
 
             return Host
                 .CreateDefaultBuilder()
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddProvider(loggerProvider);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseUrls(BuildUrls(args));
+                    webBuilder.UseUrls(BuildUrls(args, logger));
                     webBuilder.UseStartup<Startup>();
                 });
         }
 
-        private static string[] BuildUrls(string[] args)
+        private static (ILoggerProvider loggerProvider, ILogger logger) CreateLoggers()
+        {
+            ILoggerProvider loggerProvider = new CustomConsoleLoggerProvider();
+
+            ILoggerFactory loggerFactory = new LoggerFactory(new[] { loggerProvider });
+            ILogger logger = loggerFactory.CreateLogger<Program>();
+
+            return (loggerProvider, logger);
+        }
+
+        private static string[] BuildUrls(string[] args, ILogger logger)
         {
             if (args?.Any() != true)
                 return Array.Empty<string>();
@@ -51,7 +77,7 @@ namespace HttpServerMock.Server
                 .Add(new CommandLineConfigurationSource { Args = args });
 
             var urls = GetUrlParameters(configurationBuilder.Build());
-            Console.WriteLine($"Binding urls: {string.Join(',', urls)}");
+            logger.LogInformation($"Binding urls: {string.Join(',', urls)}");
 
             return urls;
         }

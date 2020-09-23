@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +15,12 @@ namespace HttpServerMock.Server.Middleware
     public class RequestLoggerMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<RequestLoggerMiddleware> _logger;
 
-        public RequestLoggerMiddleware(RequestDelegate next)
+        public RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -32,8 +35,7 @@ namespace HttpServerMock.Server.Middleware
                 mockedRequest = requestHistoryContainer.GetMockedRequestWithDefinition(requestDetails).MockedRequest.Increment();
             }
 
-            Console.WriteLine();
-            ConsoleExtensions.Write($"[IN] {LogEntryHeader(httpContext.Request, mockedRequest)}", ConsoleColor.Cyan);
+            _logger.LogInformation($"[Start request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
 
             try
             {
@@ -41,18 +43,19 @@ namespace HttpServerMock.Server.Middleware
             }
             catch (Exception ex)
             {
-                ConsoleExtensions.Write($"{DateTimeOffset.UtcNow:O} EXCEPTION {ex.Message}\n{ex.StackTrace}", ConsoleColor.Red);
+                _logger.LogError(ex, $"EXCEPTION {ex.Message}");
                 throw;
             }
             finally
             {
-                ConsoleExtensions.Write($"[OUT] {LogEntryHeader(httpContext.Request, mockedRequest)} -> {httpContext.Response?.StatusCode} ", ConsoleColor.DarkGreen);
+                var counter = mockedRequest?.Counter ?? 0;
+                _logger.LogInformation($"[Finish request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}, {(counter <= 0 ? string.Empty : "  counter=" + counter)}, response={httpContext.Response?.StatusCode}]");
             }
         }
 
-        private static string LogEntryHeader(HttpRequest request, MockedRequest? requestData)
+        private static string LogUrl(HttpRequest request)
         {
-            return $"{DateTimeOffset.UtcNow:O} {request.Method} {request.GetDisplayUrl()}  #{requestData?.Counter ?? 0} [{Thread.CurrentThread.ManagedThreadId}]";
+            return $"({request.Method}) {request.GetDisplayUrl()} ";
         }
     }
 
