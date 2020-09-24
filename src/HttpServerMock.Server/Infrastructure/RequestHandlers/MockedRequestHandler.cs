@@ -6,17 +6,22 @@ using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
     public class MockedRequestHandler : IRequestDetailsHandler
     {
         private readonly IRequestHistoryStorage _requestHistoryStorage;
+        private readonly ILogger<MockedRequestHandler> _logger;
 
         public MockedRequestHandler(
-            IRequestHistoryStorage requestHistoryStorage)
+            IRequestHistoryStorage requestHistoryStorage,
+            ILogger<MockedRequestHandler> logger)
         {
             _requestHistoryStorage = requestHistoryStorage;
+            _logger = logger;
         }
 
         public bool CanHandle(IRequestDetails requestDetails) => true;
@@ -47,6 +52,11 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             handled |= FillPayload(requestDetails, requestDefinition, response);
 
             handled |= FillHeaders(requestDefinition, response);
+
+            if (handled)
+            {
+                _logger.LogInformation($"Handler description={requestDefinition.Description ?? "N/A"}, Request counter={mockedRequestWithDefinition.MockedRequest.Counter}");
+            }
 
             return handled ? response : null;
         }

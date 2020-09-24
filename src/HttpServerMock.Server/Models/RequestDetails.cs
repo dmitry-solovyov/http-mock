@@ -1,17 +1,8 @@
 ﻿using System.Collections.Generic;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 
-namespace HttpServerMock.Server.Infrastructure
+namespace HttpServerMock.Server.Models
 {
-    public interface IRequestDetails
-    {
-        string HttpMethod { get; }
-        string Uri { get; }
-        IReadOnlyDictionary<string, string[]>? Headers { get; }
-        string ContentType { get; }
-        string? Content { get; }
-        string ClientAddress { get; }
-    }
-
     public struct RequestDetails : IRequestDetails
     {
         public RequestDetails(string httpMethod, string uri, IReadOnlyDictionary<string, string[]> headers, string clientAddress, string? content, string contentType)

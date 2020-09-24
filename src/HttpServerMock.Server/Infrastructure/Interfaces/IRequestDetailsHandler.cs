@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace HttpServerMock.Server.Infrastructure
+namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestDetailsHandler
     {

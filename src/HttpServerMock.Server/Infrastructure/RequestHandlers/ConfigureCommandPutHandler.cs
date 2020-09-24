@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
@@ -48,9 +50,9 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                     StatusCode = StatusCodes.Status400BadRequest
                 };
 
-            var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content)).ToArray();
+            var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content));
 
-            _logger.LogInformation($"Setup configuration: {requestDefinitions.Count()}");
+            _logger.LogInformation($"Setup configuration: {requestDefinitions.Definitions.Count()}");
 
             _requestDefinitionProvider.AddRange(requestDefinitions);
 

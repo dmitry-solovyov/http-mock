@@ -1,6 +1,5 @@
 ﻿using HttpServerMock.Server.Infrastructure;
 using HttpServerMock.Server.Infrastructure.Extensions;
-using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -9,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Middleware
 {
@@ -28,11 +28,11 @@ namespace HttpServerMock.Server.Middleware
             var requestDetailsProvider = httpContext.RequestServices.GetService<IRequestDetailsProvider>();
             var requestDetails = await requestDetailsProvider.GetRequestDetails();
 
-            MockedRequest? mockedRequest = null;
+            //MockedRequest? mockedRequest = null;
             if (!requestDetails.IsCommandRequest(out _))
             {
-                var requestHistoryContainer = httpContext.RequestServices.GetService<IRequestHistoryStorage>();
-                mockedRequest = requestHistoryContainer.GetMockedRequestWithDefinition(requestDetails).MockedRequest.Increment();
+                //var requestHistoryContainer = httpContext.RequestServices.GetService<IRequestHistoryStorage>();
+                //mockedRequest = requestHistoryContainer.GetMockedRequestWithDefinition(requestDetails).MockedRequest.Increment();
             }
 
             _logger.LogInformation($"[Start request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
@@ -48,8 +48,7 @@ namespace HttpServerMock.Server.Middleware
             }
             finally
             {
-                var counter = mockedRequest?.Counter ?? 0;
-                _logger.LogInformation($"[Finish request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}, {(counter <= 0 ? string.Empty : "  counter=" + counter)}, response={httpContext.Response?.StatusCode}]");
+                _logger.LogInformation($"[Finish request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}, response={httpContext.Response?.StatusCode}]");
             }
         }
 

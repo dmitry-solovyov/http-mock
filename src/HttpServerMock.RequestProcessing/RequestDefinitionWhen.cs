@@ -6,27 +6,26 @@ namespace HttpServerMock.RequestDefinitions
 {
     public class RequestDefinitionWhen
     {
-        private string? _url;
-        public string? Url
+        public RequestDefinitionWhen(string? url, bool caseInsensitive)
         {
-            get => _url;
-            set
-            {
-                _url = value;
+            Url = url;
 
-                var (normalizedUrl, fieldNames) = NormalizeUrl(value);
-                UrlRegexExpression = normalizedUrl;
-                UrlVariables = fieldNames;
-            }
+            var (urlRegexExpression, urlVariables) = NormalizeUrl(url);
+            UrlRegexExpression = urlRegexExpression;
+            UrlVariables = urlVariables;
+
+            CaseInsensitive = caseInsensitive;
         }
 
-        public bool CaseInsensitive { get; set; } = true;
+        public string? Url { get; }
 
-        public string? UrlRegexExpression { get; private set; }
+        public bool CaseInsensitive { get; }
 
-        public string[] UrlVariables { get; private set; } = Array.Empty<string>();
+        public string? UrlRegexExpression { get; }
 
-        private static (string? NormizeledUrl, string[] FieldNames) NormalizeUrl(string? url)
+        public string[] UrlVariables { get; }
+
+        private static (string? UrlExpression, string[] UrlVariables) NormalizeUrl(string? url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return (url, Array.Empty<string>());
@@ -39,7 +38,7 @@ namespace HttpServerMock.RequestDefinitions
             return (urlExpression, urlVariables);
         }
 
-        private static (string normizeledValue, string[] foundFieldNames) NormalizeSearchExpression(string url)
+        private static (string UrlExpression, string[] UrlVariables) NormalizeSearchExpression(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return (url, Array.Empty<string>());

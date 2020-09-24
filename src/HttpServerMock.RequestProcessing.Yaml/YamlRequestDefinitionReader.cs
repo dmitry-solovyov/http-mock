@@ -11,12 +11,12 @@ namespace HttpServerMock.RequestProcessing.Yaml
 {
     public class YamlRequestDefinitionReader : IRequestDefinitionReader
     {
-        public IEnumerable<RequestDefinition> Read(TextReader textReader)
+        public RequestDefinitionSet Read(TextReader textReader)
         {
             return ReadImpl(textReader);
         }
 
-        private IEnumerable<RequestDefinition> ReadImpl(TextReader textReader)
+        private RequestDefinitionSet ReadImpl(TextReader textReader)
         {
             var yaml = new YamlStream();
             yaml.Load(textReader);
@@ -24,48 +24,51 @@ namespace HttpServerMock.RequestProcessing.Yaml
             if (yaml.Documents.Count == 0)
                 throw new Exception("No documents found!");
 
+            string documentName = null;
+            var definitions = new List<RequestDefinition>();
+
             foreach (var yamlDocument in yaml.Documents)
             {
+                documentName ??= ((YamlScalarNode)yamlDocument.RootNode["info"]).Value;
                 var mapMode = (YamlSequenceNode)yamlDocument.RootNode["map"];
+
                 foreach (var mapNode in mapMode.Children.OfType<YamlMappingNode>())
                 {
                     var requestDefinition = ParseDefinitionNode(mapNode);
-                    yield return requestDefinition;
+                    definitions.Add(requestDefinition);
                 }
             }
+
+            return new RequestDefinitionSet(documentName, definitions);
         }
 
         private static RequestDefinition ParseDefinitionNode(YamlMappingNode yamlMappingNode)
         {
+            var description = ScalarField(yamlMappingNode, "description");
             var url = ScalarField(yamlMappingNode, "url");
             var payload = GetPayloadField(yamlMappingNode);
             var delay = GetDelay(yamlMappingNode);
             var statusCode = ScalarField(yamlMappingNode, "status-code", "status");
             var contentType = ScalarField(yamlMappingNode, "content-type");
+            contentType = string.IsNullOrWhiteSpace(contentType)
+                ? "application/json"
+                : new ContentType(contentType).MediaType;
             var method = ScalarField(yamlMappingNode, "http-method", "method");
             var headers = GetDictionaryField(yamlMappingNode, "headers");
 
             var requestDefinition = new RequestDefinition(
-                new RequestDefinitionWhen
-                {
-                    Url = url
-                },
+                description,
+                new RequestDefinitionWhen(url, false),
                 new RequestDefinitionThen
-                {
-                    ContentType = string.IsNullOrWhiteSpace(contentType) ? "application/json" : new ContentType(contentType).MediaType,
-                    StatusCode = int.TryParse(statusCode, out var parsedStatusCode) ? parsedStatusCode : (int)HttpStatusCode.OK,
-                    Delay = delay,
-                    Method = method,
-                    Payload = payload,
-                    ProxyUrl = null,
-                    Headers = headers
-                });
-
-            //var (adjustedUrl, adjustedUrlVariables) = NormalizeUrl(requestDefinition);
-            //requestDefinition.SetUrlDetails(adjustedUrl, adjustedUrlVariables);
-
-            //var (adjustedMethod, _) = NormalizeSearchExpression(requestDefinition.Method);
-            //requestDefinition.SetMethod(adjustedMethod);
+                (
+                    contentType,
+                    method,
+                    payload,
+                    int.TryParse(statusCode, out var parsedStatusCode) ? parsedStatusCode : (int)HttpStatusCode.OK,
+                    delay,
+                    null,
+                    headers
+                ));
 
             return requestDefinition;
         }

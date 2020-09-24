@@ -5,6 +5,8 @@ using System;
 using System.Collections;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {

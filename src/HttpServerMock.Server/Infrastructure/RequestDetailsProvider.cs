@@ -1,16 +1,13 @@
-﻿using HttpServerMock.Server.Infrastructure.Extensions;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Extensions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure
 {
-    public interface IRequestDetailsProvider
-    {
-        Task<IRequestDetails> GetRequestDetails();
-    }
-
     public class RequestDetailsProvider : IRequestDetailsProvider
     {
         private readonly IHttpContextAccessor _accessor;

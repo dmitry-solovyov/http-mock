@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {

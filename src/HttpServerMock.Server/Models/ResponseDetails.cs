@@ -1,15 +1,8 @@
 ﻿using System.Collections.Generic;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 
-namespace HttpServerMock.Server.Infrastructure
+namespace HttpServerMock.Server.Models
 {
-    public interface IResponseDetails
-    {
-        int StatusCode { get; }
-        IDictionary<string, string>? Headers { get; }
-        string? Content { get; }
-        string ContentType { get; }
-    }
-
     public class ResponseDetails : IResponseDetails
     {
         public int StatusCode { get; set; }
