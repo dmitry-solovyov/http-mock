@@ -1,14 +1,10 @@
-﻿using HttpServerMock.Server.Infrastructure;
-using HttpServerMock.Server.Infrastructure.Extensions;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Middleware
 {
@@ -25,16 +21,6 @@ namespace HttpServerMock.Server.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var requestDetailsProvider = httpContext.RequestServices.GetService<IRequestDetailsProvider>();
-            var requestDetails = await requestDetailsProvider.GetRequestDetails();
-
-            //MockedRequest? mockedRequest = null;
-            if (!requestDetails.IsCommandRequest(out _))
-            {
-                //var requestHistoryContainer = httpContext.RequestServices.GetService<IRequestHistoryStorage>();
-                //mockedRequest = requestHistoryContainer.GetMockedRequestWithDefinition(requestDetails).MockedRequest.Increment();
-            }
-
             _logger.LogInformation($"[Start request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
 
             try

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System.Net;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;

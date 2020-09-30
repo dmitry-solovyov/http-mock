@@ -11,7 +11,7 @@ using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
-    public class ConfigureCommandPutHandler : IRequestDetailsHandler
+    public class ConfigureCommandPutHandler : IRequestHandler
     {
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
         private readonly IRequestDefinitionReader _requestDefinitionReader;
@@ -52,9 +52,9 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
             var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content));
 
-            _logger.LogInformation($"Setup configuration: {requestDefinitions.Definitions.Count()}");
+            _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()}");
 
-            _requestDefinitionProvider.AddRange(requestDefinitions);
+            _requestDefinitionProvider.AddSet(requestDefinitions);
 
             _requestHistoryStorage.Clear();
 

@@ -10,7 +10,7 @@ using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
-    public class ConfigureCommandGetHandler : IRequestDetailsHandler
+    public class ConfigureCommandGetHandler : IRequestHandler
     {
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
         private readonly ILogger<ConfigureCommandGetHandler> _logger;
@@ -49,7 +49,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetItems())
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
             {
                 array.Add(item);
                 array.Add(null);
@@ -70,7 +70,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetItems())
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
             {
                 array.Add(item);
                 array.Add(null);

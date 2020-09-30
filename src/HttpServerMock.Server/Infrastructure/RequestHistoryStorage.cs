@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
 
@@ -6,7 +7,7 @@ namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestHistoryStorage : IRequestHistoryStorage
     {
-        private readonly ConcurrentDictionary<string, MockedRequest> _requestHistory = new ConcurrentDictionary<string, MockedRequest>();
+        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = new ConcurrentDictionary<string, RequestContext>();
 
         private readonly IRequestDefinitionProvider _requestDefinitionProvider;
 
@@ -22,26 +23,28 @@ namespace HttpServerMock.Server.Infrastructure
             _requestHistory.Clear();
         }
 
+        public static string GetKey(IRequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Uri}";
+
         public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails)
         {
-            var mockedRequest = _requestHistory.AddOrUpdate(
-                MockedRequest.GetKey(requestDetails),
-                new MockedRequest(requestDetails),
+            var requestContext = _requestHistory.AddOrUpdate(
+                GetKey(requestDetails),
+                new RequestContext(requestDetails),
                 (k, existingRequestData) => existingRequestData);
 
-            mockedRequest.Increment();
+            requestContext.IncrementCounter();
 
-            var foundItems = _requestDefinitionProvider.FindItems(mockedRequest);
-            if (foundItems.Length <= 0)
-                return new MockedRequestDefinition(mockedRequest, null);
+            var foundItems = _requestDefinitionProvider.FindItems(requestContext);
+            if (!foundItems.Any())
+                return new MockedRequestDefinition(requestContext, null);
 
-            var index = mockedRequest.Counter <= 0 ? 0 : mockedRequest.Counter - 1;
+            var index = requestContext.Counter <= 0 ? 0 : requestContext.Counter - 1;
             if (index >= foundItems.Length)
             {
                 index %= foundItems.Length;
             }
 
-            return new MockedRequestDefinition(mockedRequest, foundItems[index]);
+            return new MockedRequestDefinition(requestContext, foundItems[index]);
         }
     }
 }

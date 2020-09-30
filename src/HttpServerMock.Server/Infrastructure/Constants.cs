@@ -10,7 +10,8 @@
         public static class HeaderValues
         {
             public const string ConfigureCommandName = "configure-routing";
-            public const string ResetStatisticsCommandName = "reset-statistics";
+            public const string ResetCounterCommandName = "reset-counters";
+            public const string ResetConfigurationCommandName = "reset-configuration";
         }
     }
 }

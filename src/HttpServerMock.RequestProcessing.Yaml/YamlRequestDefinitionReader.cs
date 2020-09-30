@@ -11,12 +11,12 @@ namespace HttpServerMock.RequestProcessing.Yaml
 {
     public class YamlRequestDefinitionReader : IRequestDefinitionReader
     {
-        public RequestDefinitionSet Read(TextReader textReader)
+        public RequestDefinitionItemSet Read(TextReader textReader)
         {
             return ReadImpl(textReader);
         }
 
-        private RequestDefinitionSet ReadImpl(TextReader textReader)
+        private RequestDefinitionItemSet ReadImpl(TextReader textReader)
         {
             var yaml = new YamlStream();
             yaml.Load(textReader);
@@ -25,7 +25,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
                 throw new Exception("No documents found!");
 
             string documentName = null;
-            var definitions = new List<RequestDefinition>();
+            var definitions = new List<RequestDefinitionItem>();
 
             foreach (var yamlDocument in yaml.Documents)
             {
@@ -39,10 +39,10 @@ namespace HttpServerMock.RequestProcessing.Yaml
                 }
             }
 
-            return new RequestDefinitionSet(documentName, definitions);
+            return new RequestDefinitionItemSet(documentName, definitions);
         }
 
-        private static RequestDefinition ParseDefinitionNode(YamlMappingNode yamlMappingNode)
+        private static RequestDefinitionItem ParseDefinitionNode(YamlMappingNode yamlMappingNode)
         {
             var description = ScalarField(yamlMappingNode, "description");
             var url = ScalarField(yamlMappingNode, "url");
@@ -56,7 +56,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
             var method = ScalarField(yamlMappingNode, "http-method", "method");
             var headers = GetDictionaryField(yamlMappingNode, "headers");
 
-            var requestDefinition = new RequestDefinition(
+            var requestDefinition = new RequestDefinitionItem(
                 description,
                 new RequestDefinitionWhen(url, false),
                 new RequestDefinitionThen

@@ -4,6 +4,6 @@ namespace HttpServerMock.RequestDefinitions
 {
     public interface IRequestDefinitionWriter
     {
-        void Write(RequestDefinitionSet requestDefinitionSet, TextWriter textWriter);
+        void Write(RequestDefinitionItemSet requestDefinitionSet, TextWriter textWriter);
     }
 }

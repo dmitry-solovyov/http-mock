@@ -2,7 +2,7 @@
 
 namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
-    public interface IRequestDetailsHandler
+    public interface IRequestHandler
     {
         bool CanHandle(IRequestDetails requestDetails);
 

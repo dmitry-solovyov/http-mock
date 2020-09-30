@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
-    public class MockedRequestHandler : IRequestDetailsHandler
+    public class MockedRequestHandler : IRequestHandler
     {
         private readonly IRequestHistoryStorage _requestHistoryStorage;
         private readonly ILogger<MockedRequestHandler> _logger;
@@ -61,7 +61,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return handled ? response : null;
         }
 
-        private static bool FillContentType(RequestDefinition requestDefinition, ResponseDetails response)
+        private static bool FillContentType(RequestDefinitionItem requestDefinition, ResponseDetails response)
         {
             if (!string.IsNullOrWhiteSpace(requestDefinition.Then.ContentType))
             {
@@ -74,7 +74,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         }
 
         private static bool FillStatusCode(
-            RequestDefinition requestDefinition, ResponseDetails response)
+            RequestDefinitionItem requestDefinition, ResponseDetails response)
         {
             if (requestDefinition.Then.StatusCode <= 0)
                 return false;
@@ -84,7 +84,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         }
 
         private static async ValueTask<bool> FillDelay(
-            RequestDefinition requestDefinition, CancellationToken cancellationToken)
+            RequestDefinitionItem requestDefinition, CancellationToken cancellationToken)
         {
             if (!requestDefinition.Then.Delay.HasValue || requestDefinition.Then.Delay.Value <= 0)
                 return false;
@@ -93,7 +93,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private bool FillPayload(IRequestDetails requestDetails, RequestDefinition requestDefinition, ResponseDetails response)
+        private bool FillPayload(IRequestDetails requestDetails, RequestDefinitionItem requestDefinition, ResponseDetails response)
         {
             if (string.IsNullOrWhiteSpace(requestDefinition.Then.Payload))
                 return false;
@@ -118,7 +118,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private static bool FillHeaders(RequestDefinition requestDefinition, ResponseDetails response)
+        private static bool FillHeaders(RequestDefinitionItem requestDefinition, ResponseDetails response)
         {
             if (requestDefinition.Then.Headers == null || requestDefinition.Then.Headers.Count == 0)
                 return false;

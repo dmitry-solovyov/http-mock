@@ -9,23 +9,38 @@ namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestDefinitionProvider : IRequestDefinitionProvider
     {
-        private readonly List<RequestDefinitionSet> _requestDefinitionSets = new List<RequestDefinitionSet>();
+        private readonly List<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
 
-        public void AddRange(RequestDefinitionSet definitionSet)
+        public int Count => _requestDefinitionSets.Count;
+
+        public void Clear()
         {
             _requestDefinitionSets.Clear();
+        }
+
+        public void AddSet(RequestDefinitionItemSet definitionSet)
+        {
+            var foundItems = _requestDefinitionSets
+                .Where(x => string.Equals(x.DefinitionName, definitionSet.DefinitionName))
+                .ToArray();
+
+            foreach (var foundItem in foundItems)
+            {
+                _requestDefinitionSets.Remove(foundItem);
+            }
+
             _requestDefinitionSets.Add(definitionSet);
         }
 
-        public RequestDefinition[] FindItems(MockedRequest request)
+        public RequestDefinitionItem[] FindItems(RequestContext request)
         {
-            var result = new List<RequestDefinition>();
+            var result = new List<RequestDefinitionItem>();
 
             var context = request.RequestDetails;
 
             foreach (var requestDefinitionSet in _requestDefinitionSets)
             {
-                foreach (var requestDefinition in requestDefinitionSet.Definitions)
+                foreach (var requestDefinition in requestDefinitionSet.DefinitionItems)
                 {
                     if (string.IsNullOrWhiteSpace(requestDefinition.When.Url) ||
                         string.IsNullOrWhiteSpace(requestDefinition.When.UrlRegexExpression))
@@ -48,7 +63,7 @@ namespace HttpServerMock.Server.Infrastructure
             return result.ToArray();
         }
 
-        public IEnumerable<RequestDefinitionSet> GetItems()
+        public IEnumerable<RequestDefinitionItemSet> GetDefinitionSets()
         {
             return _requestDefinitionSets.AsEnumerable();
         }

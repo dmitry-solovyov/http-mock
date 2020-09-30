@@ -5,7 +5,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
 {
     public class YamlRequestDefinitionWriter : IRequestDefinitionWriter
     {
-        public void Write(RequestDefinitionSet requestDefinitionSet, TextWriter textWriter)
+        public void Write(RequestDefinitionItemSet requestDefinitionSet, TextWriter textWriter)
         {
         }
     }
