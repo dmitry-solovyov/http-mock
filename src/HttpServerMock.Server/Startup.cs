@@ -32,7 +32,7 @@ namespace HttpServerMock.Server
 
             services.AddScoped<IRequestDetailsProvider, RequestDetailsProvider>();
 
-            //services.AddSingleton<IRequestHistoryStorage, RequestHistoryStorage>();
+            services.AddSingleton<IRequestHistoryStorage, RequestHistoryStorage>();
             services.AddSingleton<IRequestDefinitionProvider, RequestDefinitionProvider>();
         }
 
