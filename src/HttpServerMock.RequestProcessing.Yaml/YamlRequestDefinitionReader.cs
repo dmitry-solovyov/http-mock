@@ -8,16 +8,13 @@ using System.Net.Mime;
 using System.Threading;
 using YamlDotNet.RepresentationModel;
 
-namespace HttpServerMock.RequestProcessing.Yaml
+namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 {
     public class YamlRequestDefinitionReader : IRequestDefinitionReader
     {
-        public RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken)
-        {
-            return ReadImpl(textReader, cancellationToken);
-        }
+        public string ContentType => "application/yaml";
 
-        private RequestDefinitionItemSet ReadImpl(TextReader textReader, CancellationToken cancellationToken)
+        public RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken)
         {
             var yaml = new YamlStream();
             yaml.Load(textReader);

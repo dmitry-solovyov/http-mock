@@ -5,6 +5,7 @@ namespace HttpServerMock.RequestDefinitions
 {
     public interface IRequestDefinitionReader
     {
+        string ContentType { get; }
         RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken);
     }
 }

@@ -16,9 +16,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Server", "Ht
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestDefinitions", "HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj", "{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestProcessing.Yaml", "HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestProcessing.Yaml.csproj", "{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestDefinitionProcessing.Yaml", "HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestDefinitionProcessing.Yaml.csproj", "{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tool", "HttpServerMock.Tool\HttpServerMock.Tool.csproj", "{E06FE8F2-C529-4295-9127-92FF88F6FC80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpServerMock.RequestDefinitionProcessing.Json", "HttpServerMock.RequestProcessing.Json\HttpServerMock.RequestDefinitionProcessing.Json.csproj", "{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +48,10 @@ Global
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

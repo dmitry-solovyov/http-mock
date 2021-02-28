@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestProcessing.Yaml.csproj" />
+    <ProjectReference Include="..\HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestDefinitionProcessing.Yaml.csproj" />
     <ProjectReference Include="..\HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,5 @@
+using HttpServerMock.RequestDefinitionProcessing.Yaml;
 using HttpServerMock.RequestDefinitions;
-using HttpServerMock.RequestProcessing.Yaml;
 using HttpServerMock.Server.Infrastructure;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Infrastructure.RequestHandlers;
