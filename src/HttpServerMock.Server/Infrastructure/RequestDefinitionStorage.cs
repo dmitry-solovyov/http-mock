@@ -7,7 +7,7 @@ using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure
 {
-    public class RequestDefinitionProvider : IRequestDefinitionProvider
+    public class RequestDefinitionStorage : IRequestDefinitionStorage
     {
         private readonly List<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
 

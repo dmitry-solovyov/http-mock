@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure.Extensions
 {
     public static class PipeReaderExtensions
     {
-        public static async Task<string> ReadPipeAsync(this PipeReader reader)
+        public static async Task<string> ReadPipeAsync(this PipeReader reader, CancellationToken cancellationToken)
         {
             List<byte>? output = null;
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             while (reader.TryRead(out var readResult))
             {
@@ -18,6 +21,8 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
 
                 while (readResult.Buffer.TryGet(ref position, out var memoryLine))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (memoryLine.IsEmpty)
                         continue;
 
@@ -30,9 +35,7 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
                 reader.AdvanceTo(buffer.Start, buffer.End);
 
                 if (readResult.IsCompleted)
-                {
                     break;
-                }
             }
 
             // Mark the PipeReader as complete.

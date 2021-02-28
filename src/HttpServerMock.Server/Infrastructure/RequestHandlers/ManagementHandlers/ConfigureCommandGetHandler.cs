@@ -1,50 +1,42 @@
-﻿using HttpServerMock.Server.Infrastructure.Extensions;
+﻿using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections;
 using System.Net.Mime;
+using System.Threading;
 using System.Threading.Tasks;
-using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
 
-namespace HttpServerMock.Server.Infrastructure.RequestHandlers
+namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
     public class ConfigureCommandGetHandler : IRequestHandler
     {
-        private readonly IRequestDefinitionProvider _requestDefinitionProvider;
+        private readonly IRequestDefinitionStorage _requestDefinitionProvider;
         private readonly ILogger<ConfigureCommandGetHandler> _logger;
 
         public ConfigureCommandGetHandler(
-            IRequestDefinitionProvider requestDefinitionProvider,
+            IRequestDefinitionStorage requestDefinitionProvider,
             ILogger<ConfigureCommandGetHandler> logger)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
             _logger = logger;
         }
 
-        public bool CanHandle(IRequestDetails requestDetails) =>
-            requestDetails.IsCommandRequest(out var commandName) &&
-            Constants.HeaderValues.ConfigureCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) &&
-            requestDetails.HttpMethod == HttpMethods.Get;
-
-        public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
+        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Set configuration");
-            return Task.FromResult(ProcessGetCommand(requestDetails));
-        }
 
-        private IResponseDetails? ProcessGetCommand(IRequestDetails requestDetails)
-        {
             var contentType = requestDetails.ContentType;
-            return (contentType.ToLower() switch
+            var content = contentType.ToLower() switch
             {
                 "application/yaml" => GenerateYamlContent(),
                 _ => GenerateJsonContent()
-            });
+            };
+
+            return Task.FromResult(content);
         }
 
-        private IResponseDetails? GenerateYamlContent()
+        private IResponseDetails GenerateYamlContent()
         {
             var serializer = new YamlDotNet.Serialization.Serializer();
 
@@ -65,7 +57,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             };
         }
 
-        private IResponseDetails? GenerateJsonContent()
+        private IResponseDetails GenerateJsonContent()
         {
             var serializer = new YamlDotNet.Serialization.Serializer();
 

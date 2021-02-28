@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using HttpServerMock.Server.Infrastructure.Interfaces;
+using System.Collections.Generic;
 using System.Linq;
-using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.Extensions
 {
     public static class RequestDetailsExtensions
     {
-        public static bool IsCommandRequest(this IRequestDetails requestDetails, out string? commandName)
+        public static bool IsCommandRequest(this IRequestDetails? requestDetails, out string? commandName)
         {
             commandName = null;
 
             if (requestDetails == null)
-            {
                 return false;
-            }
 
             var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.CommandHeader);
             if (string.IsNullOrWhiteSpace(commandHeader))

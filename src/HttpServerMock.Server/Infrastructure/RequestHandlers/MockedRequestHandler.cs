@@ -1,13 +1,14 @@
 ﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using HttpServerMock.Server.Infrastructure.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
@@ -24,20 +25,18 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             _logger = logger;
         }
 
-        public bool CanHandle(IRequestDetails requestDetails) => true;
-
-        public async Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
+        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             var mockedRequestWithDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(requestDetails);
 
-            return await ProcessRequestDefinition(requestDetails, mockedRequestWithDefinition, CancellationToken.None);
+            return ProcessRequestDefinition(requestDetails, mockedRequestWithDefinition, cancellationToken);
         }
 
-        private async Task<IResponseDetails?> ProcessRequestDefinition(IRequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition, CancellationToken cancellationToken)
+        private async Task<IResponseDetails> ProcessRequestDefinition(IRequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition, CancellationToken cancellationToken)
         {
             var requestDefinition = mockedRequestWithDefinition.RequestDefinition;
             if (requestDefinition == null)
-                return null;
+                return new ResponseDetails { StatusCode = StatusCodes.Status200OK };
 
             var handled = false;
 
@@ -58,7 +57,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                 _logger.LogInformation($"Handler description={requestDefinition.Description ?? "N/A"}, Request counter={mockedRequestWithDefinition.MockedRequest.Counter}");
             }
 
-            return handled ? response : null;
+            return response;
         }
 
         private static bool FillContentType(RequestDefinitionItem requestDefinition, ResponseDetails response)
@@ -104,13 +103,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                 while (payload.Contains("@guid"))
                     payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
 
-                foreach (var urlVariable in requestDefinition.When.UrlVariables)
-                    while (payload.Contains($"@{urlVariable}"))
-                    {
-                        var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                if (requestDefinition.When.UrlRegexExpression != null)
+                    foreach (var urlVariable in requestDefinition.When.UrlVariables)
+                        while (payload.Contains($"@{urlVariable}"))
+                        {
+                            var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-                        payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
-                    }
+                            payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
+                        }
             }
 
             response.ContentType = requestDefinition.Then.ContentType;
@@ -123,8 +123,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             if (requestDefinition.Then.Headers == null || requestDefinition.Then.Headers.Count == 0)
                 return false;
 
-            if (response.Headers == null)
-                response.Headers = new Dictionary<string, string>();
+            response.Headers ??= new Dictionary<string, string>();
 
             foreach (var thenHeader in requestDefinition.Then.Headers)
             {

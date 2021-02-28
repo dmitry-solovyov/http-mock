@@ -9,26 +9,23 @@ namespace HttpServerMock.Server.Infrastructure
     {
         private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = new ConcurrentDictionary<string, RequestContext>();
 
-        private readonly IRequestDefinitionProvider _requestDefinitionProvider;
+        private readonly IRequestDefinitionStorage _requestDefinitionProvider;
 
-        public RequestHistoryStorage(IRequestDefinitionProvider requestDefinitionProvider)
+        public RequestHistoryStorage(IRequestDefinitionStorage requestDefinitionProvider)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
         }
 
         public int CurrentItemsCount => _requestHistory.Count;
 
-        public void Clear()
-        {
-            _requestHistory.Clear();
-        }
+        public void Clear() => _requestHistory.Clear();
 
-        public static string GetKey(IRequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Uri}";
+        public static string GetHistoryItemCacheKey(IRequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Uri}";
 
         public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails)
         {
             var requestContext = _requestHistory.AddOrUpdate(
-                GetKey(requestDetails),
+                GetHistoryItemCacheKey(requestDetails),
                 new RequestContext(requestDetails),
                 (k, existingRequestData) => existingRequestData);
 
@@ -40,9 +37,7 @@ namespace HttpServerMock.Server.Infrastructure
 
             var index = requestContext.Counter <= 0 ? 0 : requestContext.Counter - 1;
             if (index >= foundItems.Length)
-            {
                 index %= foundItems.Length;
-            }
 
             return new MockedRequestDefinition(requestContext, foundItems[index]);
         }

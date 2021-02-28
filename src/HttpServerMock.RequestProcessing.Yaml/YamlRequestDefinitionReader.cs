@@ -5,26 +5,29 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Threading;
 using YamlDotNet.RepresentationModel;
 
 namespace HttpServerMock.RequestProcessing.Yaml
 {
     public class YamlRequestDefinitionReader : IRequestDefinitionReader
     {
-        public RequestDefinitionItemSet Read(TextReader textReader)
+        public RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken)
         {
-            return ReadImpl(textReader);
+            return ReadImpl(textReader, cancellationToken);
         }
 
-        private RequestDefinitionItemSet ReadImpl(TextReader textReader)
+        private RequestDefinitionItemSet ReadImpl(TextReader textReader, CancellationToken cancellationToken)
         {
             var yaml = new YamlStream();
             yaml.Load(textReader);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (yaml.Documents.Count == 0)
                 throw new Exception("No documents found!");
 
-            string documentName = null;
+            string? documentName = null;
             var definitions = new List<RequestDefinitionItem>();
 
             foreach (var yamlDocument in yaml.Documents)
@@ -34,7 +37,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
 
                 foreach (var mapNode in mapMode.Children.OfType<YamlMappingNode>())
                 {
-                    var requestDefinition = ParseDefinitionNode(mapNode);
+                    var requestDefinition = ParseDefinitionNode(mapNode, cancellationToken);
                     definitions.Add(requestDefinition);
                 }
             }
@@ -42,8 +45,10 @@ namespace HttpServerMock.RequestProcessing.Yaml
             return new RequestDefinitionItemSet(documentName, definitions);
         }
 
-        private static RequestDefinitionItem ParseDefinitionNode(YamlMappingNode yamlMappingNode)
+        private static RequestDefinitionItem ParseDefinitionNode(YamlMappingNode yamlMappingNode, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var description = ScalarField(yamlMappingNode, "description");
             var url = ScalarField(yamlMappingNode, "url");
             var payload = GetPayloadField(yamlMappingNode);
@@ -54,7 +59,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
                 ? "application/json"
                 : new ContentType(contentType).MediaType;
             var method = ScalarField(yamlMappingNode, "http-method", "method");
-            var headers = GetDictionaryField(yamlMappingNode, "headers");
+            var headers = GetDictionaryField(yamlMappingNode, "headers", cancellationToken);
 
             var requestDefinition = new RequestDefinitionItem(
                 description,
@@ -73,7 +78,7 @@ namespace HttpServerMock.RequestProcessing.Yaml
             return requestDefinition;
         }
 
-        private static Dictionary<string, string> GetDictionaryField(YamlMappingNode yamlMappingNode, string tagName)
+        private static Dictionary<string, string>? GetDictionaryField(YamlMappingNode yamlMappingNode, string tagName, CancellationToken cancellationToken)
         {
             if (yamlMappingNode.Children.ContainsKey(tagName))
             {
@@ -83,6 +88,8 @@ namespace HttpServerMock.RequestProcessing.Yaml
                     var result = new Dictionary<string, string>();
                     foreach (var sequenceNodeChild in sequenceNode.Children)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         if (!(sequenceNodeChild is YamlScalarNode sequenceScalarNode)) continue;
 
                         var headerDefinitionValue = sequenceScalarNode.Value;
@@ -111,13 +118,13 @@ namespace HttpServerMock.RequestProcessing.Yaml
 
             return int.TryParse(delay, out var parsedDelay) ? parsedDelay : 0;
         }
-        private static string GetPayloadField(YamlMappingNode yamlMappingNode)
+        private static string? GetPayloadField(YamlMappingNode yamlMappingNode)
         {
             var payload = ScalarField(yamlMappingNode, "payload", "body");
             return payload;
         }
 
-        private static string ScalarField(YamlNode node, params string[] keys)
+        private static string? ScalarField(YamlNode node, params string[] keys)
         {
             foreach (var key in keys)
             {

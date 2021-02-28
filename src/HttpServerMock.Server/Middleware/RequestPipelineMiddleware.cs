@@ -3,55 +3,56 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Middleware
 {
-    public class RequestPipelineMiddleware<TRequestHandler> : IMiddleware
-        where TRequestHandler : IRequestHandler
+    public class RequestPipelineMiddleware //: IMiddleware
     {
-        private readonly TRequestHandler _request;
+        private readonly RequestDelegate _next;
 
-        public RequestPipelineMiddleware(TRequestHandler request)
+        public RequestPipelineMiddleware(RequestDelegate next)
         {
-            _request = request;
+            _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext httpContext, RequestDelegate next)
+        public async Task Invoke(HttpContext? httpContext)
         {
-            var requestDetailsProvider = httpContext.RequestServices.GetService<IRequestDetailsProvider>();
-            var requestDetails = await requestDetailsProvider.GetRequestDetails().ConfigureAwait(false);
+            if (httpContext == null)
+                return;
 
-            if (_request.CanHandle(requestDetails))
+            var cancellationToken = httpContext.RequestAborted;
+
+            var requestHandlerFactory = httpContext.RequestServices.GetService<IRequestHandlerFactory>();
+
+            var handlerContext = await requestHandlerFactory.GetHandler(httpContext, cancellationToken).ConfigureAwait(false);
+            if (handlerContext != null)
             {
-                var result = await _request.HandleResponse(requestDetails);
-                if (result != null)
+                var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken).ConfigureAwait(false);
+
+                httpContext.Response.StatusCode = responseDetails.StatusCode;
+                httpContext.Response.ContentType = responseDetails.ContentType;
+
+                if (!string.IsNullOrWhiteSpace(responseDetails.Content))
                 {
-                    httpContext.Response.StatusCode = result.StatusCode;
-                    httpContext.Response.ContentType = result.ContentType;
-                    if (!string.IsNullOrWhiteSpace(result.Content))
-                    {
-                        var data = Encoding.UTF8.GetBytes(result.Content);
-                        await httpContext.Response.Body.WriteAsync(data, CancellationToken.None).ConfigureAwait(false);
-                    }
-
-                    await httpContext.Response.CompleteAsync();
-
-                    return;
+                    var data = Encoding.UTF8.GetBytes(responseDetails.Content);
+                    await httpContext.Response.Body.WriteAsync(data, cancellationToken).ConfigureAwait(false);
                 }
+
+                await httpContext.Response.CompleteAsync();
+
+                return;
             }
 
-            await next(httpContext);
+            await _next(httpContext);
         }
     }
 
     public static class RequestHandlerPipelineMiddlewareExtensions
     {
-        public static void UseRequestHandlerQueue<TRequestHandler>(this IApplicationBuilder builder)
-            where TRequestHandler : IRequestHandler
+        public static void UseRequestPipeline(this IApplicationBuilder builder)
         {
-            builder.UseMiddleware<RequestPipelineMiddleware<TRequestHandler>>();
+            builder.UseMiddleware<RequestPipelineMiddleware>();
         }
     }
 }

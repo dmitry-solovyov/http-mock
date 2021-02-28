@@ -6,12 +6,12 @@ namespace HttpServerMock.RequestDefinitions
     {
         public RequestDefinitionThen(
             string contentType,
-            string method,
+            string? method,
             string? payload,
             int statusCode,
             int? delay,
             string? proxyUrl,
-            IReadOnlyDictionary<string, string> headers)
+            IReadOnlyDictionary<string, string>? headers)
         {
             ContentType = contentType;
             Method = method;
@@ -23,7 +23,7 @@ namespace HttpServerMock.RequestDefinitions
         }
 
         public string ContentType { get; }
-        public string Method { get; }
+        public string? Method { get; }
         public string? Payload { get; }
         public int StatusCode { get; }
         public int? Delay { get; }

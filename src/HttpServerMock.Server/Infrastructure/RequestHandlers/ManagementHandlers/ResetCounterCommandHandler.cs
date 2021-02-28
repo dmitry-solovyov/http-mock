@@ -1,12 +1,11 @@
-﻿using HttpServerMock.Server.Infrastructure.Extensions;
-using HttpServerMock.Server.Infrastructure.Interfaces;
+﻿using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace HttpServerMock.Server.Infrastructure.RequestHandlers
+namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
     public class ResetCounterCommandHandler : IRequestHandler
     {
@@ -21,17 +20,13 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             _logger = logger;
         }
 
-        public bool CanHandle(IRequestDetails requestDetails) =>
-            requestDetails.IsCommandRequest(out var commandName) &&
-            Constants.HeaderValues.ResetCounterCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) &&
-            requestDetails.HttpMethod == HttpMethods.Post;
-
-        public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
+        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Reset counters. Current number of history items {_requestHistoryStorage.CurrentItemsCount}");
+
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails?)new ResponseDetails
+            return Task.FromResult((IResponseDetails)new ResponseDetails
             {
                 StatusCode = StatusCodes.Status200OK
             });

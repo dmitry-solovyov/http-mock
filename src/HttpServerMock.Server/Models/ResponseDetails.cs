@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using HttpServerMock.Server.Infrastructure.Interfaces;
+﻿using HttpServerMock.Server.Infrastructure.Interfaces;
+using System.Collections.Generic;
 
 namespace HttpServerMock.Server.Models
 {

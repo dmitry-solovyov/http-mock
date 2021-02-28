@@ -1,48 +1,41 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure.Extensions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace HttpServerMock.Server.Infrastructure.RequestHandlers
+namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
     public class ConfigureCommandPutHandler : IRequestHandler
     {
-        private readonly IRequestDefinitionProvider _requestDefinitionProvider;
+        private readonly IRequestDefinitionStorage _requestDefinitionStorage;
         private readonly IRequestDefinitionReader _requestDefinitionReader;
         private readonly IRequestHistoryStorage _requestHistoryStorage;
         private readonly ILogger<ConfigureCommandPutHandler> _logger;
 
         public ConfigureCommandPutHandler(
-            IRequestDefinitionProvider requestDefinitionProvider,
+            IRequestDefinitionStorage requestDefinitionStorage,
             IRequestDefinitionReader requestDefinitionReader,
             IRequestHistoryStorage requestHistoryStorage,
             ILogger<ConfigureCommandPutHandler> logger)
         {
-            _requestDefinitionProvider = requestDefinitionProvider;
+            _requestDefinitionStorage = requestDefinitionStorage;
             _requestDefinitionReader = requestDefinitionReader;
             _requestHistoryStorage = requestHistoryStorage;
             _logger = logger;
         }
 
-        public bool CanHandle(IRequestDetails requestDetails) =>
-            requestDetails.IsCommandRequest(out var commandName) &&
-            Constants.HeaderValues.ConfigureCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) &&
-            requestDetails.HttpMethod == HttpMethods.Put &&
-            !string.IsNullOrWhiteSpace(requestDetails.Content);
-
-        public Task<IResponseDetails?> HandleResponse(IRequestDetails requestDetails)
+        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            var result = ProcessPutCommand(requestDetails);
+            var result = ProcessPutCommand(requestDetails, cancellationToken);
             return Task.FromResult(result);
         }
 
-        private IResponseDetails? ProcessPutCommand(IRequestDetails requestDetails)
+        private IResponseDetails ProcessPutCommand(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(requestDetails.Content))
                 return new ResponseDetails
@@ -50,11 +43,15 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                     StatusCode = StatusCodes.Status400BadRequest
                 };
 
-            var requestDefinitions = _requestDefinitionReader.Read(new StringReader(requestDetails.Content));
+            cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()}");
+            using var contentReader = new StringReader(requestDetails.Content);
 
-            _requestDefinitionProvider.AddSet(requestDefinitions);
+            var requestDefinitions = _requestDefinitionReader.Read(contentReader, cancellationToken);
+
+            _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()} items");
+
+            _requestDefinitionStorage.AddSet(requestDefinitions);
 
             _requestHistoryStorage.Clear();
 
