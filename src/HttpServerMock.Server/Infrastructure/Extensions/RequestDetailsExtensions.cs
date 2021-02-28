@@ -13,7 +13,7 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
             if (requestDetails == null)
                 return false;
 
-            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.CommandHeader);
+            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.ManagementRequestHeader);
             if (string.IsNullOrWhiteSpace(commandHeader))
                 return false;
 

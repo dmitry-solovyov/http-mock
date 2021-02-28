@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Middleware
 {
-    public class RequestPipelineMiddleware //: IMiddleware
+    public class RequestPipelineMiddleware
     {
         private readonly RequestDelegate _next;
 
@@ -25,7 +25,7 @@ namespace HttpServerMock.Server.Middleware
 
             var requestHandlerFactory = httpContext.RequestServices.GetService<IRequestHandlerFactory>();
 
-            var handlerContext = await requestHandlerFactory.GetHandler(httpContext, cancellationToken).ConfigureAwait(false);
+            var handlerContext = await requestHandlerFactory.GetHandlerContext(httpContext, cancellationToken).ConfigureAwait(false);
             if (handlerContext != null)
             {
                 var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken).ConfigureAwait(false);

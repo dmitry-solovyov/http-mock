@@ -26,8 +26,7 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
                     if (memoryLine.IsEmpty)
                         continue;
 
-                    if (output == null)
-                        output = new List<byte>();
+                    output ??= new List<byte>();
 
                     output.AddRange(memoryLine.ToArray());
                 }
@@ -38,7 +37,6 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
                     break;
             }
 
-            // Mark the PipeReader as complete.
             await reader.CompleteAsync().ConfigureAwait(false);
 
             if (output == null)

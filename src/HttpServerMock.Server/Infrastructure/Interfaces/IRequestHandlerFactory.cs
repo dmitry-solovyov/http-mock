@@ -7,6 +7,6 @@ namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestHandlerFactory
     {
-        Task<RequestHandlerContext?> GetHandler(HttpContext httpContext, CancellationToken cancellationToken);
+        Task<RequestHandlerContext> GetHandlerContext(HttpContext httpContext, CancellationToken cancellationToken);
     }
 }

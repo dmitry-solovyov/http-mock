@@ -20,17 +20,15 @@ namespace HttpServerMock.Server.Infrastructure
             _requestDetailsProvider = requestDetailsProvider;
         }
 
-        public async Task<RequestHandlerContext?> GetHandler(HttpContext httpContext, CancellationToken cancellationToken)
+        public async Task<RequestHandlerContext> GetHandlerContext(HttpContext httpContext, CancellationToken cancellationToken)
         {
             var requestDetails = await _requestDetailsProvider.GetRequestDetails(cancellationToken).ConfigureAwait(false);
 
             var managementHandler = GetManagementHandler(httpContext, requestDetails);
-            if (managementHandler != null)
-            {
-                return new RequestHandlerContext(requestDetails, managementHandler);
-            }
 
-            return new RequestHandlerContext(requestDetails, httpContext.RequestServices.GetService<MockedRequestHandler>());
+            var requestHandler = managementHandler ?? httpContext.RequestServices.GetService<MockedRequestHandler>();
+
+            return new RequestHandlerContext(requestDetails, requestHandler);
         }
 
         private IRequestHandler? GetManagementHandler(HttpContext httpContext, IRequestDetails requestDetails)
@@ -52,5 +50,5 @@ namespace HttpServerMock.Server.Infrastructure
 
             return null;
         }
-}
+    }
 }
