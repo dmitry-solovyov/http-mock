@@ -1,5 +1,6 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
+﻿using HttpServerMock.RequestDefinitions;
 using System.Collections.Generic;
+using System.Net.Mime;
 
 namespace HttpServerMock.Server.Models
 {
@@ -8,6 +9,6 @@ namespace HttpServerMock.Server.Models
         public int StatusCode { get; set; }
         public IDictionary<string, string>? Headers { get; set; }
         public string? Content { get; set; }
-        public string ContentType { get; set; } = "application/json";
+        public string ContentType { get; set; } = MediaTypeNames.Application.Json;
     }
 }

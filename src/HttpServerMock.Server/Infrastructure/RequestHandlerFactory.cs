@@ -1,4 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Extensions;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Infrastructure.RequestHandlers;
 using HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers;
@@ -24,8 +25,10 @@ namespace HttpServerMock.Server.Infrastructure
         {
             var requestDetails = await _requestDetailsProvider.GetRequestDetails(cancellationToken).ConfigureAwait(false);
 
+            // Try to find a management handler
             var managementHandler = GetManagementHandler(httpContext, requestDetails);
 
+            // Use found management handler, otherwise initiate a mock handler
             var requestHandler = managementHandler ?? httpContext.RequestServices.GetService<MockedRequestHandler>();
 
             return new RequestHandlerContext(requestDetails, requestHandler);
@@ -36,19 +39,28 @@ namespace HttpServerMock.Server.Infrastructure
             if (!requestDetails.IsCommandRequest(out var commandName))
                 return null;
 
-            if (Constants.HeaderValues.ConfigureCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) && requestDetails.HttpMethod == HttpMethods.Get)
-                return httpContext.RequestServices.GetService<ConfigureCommandGetHandler>();
+            IRequestHandler? result = requestDetails.HttpMethod switch
+            {
+                _ when HttpMethods.IsGet(requestDetails.HttpMethod) &&
+                       StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ConfigureCommandName)
+                    => httpContext.RequestServices.GetService<ConfigureCommandGetHandler>(),
 
-            if (Constants.HeaderValues.ConfigureCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) && requestDetails.HttpMethod == HttpMethods.Put)
-                return httpContext.RequestServices.GetService<ConfigureCommandPutHandler>();
+                _ when HttpMethods.IsPut(requestDetails.HttpMethod) &&
+                       StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ConfigureCommandName)
+                    => httpContext.RequestServices.GetService<ConfigureCommandPutHandler>(),
 
-            if (Constants.HeaderValues.ResetCounterCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) && requestDetails.HttpMethod == HttpMethods.Post)
-                return httpContext.RequestServices.GetService<ResetCounterCommandHandler>();
+                _ when HttpMethods.IsPost(requestDetails.HttpMethod) &&
+                       StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ResetCounterCommandName)
+                    => httpContext.RequestServices.GetService<ResetCounterCommandHandler>(),
 
-            if (Constants.HeaderValues.ResetConfigurationCommandName.Equals(commandName, StringComparison.OrdinalIgnoreCase) && requestDetails.HttpMethod == HttpMethods.Post)
-                return httpContext.RequestServices.GetService<ResetConfigurationCommandHandler>();
+                _ when HttpMethods.IsPost(requestDetails.HttpMethod) &&
+                       StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ResetConfigurationCommandName)
+                    => httpContext.RequestServices.GetService<ResetConfigurationCommandHandler>(),
 
-            return null;
+                _ => null
+            };
+
+            return result;
         }
     }
 }

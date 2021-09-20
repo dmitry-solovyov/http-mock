@@ -1,47 +1,60 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using HttpServerMock.RequestDefinitions;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
+using System.Threading;
 
 namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestDefinitionStorage : IRequestDefinitionStorage
     {
-        private readonly List<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
+        private readonly ReaderWriterLockSlim _listLock = new ReaderWriterLockSlim();
 
-        public int Count => _requestDefinitionSets.Count;
+        private readonly ConcurrentDictionary<string, List<RequestDefinitionItemSet>> _requestDefinitionSets =
+                new ConcurrentDictionary<string, List<RequestDefinitionItemSet>>();
 
-        public void Clear()
+        public IEnumerable<string> Departments => _requestDefinitionSets.Keys;
+
+        public int GetCount(string department) => _requestDefinitionSets.Count;
+
+        public void Clear(string department)
         {
-            _requestDefinitionSets.Clear();
+            _requestDefinitionSets.TryRemove(department, out _);
         }
 
-        public void AddSet(RequestDefinitionItemSet definitionSet)
+        public void AddSet(string department, RequestDefinitionItemSet definitionSet)
         {
-            var foundItems = _requestDefinitionSets
+            Clear(department);
+
+            _listLock.EnterReadLock();
+            try
+            {
+                var foundItems = _requestDefinitionSets
                 .Where(x => string.Equals(x.DefinitionName, definitionSet.DefinitionName))
                 .ToArray();
 
-            foreach (var foundItem in foundItems)
-            {
-                _requestDefinitionSets.Remove(foundItem);
-            }
+                foreach (var foundItem in foundItems)
+                    _requestDefinitionSets.Remove(foundItem);
 
-            _requestDefinitionSets.Add(definitionSet);
+                _requestDefinitionSets.Add(definitionSet);
+            }
+            finally
+            {
+                _listLock.ExitReadLock();
+            }
         }
 
-        public RequestDefinitionItem[] FindItems(RequestContext request)
+        public IEnumerable<RequestDefinitionItem> FindItems(string department, RequestContext request, CancellationToken cancellationToken)
         {
-            var result = new List<RequestDefinitionItem>();
-
             var context = request.RequestDetails;
 
-            foreach (var requestDefinitionSet in _requestDefinitionSets)
+            foreach (var requestDefinitionSet in _requestDefinitionSets.Values)
             {
-                foreach (var requestDefinition in requestDefinitionSet.DefinitionItems)
+                foreach (var requestDefinition in requestDefinitionSet.AsReadOnly())
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (string.IsNullOrWhiteSpace(requestDefinition.When.Url) ||
                         string.IsNullOrWhiteSpace(requestDefinition.When.UrlRegexExpression))
                         continue;
@@ -56,16 +69,14 @@ namespace HttpServerMock.Server.Infrastructure
                     if (!match.Success)
                         continue;
 
-                    result.Add(requestDefinition);
+                    yield return requestDefinition;
                 }
             }
-
-            return result.ToArray();
         }
 
-        public IEnumerable<RequestDefinitionItemSet> GetDefinitionSets()
+        public IEnumerable<RequestDefinitionItemSet> GetDefinitionSets(string department)
         {
-            return _requestDefinitionSets.AsEnumerable();
+            return _requestDefinitionSets.AsReadOnly();
         }
     }
 }

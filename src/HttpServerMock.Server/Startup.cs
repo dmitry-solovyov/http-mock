@@ -1,3 +1,4 @@
+using HttpServerMock.RequestDefinitionProcessing.Json;
 using HttpServerMock.RequestDefinitionProcessing.Yaml;
 using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure;
@@ -31,8 +32,13 @@ namespace HttpServerMock.Server
             services.AddTransient<ResetCounterCommandHandler>();
             services.AddTransient<MockedRequestHandler>();
 
+            services.AddTransient<IRequestDefinitionReaderProvider, RequestDefinitionReaderProvider>();
+            services.AddTransient<IRequestDefinitionWriterProvider, RequestDefinitionWriterProvider>();
+
             services.AddTransient<IRequestDefinitionReader, YamlRequestDefinitionReader>();
             services.AddTransient<IRequestDefinitionWriter, YamlRequestDefinitionWriter>();
+            services.AddTransient<IRequestDefinitionReader, JsonRequestDefinitionReader>();
+            services.AddTransient<IRequestDefinitionWriter, JsonRequestDefinitionWriter>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IRequestDetailsProvider, RequestDetailsProvider>();
             services.AddTransient<IRequestHandlerFactory, RequestHandlerFactory>();

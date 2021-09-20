@@ -1,14 +1,15 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.IO;
+using System.Net.Mime;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Json
 {
     public class JsonRequestDefinitionWriter : IRequestDefinitionWriter
     {
-        public string ContentType => "application/json";
+        public string ContentType => MediaTypeNames.Application.Json;
 
-        public void Write(RequestDefinitionItemSet requestDefinitionSet, TextWriter textWriter)
+        public string Write(RequestDefinitionItemSet requestDefinitionSet)
         {
+            return string.Empty;
         }
     }
 }

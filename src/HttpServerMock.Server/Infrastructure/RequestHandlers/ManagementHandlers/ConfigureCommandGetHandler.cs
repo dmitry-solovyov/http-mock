@@ -1,5 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Collections;
@@ -12,19 +12,25 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
     public class ConfigureCommandGetHandler : IRequestHandler
     {
         private readonly IRequestDefinitionStorage _requestDefinitionProvider;
+        private readonly IRequestDefinitionReaderProvider _requestDefinitionReaderProvider;
         private readonly ILogger<ConfigureCommandGetHandler> _logger;
 
         public ConfigureCommandGetHandler(
             IRequestDefinitionStorage requestDefinitionProvider,
-            ILogger<ConfigureCommandGetHandler> logger)
+            ILogger<ConfigureCommandGetHandler> logger,
+            IRequestDefinitionReaderProvider requestDefinitionReaderProvider)
         {
             _requestDefinitionProvider = requestDefinitionProvider;
             _logger = logger;
+            _requestDefinitionReaderProvider = requestDefinitionReaderProvider;
         }
 
         public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Set configuration");
+
+            //var reader = _requestDefinitionReaderProvider.GetReader();
+            //reader.Read(, cancellationToken);
 
             var contentType = requestDetails.ContentType;
             var content = contentType.ToLower() switch
@@ -41,7 +47,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets(string.Empty))
             {
                 array.Add(item);
                 array.Add(null);
@@ -49,7 +55,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             var yaml = serializer.Serialize(new { map = array });
 
-            return new ResponseDetails
+            return new Models.ResponseDetails
             {
                 StatusCode = StatusCodes.Status200OK,
                 Content = yaml,
@@ -62,7 +68,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets(string.Empty))
             {
                 array.Add(item);
                 array.Add(null);
@@ -70,7 +76,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             var json = serializer.Serialize(new { map = array });
 
-            return new ResponseDetails
+            return new Models.ResponseDetails
             {
                 StatusCode = StatusCodes.Status200OK,
                 Content = json,

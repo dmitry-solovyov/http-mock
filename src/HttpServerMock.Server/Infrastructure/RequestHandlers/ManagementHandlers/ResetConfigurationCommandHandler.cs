@@ -1,5 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -25,12 +25,12 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
         public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Reset configuration. Current number of definition items {_requestDefinitionProvider.Count}");
+            _logger.LogInformation($"Reset configuration. Current number of definition items {_requestDefinitionProvider.GetCount(string.Empty)}");
 
-            _requestDefinitionProvider.Clear();
+            _requestDefinitionProvider.Clear(string.Empty);
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)new ResponseDetails { StatusCode = StatusCodes.Status200OK });
+            return Task.FromResult((IResponseDetails)new Models.ResponseDetails { StatusCode = StatusCodes.Status200OK });
         }
     }
 }

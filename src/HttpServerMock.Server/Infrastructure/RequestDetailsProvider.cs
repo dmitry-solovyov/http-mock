@@ -1,4 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Extensions;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;

@@ -4,9 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace HttpServerMock.RequestDefinitions
 {
-    public class RequestDefinitionWhen
+    public class RequestCondition
     {
-        public RequestDefinitionWhen(string? url, bool caseInsensitive)
+        public RequestCondition(string? url, bool caseInsensitive)
         {
             Url = url;
 

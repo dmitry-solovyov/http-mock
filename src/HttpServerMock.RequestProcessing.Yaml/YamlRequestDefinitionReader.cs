@@ -34,6 +34,8 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 
                 foreach (var mapNode in mapMode.Children.OfType<YamlMappingNode>())
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var requestDefinition = ParseDefinitionNode(mapNode, cancellationToken);
                     definitions.Add(requestDefinition);
                 }
@@ -53,15 +55,17 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
             var statusCode = ScalarField(yamlMappingNode, "status-code", "status");
             var contentType = ScalarField(yamlMappingNode, "content-type");
             contentType = string.IsNullOrWhiteSpace(contentType)
-                ? "application/json"
+                ? MediaTypeNames.Application.Json
                 : new ContentType(contentType).MediaType;
             var method = ScalarField(yamlMappingNode, "http-method", "method");
             var headers = GetDictionaryField(yamlMappingNode, "headers", cancellationToken);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var requestDefinition = new RequestDefinitionItem(
                 description,
-                new RequestDefinitionWhen(url, false),
-                new RequestDefinitionThen
+                new RequestCondition(url, false),
+                new ResponseDetails
                 (
                     contentType,
                     method,
@@ -77,33 +81,37 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 
         private static Dictionary<string, string>? GetDictionaryField(YamlMappingNode yamlMappingNode, string tagName, CancellationToken cancellationToken)
         {
-            if (yamlMappingNode.Children.ContainsKey(tagName))
+            if (!yamlMappingNode.Children.ContainsKey(tagName))
+                return null;
+
+            var headersNode = yamlMappingNode.Children[tagName];
+            if (headersNode is YamlSequenceNode sequenceNode)
             {
-                var headersNode = yamlMappingNode.Children[tagName];
-                if (headersNode != null && headersNode is YamlSequenceNode sequenceNode)
+                var result = new Dictionary<string, string>();
+                foreach (var sequenceNodeChild in sequenceNode.Children)
                 {
-                    var result = new Dictionary<string, string>();
-                    foreach (var sequenceNodeChild in sequenceNode.Children)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                        if (!(sequenceNodeChild is YamlScalarNode sequenceScalarNode)) continue;
+                    if (!(sequenceNodeChild is YamlScalarNode sequenceScalarNode))
+                        continue;
 
-                        var headerDefinitionValue = sequenceScalarNode.Value;
-                        if (string.IsNullOrWhiteSpace(headerDefinitionValue)) continue;
+                    var headerDefinitionValue = sequenceScalarNode.Value;
+                    if (string.IsNullOrWhiteSpace(headerDefinitionValue))
+                        continue;
 
-                        var headerParts = headerDefinitionValue.Split(':');
-                        if (headerParts.Length != 2) continue;
+                    var headerParts = headerDefinitionValue.Split(':');
+                    if (headerParts.Length != 2)
+                        continue;
 
-                        var headerName = headerParts[0];
-                        var headerValue = headerParts[1];
-                        if (string.IsNullOrWhiteSpace(headerName) || string.IsNullOrWhiteSpace(headerValue)) continue;
+                    var headerName = headerParts[0];
+                    var headerValue = headerParts[1];
+                    if (string.IsNullOrWhiteSpace(headerName) || string.IsNullOrWhiteSpace(headerValue))
+                        continue;
 
-                        result[headerName] = headerValue;
-                    }
-
-                    return result;
+                    result[headerName] = headerValue;
                 }
+
+                return result;
             }
 
             return null;

@@ -1,5 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Threading;
@@ -26,7 +26,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)new ResponseDetails
+            return Task.FromResult((IResponseDetails)new Models.ResponseDetails
             {
                 StatusCode = StatusCodes.Status200OK
             });

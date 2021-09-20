@@ -1,6 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.IO;
@@ -13,18 +12,18 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
     public class ConfigureCommandPutHandler : IRequestHandler
     {
         private readonly IRequestDefinitionStorage _requestDefinitionStorage;
-        private readonly IRequestDefinitionReader _requestDefinitionReader;
+        private readonly IRequestDefinitionReaderProvider _requestDefinitionReaderProvider;
         private readonly IRequestHistoryStorage _requestHistoryStorage;
         private readonly ILogger<ConfigureCommandPutHandler> _logger;
 
         public ConfigureCommandPutHandler(
             IRequestDefinitionStorage requestDefinitionStorage,
-            IRequestDefinitionReader requestDefinitionReader,
+            IRequestDefinitionReaderProvider requestDefinitionReaderProvider,
             IRequestHistoryStorage requestHistoryStorage,
             ILogger<ConfigureCommandPutHandler> logger)
         {
             _requestDefinitionStorage = requestDefinitionStorage;
-            _requestDefinitionReader = requestDefinitionReader;
+            _requestDefinitionReaderProvider = requestDefinitionReaderProvider;
             _requestHistoryStorage = requestHistoryStorage;
             _logger = logger;
         }
@@ -38,7 +37,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
         private IResponseDetails ProcessPutCommand(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(requestDetails.Content))
-                return new ResponseDetails
+                return new Models.ResponseDetails
                 {
                     StatusCode = StatusCodes.Status400BadRequest
                 };
@@ -47,15 +46,17 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             using var contentReader = new StringReader(requestDetails.Content);
 
-            var requestDefinitions = _requestDefinitionReader.Read(contentReader, cancellationToken);
+            var requestDefinitionReader = _requestDefinitionReaderProvider.GetReader();
+
+            var requestDefinitions = requestDefinitionReader.Read(contentReader, cancellationToken);
 
             _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()} items");
 
-            _requestDefinitionStorage.AddSet(requestDefinitions);
+            _requestDefinitionStorage.AddSet(string.Empty, requestDefinitions);
 
             _requestHistoryStorage.Clear();
 
-            return new ResponseDetails
+            return new Models.ResponseDetails
             {
                 StatusCode = StatusCodes.Status202Accepted
             };

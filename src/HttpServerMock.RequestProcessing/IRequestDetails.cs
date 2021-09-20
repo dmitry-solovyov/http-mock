@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HttpServerMock.Server.Infrastructure.Interfaces
+namespace HttpServerMock.RequestDefinitions
 {
     public interface IRequestDetails
     {

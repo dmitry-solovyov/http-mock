@@ -2,9 +2,9 @@
 
 namespace HttpServerMock.RequestDefinitions
 {
-    public class RequestDefinitionThen
+    public class ResponseDetails
     {
-        public RequestDefinitionThen(
+        public ResponseDetails(
             string contentType,
             string? method,
             string? payload,

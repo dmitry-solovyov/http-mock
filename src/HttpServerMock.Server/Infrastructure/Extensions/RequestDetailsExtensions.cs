@@ -1,4 +1,4 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
+﻿using HttpServerMock.RequestDefinitions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,7 +13,7 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
             if (requestDetails == null)
                 return false;
 
-            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.ManagementRequestHeader);
+            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.ManagementCommandRequestHeader);
             if (string.IsNullOrWhiteSpace(commandHeader))
                 return false;
 

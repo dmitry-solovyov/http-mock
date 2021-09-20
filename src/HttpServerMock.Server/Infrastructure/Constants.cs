@@ -4,7 +4,8 @@
     {
         public static class HeaderNames
         {
-            public const string ManagementRequestHeader = "httpmock-command";
+            public const string ManagementCommandRequestHeader = "httpmock-command";
+            public const string ConfigurationDepartmentRequestHeader = "httpmock-department";
         }
 
         public static class HeaderValues
