@@ -3,13 +3,13 @@ using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Threading;
 
 namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestHistoryStorage : IRequestHistoryStorage
     {
-        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = new ConcurrentDictionary<string, RequestContext>();
+        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = 
+            new ConcurrentDictionary<string, RequestContext>();
 
         private readonly IRequestDefinitionStorage _requestDefinitionProvider;
 
@@ -24,7 +24,7 @@ namespace HttpServerMock.Server.Infrastructure
 
         public static string GetHistoryItemCacheKey(IRequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Uri}";
 
-        public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails)
         {
             var requestContext = _requestHistory.AddOrUpdate(
                 GetHistoryItemCacheKey(requestDetails),
@@ -33,9 +33,7 @@ namespace HttpServerMock.Server.Infrastructure
 
             requestContext.IncrementCounter();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var foundItems = _requestDefinitionProvider.FindItems(requestContext, cancellationToken).ToArray();
+            var foundItems = _requestDefinitionProvider.FindItems(requestContext).ToArray();
             if (!foundItems.Any())
                 return new MockedRequestDefinition(requestContext, null);
 

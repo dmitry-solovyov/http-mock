@@ -19,7 +19,7 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets(string.Empty)) //TODO: place proper department
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
             {
                 array.Add(item);
                 array.Add(null);

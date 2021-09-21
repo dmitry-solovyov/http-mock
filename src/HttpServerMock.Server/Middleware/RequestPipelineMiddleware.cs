@@ -19,32 +19,29 @@ namespace HttpServerMock.Server.Middleware
         public async Task Invoke(HttpContext? httpContext)
         {
             if (httpContext == null)
+            {
+                await _next(httpContext);
                 return;
+            }
 
             var cancellationToken = httpContext.RequestAborted;
 
             var requestHandlerFactory = httpContext.RequestServices.GetService<IRequestHandlerFactory>();
 
             var handlerContext = await requestHandlerFactory.GetHandlerContext(httpContext, cancellationToken).ConfigureAwait(false);
-            if (handlerContext != null)
+
+            var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken).ConfigureAwait(false);
+
+            httpContext.Response.StatusCode = responseDetails.StatusCode;
+            httpContext.Response.ContentType = responseDetails.ContentType;
+
+            if (!string.IsNullOrWhiteSpace(responseDetails.Content))
             {
-                var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken).ConfigureAwait(false);
-
-                httpContext.Response.StatusCode = responseDetails.StatusCode;
-                httpContext.Response.ContentType = responseDetails.ContentType;
-
-                if (!string.IsNullOrWhiteSpace(responseDetails.Content))
-                {
-                    var data = Encoding.UTF8.GetBytes(responseDetails.Content);
-                    await httpContext.Response.Body.WriteAsync(data, cancellationToken).ConfigureAwait(false);
-                }
-
-                await httpContext.Response.CompleteAsync();
-
-                return;
+                var data = Encoding.UTF8.GetBytes(responseDetails.Content);
+                await httpContext.Response.Body.WriteAsync(data, cancellationToken).ConfigureAwait(false);
             }
 
-            await _next(httpContext);
+            await httpContext.Response.CompleteAsync();
         }
     }
 

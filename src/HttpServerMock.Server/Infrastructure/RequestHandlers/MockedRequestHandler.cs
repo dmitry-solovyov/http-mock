@@ -27,7 +27,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            var mockedRequestWithDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(requestDetails, cancellationToken);
+            var mockedRequestWithDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(requestDetails);
 
             return ProcessRequestDefinition(requestDetails, mockedRequestWithDefinition, cancellationToken);
         }

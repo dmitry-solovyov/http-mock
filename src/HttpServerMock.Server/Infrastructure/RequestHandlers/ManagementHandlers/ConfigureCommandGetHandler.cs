@@ -47,7 +47,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets(string.Empty))
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
             {
                 array.Add(item);
                 array.Add(null);
@@ -68,7 +68,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var serializer = new YamlDotNet.Serialization.Serializer();
 
             var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets(string.Empty))
+            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
             {
                 array.Add(item);
                 array.Add(null);

@@ -25,9 +25,9 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
         public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Reset configuration. Current number of definition items {_requestDefinitionProvider.GetCount(string.Empty)}");
+            _logger.LogInformation($"Reset configuration. Current number of definition items {_requestDefinitionProvider.GetCount()}");
 
-            _requestDefinitionProvider.Clear(string.Empty);
+            _requestDefinitionProvider.Clear();
             _requestHistoryStorage.Clear();
 
             return Task.FromResult((IResponseDetails)new Models.ResponseDetails { StatusCode = StatusCodes.Status200OK });

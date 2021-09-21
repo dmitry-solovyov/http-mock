@@ -30,6 +30,7 @@ namespace HttpServerMock.Server.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"EXCEPTION {ex.Message}");
+                _logger.LogDebug(ex.StackTrace);
                 throw;
             }
             finally

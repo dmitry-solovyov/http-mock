@@ -52,7 +52,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()} items");
 
-            _requestDefinitionStorage.AddSet(string.Empty, requestDefinitions);
+            _requestDefinitionStorage.AddSet(requestDefinitions);
 
             _requestHistoryStorage.Clear();
 

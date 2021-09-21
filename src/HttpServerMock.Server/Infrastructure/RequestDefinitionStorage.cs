@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using HttpServerMock.RequestDefinitions;
+﻿using HttpServerMock.RequestDefinitions;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,28 +11,23 @@ namespace HttpServerMock.Server.Infrastructure
     {
         private readonly ReaderWriterLockSlim _listLock = new ReaderWriterLockSlim();
 
-        private readonly ConcurrentDictionary<string, List<RequestDefinitionItemSet>> _requestDefinitionSets =
-                new ConcurrentDictionary<string, List<RequestDefinitionItemSet>>();
+        private readonly IList<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
 
-        public IEnumerable<string> Departments => _requestDefinitionSets.Keys;
+        public int GetCount() => _requestDefinitionSets.Count;
 
-        public int GetCount(string department) => _requestDefinitionSets.Count;
-
-        public void Clear(string department)
+        public void Clear()
         {
-            _requestDefinitionSets.TryRemove(department, out _);
+            _requestDefinitionSets.Clear();
         }
 
-        public void AddSet(string department, RequestDefinitionItemSet definitionSet)
+        public void AddSet(RequestDefinitionItemSet definitionSet)
         {
-            Clear(department);
+            Clear();
 
             _listLock.EnterReadLock();
             try
             {
-                var foundItems = _requestDefinitionSets
-                .Where(x => string.Equals(x.DefinitionName, definitionSet.DefinitionName))
-                .ToArray();
+                var foundItems = _requestDefinitionSets.ToArray();
 
                 foreach (var foundItem in foundItems)
                     _requestDefinitionSets.Remove(foundItem);
@@ -45,16 +40,14 @@ namespace HttpServerMock.Server.Infrastructure
             }
         }
 
-        public IEnumerable<RequestDefinitionItem> FindItems(string department, RequestContext request, CancellationToken cancellationToken)
+        public IEnumerable<RequestDefinitionItem> FindItems(RequestContext request)
         {
             var context = request.RequestDetails;
 
-            foreach (var requestDefinitionSet in _requestDefinitionSets.Values)
+            foreach (var requestDefinitionSet in _requestDefinitionSets)
             {
-                foreach (var requestDefinition in requestDefinitionSet.AsReadOnly())
+                foreach (var requestDefinition in requestDefinitionSet.DefinitionItems)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
                     if (string.IsNullOrWhiteSpace(requestDefinition.When.Url) ||
                         string.IsNullOrWhiteSpace(requestDefinition.When.UrlRegexExpression))
                         continue;
@@ -74,9 +67,9 @@ namespace HttpServerMock.Server.Infrastructure
             }
         }
 
-        public IEnumerable<RequestDefinitionItemSet> GetDefinitionSets(string department)
+        public IReadOnlyCollection<RequestDefinitionItemSet> GetDefinitionSets()
         {
-            return _requestDefinitionSets.AsReadOnly();
+            return new ReadOnlyCollection<RequestDefinitionItemSet>(_requestDefinitionSets);
         }
     }
 }
