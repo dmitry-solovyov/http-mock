@@ -23,6 +23,7 @@ namespace HttpServerMock.RequestDefinitions
         public RequestDefinitionItem? RequestDefinition { get; }
 
         private int _counter;
+
         public int Counter
         {
             get => _counter;

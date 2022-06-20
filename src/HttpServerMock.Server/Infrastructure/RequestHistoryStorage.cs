@@ -8,7 +8,7 @@ namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestHistoryStorage : IRequestHistoryStorage
     {
-        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = 
+        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory =
             new ConcurrentDictionary<string, RequestContext>();
 
         private readonly IRequestDefinitionStorage _requestDefinitionProvider;

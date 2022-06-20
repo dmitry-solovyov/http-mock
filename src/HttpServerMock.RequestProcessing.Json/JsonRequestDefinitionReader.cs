@@ -1,7 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.IO;
 using System.Net.Mime;
-using System.Threading;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Json
 {
@@ -9,9 +7,9 @@ namespace HttpServerMock.RequestDefinitionProcessing.Json
     {
         public string ContentType => MediaTypeNames.Application.Json;
 
-        public RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken)
+        public ConfigurationDefinition Read(string requestContent)
         {
-            return new RequestDefinitionItemSet(string.Empty, new RequestDefinitionItem[0]);
+            return new ConfigurationDefinition();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HttpServerMock.Server.Infrastructure.Extensions
 {
@@ -21,16 +20,12 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
             return true;
         }
 
-        private static string? GetHeaderValue(IReadOnlyDictionary<string, string[]>? headers, string headerName)
+        private static string? GetHeaderValue(IReadOnlyDictionary<string, string>? headers, string headerName)
         {
-            if (headers == null || !headers.TryGetValue(headerName, out var foundHeader))
-                return null;
+            if (headers != null && headers.TryGetValue(headerName, out var foundHeader))
+                return foundHeader;
 
-            var headerValue = foundHeader.FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(headerValue))
-                return null;
-
-            return headerValue;
+            return null;
         }
     }
 }

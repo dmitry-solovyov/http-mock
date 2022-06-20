@@ -6,9 +6,8 @@ namespace HttpServerMock.RequestDefinitions
     {
         string HttpMethod { get; }
         string Uri { get; }
-        IReadOnlyDictionary<string, string[]>? Headers { get; }
-        string ContentType { get; }
-        string? Content { get; }
-        string ClientAddress { get; }
+        IReadOnlyDictionary<string, string> Headers { get; }
+        string? ContentType { get; }
+        string? ClientAddress { get; }
     }
 }

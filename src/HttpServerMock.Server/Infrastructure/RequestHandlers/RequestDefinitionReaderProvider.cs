@@ -13,8 +13,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public RequestDefinitionReaderProvider(
             IHttpContextAccessor httpContextAccessor,
-            IEnumerable<IRequestDefinitionReader> requestDefinitionReaders
-        )
+            IEnumerable<IRequestDefinitionReader> requestDefinitionReaders)
         {
             _httpContextAccessor = httpContextAccessor;
             _requestDefinitionReaders = requestDefinitionReaders;
@@ -22,16 +21,13 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public IRequestDefinitionReader GetReader()
         {
-            var contentType = _httpContextAccessor.HttpContext.Request.ContentType;
+            var contentType = _httpContextAccessor.HttpContext?.Request.ContentType;
 
-            var reader = _requestDefinitionReaders.FirstOrDefault(x => CompareContentType(x.ContentType, contentType));
+            var reader = _requestDefinitionReaders.FirstOrDefault(x => x.IsContentTypeSupported(contentType));
             if (reader != null)
                 return reader;
 
             throw new NotImplementedException($"Content type `{contentType}` is not supported!");
         }
-
-        private static bool CompareContentType(string contentType1, string contentType2) =>
-            string.Equals(contentType1, contentType2, StringComparison.OrdinalIgnoreCase);
     }
 }

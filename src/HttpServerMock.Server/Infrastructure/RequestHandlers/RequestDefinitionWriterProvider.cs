@@ -21,15 +21,13 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         public IRequestDefinitionWriter GetWriter()
         {
-            var contentType = _httpContextAccessor.HttpContext.Request.ContentType;
+            var contentType = _httpContextAccessor.HttpContext?.Request.ContentType;
 
-            var reader = _requestDefinitionWriters.FirstOrDefault(x => CompareContentType(x.ContentType, contentType));
+            var reader = _requestDefinitionWriters.FirstOrDefault(x => x.IsContentTypeSupported(contentType));
             if (reader != null)
                 return reader;
 
             throw new NotImplementedException($"Content type `{contentType}` is not supported!");
         }
-        private static bool CompareContentType(string contentType1, string contentType2) =>
-            string.Equals(contentType1, contentType2, StringComparison.OrdinalIgnoreCase);
     }
 }

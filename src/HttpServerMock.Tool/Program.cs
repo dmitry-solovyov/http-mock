@@ -6,11 +6,11 @@ using System.Reflection;
 
 namespace HttpServerMock.Tool
 {
-    class Program
+    internal class Program
     {
         private const int DefaultHttpPort = 8888;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             if (args.Length == 0 ||
                 args.Contains("/?") ||
@@ -35,7 +35,7 @@ namespace HttpServerMock.Tool
 
             Console.WriteLine($"Starting server for url: {url}...");
 
-            Server.Program.StartServer(url);
+            Server.Server.StartTool(url);
         }
 
         private static void ShowHelp()
@@ -54,9 +54,9 @@ Parameters:
         Value:
             * (default)- bind any endpoint to the service
             localhost (or 127.0.0.1) - bind name of the local host
-            server.url - name that can be bind to the service 
+            server.url - name that can be bind to the service
 
-    --schema: (optional) start service using 
+    --schema: (optional) start service using
         Value:
             http (default)
             https

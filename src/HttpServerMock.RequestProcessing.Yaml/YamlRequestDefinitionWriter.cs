@@ -1,5 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.Collections;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 {
@@ -16,16 +15,10 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 
         public string Write(RequestDefinitionItemSet requestDefinitionSet)
         {
-            var serializer = new YamlDotNet.Serialization.Serializer();
+            var serializer = new SharpYaml.Serialization.Serializer();
 
-            var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
-            {
-                array.Add(item);
-                array.Add(null);
-            }
+            var yaml = serializer.Serialize(new { });
 
-            var yaml = serializer.Serialize(new { map = array });
             return yaml;
         }
     }

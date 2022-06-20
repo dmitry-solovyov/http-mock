@@ -1,11 +1,10 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestDetailsProvider
     {
-        Task<IRequestDetails> GetRequestDetails(CancellationToken cancellationToken);
+        IRequestDetails? GetRequestDetails(HttpContext httpContext);
     }
 }

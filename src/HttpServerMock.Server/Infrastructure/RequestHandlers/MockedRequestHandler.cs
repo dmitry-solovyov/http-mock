@@ -94,24 +94,21 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         private bool FillPayload(IRequestDetails requestDetails, RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
-            if (string.IsNullOrWhiteSpace(requestDefinition.Then.Payload))
+            var payload = requestDefinition.Then.Payload;
+
+            if (string.IsNullOrWhiteSpace(payload))
                 return false;
 
-            var payload = requestDefinition.Then.Payload;
-            if (!string.IsNullOrWhiteSpace(payload))
-            {
-                while (payload.Contains("@guid"))
-                    payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
+            payload = ReplaceGuids(payload);
 
-                if (requestDefinition.When.UrlRegexExpression != null)
-                    foreach (var urlVariable in requestDefinition.When.UrlVariables)
-                        while (payload.Contains($"@{urlVariable}"))
-                        {
-                            var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (requestDefinition.When.UrlRegexExpression != null)
+                foreach (var urlVariable in requestDefinition.When.UrlVariables)
+                    while (payload.Contains($"@{urlVariable}"))
+                    {
+                        var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-                            payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
-                        }
-            }
+                        payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
+                    }
 
             response.ContentType = requestDefinition.Then.ContentType;
             response.Content = payload;
@@ -130,6 +127,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                 response.Headers[thenHeader.Key] = thenHeader.Value;
             }
             return true;
+        }
+
+        private static string ReplaceGuids(string payload)
+        {
+            while (payload.Contains("@guid"))
+                payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
+
+            return payload;
         }
     }
 }

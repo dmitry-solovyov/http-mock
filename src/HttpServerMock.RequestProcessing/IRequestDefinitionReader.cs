@@ -1,11 +1,11 @@
-﻿using System.IO;
-using System.Threading;
-
-namespace HttpServerMock.RequestDefinitions
+﻿namespace HttpServerMock.RequestDefinitions
 {
     public interface IRequestDefinitionReader
     {
         string ContentType { get; }
-        RequestDefinitionItemSet Read(TextReader textReader, CancellationToken cancellationToken);
+
+        bool IsContentTypeSupported(string? contentType) => string.Equals(ContentType, contentType, System.StringComparison.OrdinalIgnoreCase);
+
+        ConfigurationDefinition Read(string requestContent);
     }
 }

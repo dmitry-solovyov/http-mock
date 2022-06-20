@@ -7,39 +7,42 @@ using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure
 {
-    public class RequestHandlerFactory : IRequestHandlerFactory
+    public class RequestHandlerRouter : IRequestHandlerRouter
     {
         private readonly IRequestDetailsProvider _requestDetailsProvider;
 
-        public RequestHandlerFactory(IRequestDetailsProvider requestDetailsProvider)
+        public RequestHandlerRouter(IRequestDetailsProvider requestDetailsProvider)
         {
             _requestDetailsProvider = requestDetailsProvider;
         }
 
-        public async Task<RequestHandlerContext> GetHandlerContext(HttpContext httpContext, CancellationToken cancellationToken)
+        public RequestHandlerContext GetHandler(HttpContext httpContext)
         {
-            var requestDetails = await _requestDetailsProvider.GetRequestDetails(cancellationToken).ConfigureAwait(false);
+            var requestDetails = _requestDetailsProvider.GetRequestDetails(httpContext);
 
             // Try to find a management handler
-            var managementHandler = GetManagementHandler(httpContext, requestDetails);
+            if (TryGetManagementHandler(httpContext, requestDetails, out var managementHandler) && managementHandler != null)
+            {
+                return new RequestHandlerContext(requestDetails, managementHandler);
+            }
 
-            // Use found management handler, otherwise initiate a mock handler
-            var requestHandler = managementHandler ?? httpContext.RequestServices.GetService<MockedRequestHandler>();
-
+            // Otherwise initiate a mock handler
+            var requestHandler = httpContext.RequestServices.GetRequiredService<MockedRequestHandler>();
             return new RequestHandlerContext(requestDetails, requestHandler);
         }
 
-        private IRequestHandler? GetManagementHandler(HttpContext httpContext, IRequestDetails requestDetails)
+        private bool TryGetManagementHandler(HttpContext httpContext, IRequestDetails? requestDetails, out IRequestHandler? result)
         {
-            if (!requestDetails.IsCommandRequest(out var commandName))
-                return null;
+            if (requestDetails == null || !requestDetails.IsCommandRequest(out var commandName))
+            {
+                result = null;
+                return false;
+            }
 
-            IRequestHandler? result = requestDetails.HttpMethod switch
+            result = requestDetails.HttpMethod switch
             {
                 _ when HttpMethods.IsGet(requestDetails.HttpMethod) &&
                        StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ConfigureCommandName)
@@ -60,7 +63,7 @@ namespace HttpServerMock.Server.Infrastructure
                 _ => null
             };
 
-            return result;
+            return result != null;
         }
     }
 }

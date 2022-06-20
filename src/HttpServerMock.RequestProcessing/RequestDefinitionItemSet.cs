@@ -14,6 +14,5 @@ namespace HttpServerMock.RequestDefinitions
         public Guid Id { get; } = Guid.NewGuid();
         public string? DefinitionName { get; }
         public IEnumerable<RequestDefinitionItem> DefinitionItems { get; }
-
     }
 }

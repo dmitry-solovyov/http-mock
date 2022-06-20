@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
 
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>HttpServerMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
-    <version>1.0.5</version>
+    <version>1.0.12</version>
     <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 

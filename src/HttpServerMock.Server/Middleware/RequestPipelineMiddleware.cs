@@ -19,21 +19,31 @@ namespace HttpServerMock.Server.Middleware
         public async Task Invoke(HttpContext? httpContext)
         {
             if (httpContext == null)
-            {
-                await _next(httpContext);
                 return;
-            }
 
             var cancellationToken = httpContext.RequestAborted;
 
-            var requestHandlerFactory = httpContext.RequestServices.GetService<IRequestHandlerFactory>();
+            var requestHandlerFactory = httpContext.RequestServices.GetRequiredService<IRequestHandlerRouter>();
 
-            var handlerContext = await requestHandlerFactory.GetHandlerContext(httpContext, cancellationToken).ConfigureAwait(false);
+            var handlerContext = requestHandlerFactory.GetHandler(httpContext);
+            if (handlerContext.RequestDetails == null)
+            {
+                await httpContext.Response.CompleteAsync();
+                return;
+            }
 
-            var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken).ConfigureAwait(false);
+            var responseDetails = await handlerContext.RequestHandler
+                .Execute(handlerContext.RequestDetails, cancellationToken)
+                .ConfigureAwait(false);
 
             httpContext.Response.StatusCode = responseDetails.StatusCode;
             httpContext.Response.ContentType = responseDetails.ContentType;
+
+            if (responseDetails.Headers?.Count > 0)
+            {
+                foreach (var header in responseDetails.Headers)
+                    httpContext.Response.Headers.Add(header.Key, header.Value);
+            }
 
             if (!string.IsNullOrWhiteSpace(responseDetails.Content))
             {
