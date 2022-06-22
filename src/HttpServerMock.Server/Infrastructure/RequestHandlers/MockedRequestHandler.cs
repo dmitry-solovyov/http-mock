@@ -1,14 +1,8 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {

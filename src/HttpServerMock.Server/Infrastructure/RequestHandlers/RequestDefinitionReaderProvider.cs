@@ -1,8 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {

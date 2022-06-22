@@ -1,5 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.Collections.Generic;
 
 namespace HttpServerMock.Server.Infrastructure.Extensions
 {

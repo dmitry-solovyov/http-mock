@@ -2,7 +2,6 @@
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
 using System.Collections.Concurrent;
-using System.Linq;
 
 namespace HttpServerMock.Server.Infrastructure
 {

@@ -1,11 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using Microsoft.AspNetCore.Http.Extensions;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Middleware
 {

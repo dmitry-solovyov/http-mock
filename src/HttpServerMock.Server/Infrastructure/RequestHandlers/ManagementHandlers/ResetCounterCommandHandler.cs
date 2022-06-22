@@ -1,9 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {

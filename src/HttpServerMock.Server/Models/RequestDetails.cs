@@ -1,6 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System;
-using System.Collections.Generic;
 
 namespace HttpServerMock.Server.Models
 {

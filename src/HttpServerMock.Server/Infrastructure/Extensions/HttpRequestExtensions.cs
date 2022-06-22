@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace HttpServerMock.Server.Infrastructure.Extensions;
+﻿namespace HttpServerMock.Server.Infrastructure.Extensions;
 
 public static class HttpRequestExtensions
 {

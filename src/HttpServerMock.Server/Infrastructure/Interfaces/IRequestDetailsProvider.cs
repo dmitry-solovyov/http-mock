@@ -1,5 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using Microsoft.AspNetCore.Http;
 
 namespace HttpServerMock.Server.Infrastructure.Interfaces
 {

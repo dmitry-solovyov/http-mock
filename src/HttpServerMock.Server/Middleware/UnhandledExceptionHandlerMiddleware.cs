@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using System.Net.Mime;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net.Mime;
 
 namespace HttpServerMock.Server.Middleware
 {

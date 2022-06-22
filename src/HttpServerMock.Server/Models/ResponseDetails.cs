@@ -1,5 +1,4 @@
 ﻿using HttpServerMock.RequestDefinitions;
-using System.Collections.Generic;
 using System.Net.Mime;
 
 namespace HttpServerMock.Server.Models

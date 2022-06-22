@@ -4,9 +4,6 @@ using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Infrastructure.RequestHandlers;
 using HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers;
 using HttpServerMock.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace HttpServerMock.Server.Infrastructure
 {

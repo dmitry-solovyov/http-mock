@@ -1,9 +1,5 @@
 ﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Middleware
 {

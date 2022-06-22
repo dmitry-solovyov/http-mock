@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace HttpServerMock.Server.Infrastructure.Logging
+﻿namespace HttpServerMock.Server.Infrastructure.Logging
 {
     public class CustomConsoleLoggerProvider : ILoggerProvider
     {
