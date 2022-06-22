@@ -109,7 +109,7 @@ namespace HttpServerMock.Server
             const char urlSeparator = ',';
 
             var urls = configuration[urlsArgumentName];
-            if (string.IsNullOrWhiteSpace(urls) || urls.IndexOf(urlSeparator) == -1)
+            if (string.IsNullOrWhiteSpace(urls))
                 return Array.Empty<string>();
 
             var urlParts = urls
