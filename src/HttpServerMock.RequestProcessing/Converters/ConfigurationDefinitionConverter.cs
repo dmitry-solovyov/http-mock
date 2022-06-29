@@ -6,7 +6,7 @@ namespace HttpServerMock.RequestDefinitions.Converters;
 
 public static class ConfigurationDefinitionConverter
 {
-    public static RequestDefinitionItemSet? ToDefinitionSet(ConfigurationDefinition configurationDefinition)
+    public static RequestDefinitionItemSet? ToDefinitionSet(ref ConfigurationDefinition configurationDefinition)
     {
         if (!configurationDefinition.HasData)
             return null;
@@ -34,5 +34,33 @@ public static class ConfigurationDefinitionConverter
                 requestConfigurationDefinition.Headers
             )
         );
+    }
+
+    public static ConfigurationDefinition ToConfigurationDefinition(RequestDefinitionItemSet requestDefinitionItemSet)
+    {
+        if (!requestDefinitionItemSet.DefinitionItems.Any())
+            return default;
+
+        var items = requestDefinitionItemSet.DefinitionItems!.Select(ToConfigurationDefinitionItem);
+
+        return new ConfigurationDefinition
+        {
+            Info = requestDefinitionItemSet.DefinitionName,
+            Map = items.ToList()
+        };
+    }
+
+    private static RequestConfigurationDefinition ToConfigurationDefinitionItem(RequestDefinitionItem requestDefinitionItem)
+    {
+        return new RequestConfigurationDefinition
+        {
+            Url = requestDefinitionItem.When.Url,
+            Description = requestDefinitionItem.Description,
+            //Headers = requestDefinitionItem.Then.Headers,
+            Payload = requestDefinitionItem.Then.Payload,
+            Method = requestDefinitionItem.Then.Method,
+            Status = requestDefinitionItem.Then.StatusCode,
+            Delay = requestDefinitionItem.Then.Delay,
+        };
     }
 }

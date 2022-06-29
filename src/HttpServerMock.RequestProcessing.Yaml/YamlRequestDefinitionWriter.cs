@@ -1,23 +1,22 @@
 ﻿using HttpServerMock.RequestDefinitions;
+using SharpYaml.Serialization;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 {
     public class YamlRequestDefinitionWriter : IRequestDefinitionWriter
     {
-        private readonly IRequestDefinitionStorage _requestDefinitionProvider;
-
-        public YamlRequestDefinitionWriter(IRequestDefinitionStorage requestDefinitionProvider)
-        {
-            _requestDefinitionProvider = requestDefinitionProvider;
-        }
-
         public string ContentType => "application/yaml";
 
-        public string Write(RequestDefinitionItemSet requestDefinitionSet)
+        public string Write(ref ConfigurationDefinition configurationDefinition)
         {
-            var serializer = new SharpYaml.Serialization.Serializer();
+            var serializer = new Serializer(new SerializerSettings
+            {
+                IgnoreNulls = true,
+                DefaultStyle = SharpYaml.YamlStyle.Block,
+                EmitAlias = false,
+            });
 
-            var yaml = serializer.Serialize(new { });
+            var yaml = serializer.Serialize(configurationDefinition);
 
             return yaml;
         }

@@ -40,6 +40,10 @@ namespace HttpServerMock.Server
                 logger.LogInformation($"Binding URLs: {string.Join(',', bindingUrls)}");
 
                 builder.WebHost.UseUrls(bindingUrls);
+                builder.WebHost.ConfigureKestrel(app =>
+                {
+                    app.AllowSynchronousIO = true;
+                });
             }
             else
             {

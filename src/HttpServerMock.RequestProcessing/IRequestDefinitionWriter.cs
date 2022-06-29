@@ -6,6 +6,6 @@
 
         bool IsContentTypeSupported(string? contentType) => string.Equals(ContentType, contentType, System.StringComparison.OrdinalIgnoreCase);
 
-        string Write(RequestDefinitionItemSet requestDefinitionSet);
+        string Write(ref ConfigurationDefinition configurationDefinition);
     }
 }

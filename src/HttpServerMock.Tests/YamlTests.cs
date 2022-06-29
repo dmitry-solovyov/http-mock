@@ -1,6 +1,7 @@
 using FluentAssertions;
 using HttpServerMock.RequestDefinitions;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace HttpServerMock.Tests
@@ -12,19 +13,43 @@ namespace HttpServerMock.Tests
         {
             var config = new ConfigurationDefinition();
             config.Info = "Test data";
-            config.Map = new List<RequestConfigurationDefinition>();
-            config.Map.Add(new RequestConfigurationDefinition
+            config.Map = new List<RequestConfigurationDefinition>
             {
-                Url = "/probe",
-                Status = 200,
-                Delay = 100,
-                Headers = new Dictionary<string, string>
+                new RequestConfigurationDefinition
                 {
-                    { "Location", "/probe?a=b"}
+                    Url = "/probe",
+                    Status = 200,
+                    Delay = 100,
+                    Description = "Probe endpoint"
+                },
+                new RequestConfigurationDefinition
+                {
+                    Url = "/swagger",
+                    Status = 200,
+                    Delay = 200,
+                    Description= "Swagger endpoint"
+                },
+                new RequestConfigurationDefinition
+                {
+                    Url = "/order",
+                    Status = 201,
+                    Delay = 300,
+                    Description = "Order endpoint",
+                    Payload = "{\"paymentId\":\"@guid\"}",
+                    Headers = new Dictionary<string, string>
+                    {
+                        { "Location", "/probe?a=b"},
+                        { "Authorization", "Bearer aaa"}
+                    }
                 }
-            });
+            };
 
-            var serializer = new SharpYaml.Serialization.Serializer();
+            var serializer = new SharpYaml.Serialization.Serializer(new SharpYaml.Serialization.SerializerSettings
+            {
+                EmitAlias = false,
+                EmitShortTypeName = false,
+                DefaultStyle = SharpYaml.YamlStyle.Block,
+            });
 
             var result = serializer.Serialize(config);
 
@@ -41,13 +66,13 @@ Map:
     Description: Probe endpoint
     Status: 200
     Url: /probe
-
+    
   - Delay: 200
     Description: Swagger endpoint
     Status: 200
     Url: /swagger
     Foo: bar
-
+    
   - Delay: 300
     Method: POST
     Description: Order endpoint
@@ -60,7 +85,7 @@ Map:
 ";
 
             var serializer = new SharpYaml.Serialization.Serializer();
-            //serializer.Settings.IgnoreUnmatchedProperties = true;
+            serializer.Settings.IgnoreUnmatchedProperties = true;
 
             var result = serializer.Deserialize<ConfigurationDefinition>(yaml);
 
@@ -70,7 +95,7 @@ Map:
             result.Map.Should().NotBeNullOrEmpty();
             result.Map.Should().HaveCount(3);
 
-            var firstItem = result.Map![0];
+            var firstItem = result.Map!.ElementAt(0);
             firstItem.Delay.Should().Be(100);
             firstItem.Description.Should().Be("Probe endpoint");
             firstItem.Status.Should().Be(200);
@@ -79,7 +104,7 @@ Map:
             firstItem.Headers.Should().BeNull();
             firstItem.Method.Should().BeNull();
 
-            var secondItem = result.Map![1];
+            var secondItem = result.Map!.ElementAt(1);
             secondItem.Delay.Should().Be(200);
             secondItem.Description.Should().Be("Swagger endpoint");
             secondItem.Status.Should().Be(200);
@@ -88,7 +113,7 @@ Map:
             secondItem.Headers.Should().BeNull();
             secondItem.Method.Should().BeNull();
 
-            var thirdItem = result.Map![2];
+            var thirdItem = result.Map!.ElementAt(2);
             thirdItem.Delay.Should().Be(300);
             thirdItem.Description.Should().Be("Order endpoint");
             thirdItem.Status.Should().Be(201);

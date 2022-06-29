@@ -7,9 +7,10 @@ namespace HttpServerMock.RequestDefinitionProcessing.Json
     {
         public string ContentType => MediaTypeNames.Application.Json;
 
-        public string Write(RequestDefinitionItemSet requestDefinitionSet)
+        public string Write(ref ConfigurationDefinition configurationDefinition)
         {
-            return string.Empty;
+            var content = System.Text.Json.JsonSerializer.Serialize(configurationDefinition);
+            return content;
         }
     }
 }

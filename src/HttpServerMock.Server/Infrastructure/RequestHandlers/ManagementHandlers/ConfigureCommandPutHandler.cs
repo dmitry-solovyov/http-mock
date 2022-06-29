@@ -27,30 +27,29 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _logger = logger;
         }
 
-        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        public async Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            return ProcessPutCommand(requestDetails, cancellationToken);
-        }
+            _logger.LogInformation("Set configuration");
 
-        private async Task<IResponseDetails> ProcessPutCommand(IRequestDetails requestDetails, CancellationToken cancellationToken)
-        {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (_httpContextAccessor.HttpContext == null)
-                return new Models.ResponseDetails { StatusCode = StatusCodes.Status400BadRequest };
+            {
+                return PreDefinedResponses.Status400BadRequest.Value;
+            }
 
             var requestDefinitionReader = _requestDefinitionReaderProvider.GetReader();
 
-            var content = await _httpContextAccessor.HttpContext.Request.GetContent(cancellationToken);
-            if (string.IsNullOrWhiteSpace(content))
-                return new Models.ResponseDetails { StatusCode = StatusCodes.Status400BadRequest };
+            var configurationDefinitions = await requestDefinitionReader.Read(_httpContextAccessor.HttpContext.Request.Body);
+            if (!configurationDefinitions.HasData)
+            {
+                return PreDefinedResponses.Status404NotFound.Value;
+            }
 
-            var configurationDefinitions = requestDefinitionReader.Read(content);
-
-            var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionSet(configurationDefinitions);
+            var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionSet(ref configurationDefinitions);
             if (requestDefinitions == null)
             {
-                return new Models.ResponseDetails { StatusCode = StatusCodes.Status400BadRequest };
+                return PreDefinedResponses.Status404NotFound.Value;
             }
 
             _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()} items");
@@ -59,7 +58,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _requestHistoryStorage.Clear();
 
-            return new Models.ResponseDetails { StatusCode = StatusCodes.Status202Accepted };
+            return PreDefinedResponses.Status202Accepted.Value;
         }
     }
 }

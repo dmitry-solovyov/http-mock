@@ -1,5 +1,9 @@
 ﻿using HttpServerMock.RequestDefinitions;
+using System.IO;
 using System.Net.Mime;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Json
 {
@@ -7,9 +11,10 @@ namespace HttpServerMock.RequestDefinitionProcessing.Json
     {
         public string ContentType => MediaTypeNames.Application.Json;
 
-        public ConfigurationDefinition Read(string requestContent)
+        public async Task<ConfigurationDefinition> Read(Stream contentStream, CancellationToken cancellationToken = default)
         {
-            return new ConfigurationDefinition();
+            var configuration = await JsonSerializer.DeserializeAsync<ConfigurationDefinition>(contentStream, cancellationToken: cancellationToken);
+            return configuration;
         }
     }
 }

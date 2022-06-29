@@ -1,5 +1,8 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using SharpYaml.Serialization;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HttpServerMock.RequestDefinitionProcessing.Yaml
 {
@@ -7,11 +10,14 @@ namespace HttpServerMock.RequestDefinitionProcessing.Yaml
     {
         public string ContentType => "application/yaml";
 
-        public ConfigurationDefinition Read(string requestContent)
+        public Task<ConfigurationDefinition> Read(Stream contentStream, CancellationToken cancellationToken = default)
         {
-            var serializer = new Serializer();
-            var configuration = serializer.Deserialize<ConfigurationDefinition>(requestContent);
-            return configuration;
+            var serializer = new Serializer(new SerializerSettings
+            {
+                IgnoreUnmatchedProperties = true
+            });
+            var configuration = serializer.Deserialize<ConfigurationDefinition>(contentStream);
+            return Task.FromResult(configuration);
         }
     }
 }
