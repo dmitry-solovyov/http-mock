@@ -1,6 +1,6 @@
-using HttpServerMock.RequestDefinitionProcessing.Json;
-using HttpServerMock.RequestDefinitionProcessing.Yaml;
 using HttpServerMock.RequestDefinitions;
+using HttpServerMock.RequestDefinitions.ContentTypeProcessors.Json;
+using HttpServerMock.RequestDefinitions.ContentTypeProcessors.Yaml;
 using HttpServerMock.Server.Infrastructure;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Infrastructure.Logging;

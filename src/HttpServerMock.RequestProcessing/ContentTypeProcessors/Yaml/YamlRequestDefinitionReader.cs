@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HttpServerMock.RequestDefinitionProcessing.Yaml
+namespace HttpServerMock.RequestDefinitions.ContentTypeProcessors.Yaml
 {
     public class YamlRequestDefinitionReader : IRequestDefinitionReader
     {

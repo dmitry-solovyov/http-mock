@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using HttpServerMock.RequestDefinitions.Extensions;
+using System.Linq;
 using System.Net;
 using System.Net.Mime;
 
@@ -8,7 +9,7 @@ public static class ConfigurationDefinitionConverter
 {
     public static RequestDefinitionItemSet? ToDefinitionSet(ref ConfigurationDefinition configurationDefinition)
     {
-        if (!configurationDefinition.HasData)
+        if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             return null;
 
         var items = configurationDefinition.Map!.Select(ToRequestDefinition);

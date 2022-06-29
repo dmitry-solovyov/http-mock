@@ -1,6 +1,6 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.RequestDefinitions.Converters;
-using HttpServerMock.Server.Infrastructure.Extensions;
+using HttpServerMock.RequestDefinitions.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
@@ -40,17 +40,19 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             var requestDefinitionReader = _requestDefinitionReaderProvider.GetReader();
 
-            var configurationDefinitions = await requestDefinitionReader.Read(_httpContextAccessor.HttpContext.Request.Body);
-            if (!configurationDefinitions.HasData)
+            var configurationDefinition = await requestDefinitionReader.Read(_httpContextAccessor.HttpContext.Request.Body);
+            if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             {
                 return PreDefinedResponses.Status404NotFound.Value;
             }
 
-            var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionSet(ref configurationDefinitions);
+            var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionSet(ref configurationDefinition);
             if (requestDefinitions == null)
             {
                 return PreDefinedResponses.Status404NotFound.Value;
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             _logger.LogInformation($"Setup configuration: {requestDefinitions.DefinitionItems.Count()} items");
 

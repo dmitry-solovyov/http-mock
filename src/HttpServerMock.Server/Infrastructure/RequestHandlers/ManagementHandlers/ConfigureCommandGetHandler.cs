@@ -1,7 +1,7 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.RequestDefinitions.Converters;
+using HttpServerMock.RequestDefinitions.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
-using System.Net;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
@@ -40,7 +40,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             }
 
             var configurationDefinition = ConfigurationDefinitionConverter.ToConfigurationDefinition(fisrstDefinition);
-            if (!configurationDefinition.HasData)
+            if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             {
                 return PreDefinedResponses.Status400BadRequest.Value;
             }
