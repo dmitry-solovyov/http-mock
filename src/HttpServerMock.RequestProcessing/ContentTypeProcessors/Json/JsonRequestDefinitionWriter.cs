@@ -15,8 +15,10 @@ namespace HttpServerMock.RequestDefinitions.ContentTypeProcessors.Json
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 IgnoreReadOnlyFields = true
             };
-            var content = JsonSerializer.Serialize(configurationDefinition, settings);
-            return content;
+
+            var json = JsonSerializer.Serialize(configurationDefinition, settings);
+
+            return json;
         }
     }
 }

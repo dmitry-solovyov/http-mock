@@ -10,7 +10,7 @@ namespace HttpServerMock.RequestDefinitions
         {
             Url = url;
 
-            var (urlRegexExpression, urlVariables) = NormalizeUrl(url);
+            (var urlRegexExpression, var urlVariables) = NormalizeUrl(url);
             UrlRegexExpression = urlRegexExpression;
             UrlVariables = urlVariables;
 
@@ -30,7 +30,7 @@ namespace HttpServerMock.RequestDefinitions
             if (string.IsNullOrWhiteSpace(url))
                 return (url, Array.Empty<string>());
 
-            var (urlExpression, urlVariables) = NormalizeSearchExpression(url);
+            (var urlExpression, var urlVariables) = NormalizeSearchExpression(url);
 
             if (urlExpression.EndsWith("/"))
                 urlExpression = urlExpression.TrimEnd('/');

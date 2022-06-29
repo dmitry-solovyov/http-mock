@@ -1,5 +1,4 @@
-﻿using HttpServerMock.RequestDefinitions;
-using SharpYaml.Serialization;
+﻿using SharpYaml.Serialization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,9 @@ namespace HttpServerMock.RequestDefinitions.ContentTypeProcessors.Yaml
             {
                 IgnoreUnmatchedProperties = true
             });
+
             var configuration = serializer.Deserialize<ConfigurationDefinition>(contentStream);
+
             return Task.FromResult(configuration);
         }
     }

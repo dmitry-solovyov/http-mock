@@ -1,5 +1,4 @@
-﻿using HttpServerMock.RequestDefinitions;
-using SharpYaml.Serialization;
+﻿using SharpYaml.Serialization;
 
 namespace HttpServerMock.RequestDefinitions.ContentTypeProcessors.Yaml
 {

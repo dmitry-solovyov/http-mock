@@ -30,7 +30,7 @@ namespace HttpServerMock.Tool
             var configurationBuilder = new ConfigurationBuilder()
                 .Add(new CommandLineConfigurationSource { Args = args });
 
-            var (port, server, schema) = GetStartupParameters(configurationBuilder.Build());
+            (var port, var server, var schema) = GetStartupParameters(configurationBuilder.Build());
             var url = $"{schema}://{server}:{port}";
 
             Console.WriteLine($"Starting server for url: {url}...");

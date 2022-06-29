@@ -18,7 +18,9 @@ namespace HttpServerMock.RequestDefinitions.ContentTypeProcessors.Json
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 IgnoreReadOnlyFields = true
             };
+
             var configuration = await JsonSerializer.DeserializeAsync<ConfigurationDefinition>(contentStream, settings, cancellationToken);
+
             return configuration;
         }
     }
