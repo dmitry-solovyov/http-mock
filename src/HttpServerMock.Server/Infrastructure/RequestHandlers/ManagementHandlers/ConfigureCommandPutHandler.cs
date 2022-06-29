@@ -35,7 +35,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             if (_httpContextAccessor.HttpContext == null)
             {
-                return PreDefinedResponses.Status400BadRequest.Value;
+                return ResponseDetailsFactory.Status400BadRequest();
             }
 
             var requestDefinitionReader = _requestDefinitionReaderProvider.GetReader();
@@ -43,13 +43,13 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var configurationDefinition = await requestDefinitionReader.Read(_httpContextAccessor.HttpContext.Request.Body);
             if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             {
-                return PreDefinedResponses.Status404NotFound.Value;
+                return ResponseDetailsFactory.Status404NotFound();
             }
 
             var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionSet(ref configurationDefinition);
             if (requestDefinitions == null)
             {
-                return PreDefinedResponses.Status404NotFound.Value;
+                return ResponseDetailsFactory.Status404NotFound();
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -60,7 +60,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _requestHistoryStorage.Clear();
 
-            return PreDefinedResponses.Status202Accepted.Value;
+            return ResponseDetailsFactory.Status202Accepted();
         }
     }
 }

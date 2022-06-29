@@ -22,7 +22,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)PreDefinedResponses.Status200OK.Value);
+            return Task.FromResult((IResponseDetails)ResponseDetailsFactory.Status200OK());
         }
     }
 }

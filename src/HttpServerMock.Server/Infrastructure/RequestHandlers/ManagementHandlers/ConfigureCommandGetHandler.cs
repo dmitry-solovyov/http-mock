@@ -36,22 +36,22 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var fisrstDefinition = definitionSets.FirstOrDefault();
             if (fisrstDefinition == null)
             {
-                return PreDefinedResponses.Status404NotFound.Value;
+                return ResponseDetailsFactory.Status404NotFound();
             }
 
             var configurationDefinition = ConfigurationDefinitionConverter.ToConfigurationDefinition(fisrstDefinition);
             if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             {
-                return PreDefinedResponses.Status400BadRequest.Value;
+                return ResponseDetailsFactory.Status400BadRequest();
             }
 
             var content = requestDefinitionWriter.Write(ref configurationDefinition);
             if (content == null)
             {
-                return PreDefinedResponses.Status400BadRequest.Value;
+                return ResponseDetailsFactory.Status400BadRequest();
             }
 
-            return new Models.ResponseDetails { StatusCode = StatusCodes.Status200OK, Content = content };
+            return ResponseDetailsFactory.Status200OK(content);
         }
     }
 }
