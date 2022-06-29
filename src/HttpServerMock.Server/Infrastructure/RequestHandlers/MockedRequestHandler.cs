@@ -1,14 +1,8 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 {
@@ -36,11 +30,11 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         {
             var requestDefinition = mockedRequestWithDefinition.RequestDefinition;
             if (requestDefinition == null)
-                return new ResponseDetails { StatusCode = StatusCodes.Status200OK };
+                return new Models.ResponseDetails { StatusCode = StatusCodes.Status200OK };
 
             var handled = false;
 
-            var response = new ResponseDetails();
+            var response = new Models.ResponseDetails();
 
             handled |= FillContentType(requestDefinition, response);
 
@@ -60,7 +54,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return response;
         }
 
-        private static bool FillContentType(RequestDefinitionItem requestDefinition, ResponseDetails response)
+        private static bool FillContentType(RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
             if (!string.IsNullOrWhiteSpace(requestDefinition.Then.ContentType))
             {
@@ -73,7 +67,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         }
 
         private static bool FillStatusCode(
-            RequestDefinitionItem requestDefinition, ResponseDetails response)
+            RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
             if (requestDefinition.Then.StatusCode <= 0)
                 return false;
@@ -92,33 +86,30 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private bool FillPayload(IRequestDetails requestDetails, RequestDefinitionItem requestDefinition, ResponseDetails response)
+        private bool FillPayload(IRequestDetails requestDetails, RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
-            if (string.IsNullOrWhiteSpace(requestDefinition.Then.Payload))
+            var payload = requestDefinition.Then.Payload;
+
+            if (string.IsNullOrWhiteSpace(payload))
                 return false;
 
-            var payload = requestDefinition.Then.Payload;
-            if (!string.IsNullOrWhiteSpace(payload))
-            {
-                while (payload.Contains("@guid"))
-                    payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
+            payload = ReplaceGuids(payload);
 
-                if (requestDefinition.When.UrlRegexExpression != null)
-                    foreach (var urlVariable in requestDefinition.When.UrlVariables)
-                        while (payload.Contains($"@{urlVariable}"))
-                        {
-                            var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            if (requestDefinition.When.UrlRegexExpression != null)
+                foreach (var urlVariable in requestDefinition.When.UrlVariables)
+                    while (payload.Contains($"@{urlVariable}"))
+                    {
+                        var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-                            payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
-                        }
-            }
+                        payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
+                    }
 
             response.ContentType = requestDefinition.Then.ContentType;
             response.Content = payload;
             return true;
         }
 
-        private static bool FillHeaders(RequestDefinitionItem requestDefinition, ResponseDetails response)
+        private static bool FillHeaders(RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
             if (requestDefinition.Then.Headers == null || requestDefinition.Then.Headers.Count == 0)
                 return false;
@@ -130,6 +121,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                 response.Headers[thenHeader.Key] = thenHeader.Value;
             }
             return true;
+        }
+
+        private static string ReplaceGuids(string payload)
+        {
+            while (payload.Contains("@guid"))
+                payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
+
+            return payload;
         }
     }
 }

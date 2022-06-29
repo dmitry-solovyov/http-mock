@@ -1,9 +1,11 @@
-﻿using System.IO;
-
-namespace HttpServerMock.RequestDefinitions
+﻿namespace HttpServerMock.RequestDefinitions
 {
     public interface IRequestDefinitionWriter
     {
-        void Write(RequestDefinitionItemSet requestDefinitionSet, TextWriter textWriter);
+        string ContentType { get; }
+
+        bool IsContentTypeSupported(string? contentType) => string.Equals(ContentType, contentType, System.StringComparison.OrdinalIgnoreCase);
+
+        string Write(ref ConfigurationDefinition configurationDefinition);
     }
 }

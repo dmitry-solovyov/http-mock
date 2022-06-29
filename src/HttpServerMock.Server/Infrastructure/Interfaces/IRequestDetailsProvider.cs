@@ -1,10 +1,9 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using HttpServerMock.RequestDefinitions;
 
 namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestDetailsProvider
     {
-        Task<IRequestDetails> GetRequestDetails(CancellationToken cancellationToken);
+        IRequestDetails? GetRequestDetails(HttpContext httpContext);
     }
 }

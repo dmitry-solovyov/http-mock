@@ -1,19 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <Platform>x64</Platform>
+    <OutputType>Exe</OutputType>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.14.0" />-->
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
-    <PackageReference Include="System.IO.Pipelines" Version="5.0.1" />
+    <!--<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />-->
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestDefinitionProcessing.Yaml.csproj" />
     <ProjectReference Include="..\HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj" />
   </ItemGroup>
 

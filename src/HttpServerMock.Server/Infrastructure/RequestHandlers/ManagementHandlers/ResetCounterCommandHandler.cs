@@ -1,9 +1,5 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
@@ -26,10 +22,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
 
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)new ResponseDetails
-            {
-                StatusCode = StatusCodes.Status200OK
-            });
+            return Task.FromResult((IResponseDetails)ResponseDetailsFactory.Status200OK());
         }
     }
 }

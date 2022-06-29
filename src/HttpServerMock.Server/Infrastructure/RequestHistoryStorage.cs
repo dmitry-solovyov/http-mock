@@ -1,13 +1,14 @@
-﻿using System.Collections.Concurrent;
-using System.Linq;
+﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 using HttpServerMock.Server.Models;
+using System.Collections.Concurrent;
 
 namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestHistoryStorage : IRequestHistoryStorage
     {
-        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory = new ConcurrentDictionary<string, RequestContext>();
+        private readonly ConcurrentDictionary<string, RequestContext> _requestHistory =
+            new ConcurrentDictionary<string, RequestContext>();
 
         private readonly IRequestDefinitionStorage _requestDefinitionProvider;
 
@@ -31,7 +32,7 @@ namespace HttpServerMock.Server.Infrastructure
 
             requestContext.IncrementCounter();
 
-            var foundItems = _requestDefinitionProvider.FindItems(requestContext);
+            var foundItems = _requestDefinitionProvider.FindItems(requestContext).ToArray();
             if (!foundItems.Any())
                 return new MockedRequestDefinition(requestContext, null);
 

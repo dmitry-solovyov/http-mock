@@ -1,6 +1,4 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
+﻿using HttpServerMock.RequestDefinitions;
 
 namespace HttpServerMock.Server.Infrastructure.Extensions
 {
@@ -13,7 +11,7 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
             if (requestDetails == null)
                 return false;
 
-            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.ManagementRequestHeader);
+            var commandHeader = GetHeaderValue(requestDetails.Headers, Constants.HeaderNames.ManagementCommandRequestHeader);
             if (string.IsNullOrWhiteSpace(commandHeader))
                 return false;
 
@@ -21,16 +19,12 @@ namespace HttpServerMock.Server.Infrastructure.Extensions
             return true;
         }
 
-        private static string? GetHeaderValue(IReadOnlyDictionary<string, string[]>? headers, string headerName)
+        private static string? GetHeaderValue(IReadOnlyDictionary<string, string>? headers, string headerName)
         {
-            if (headers == null || !headers.TryGetValue(headerName, out var foundHeader))
-                return null;
+            if (headers != null && headers.TryGetValue(headerName, out var foundHeader))
+                return foundHeader;
 
-            var headerValue = foundHeader.FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(headerValue))
-                return null;
-
-            return headerValue;
+            return null;
         }
     }
 }

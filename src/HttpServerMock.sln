@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29519.87
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{ADF642E9-D1AF-4E95-84B1-803B418D35BF}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,11 +16,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Server", "Ht
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestDefinitions", "HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj", "{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.RequestDefinitionProcessing.Yaml", "HttpServerMock.RequestProcessing.Yaml\HttpServerMock.RequestDefinitionProcessing.Yaml.csproj", "{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tool", "HttpServerMock.Tool\HttpServerMock.Tool.csproj", "{E06FE8F2-C529-4295-9127-92FF88F6FC80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpServerMock.RequestDefinitionProcessing.Json", "HttpServerMock.RequestProcessing.Json\HttpServerMock.RequestDefinitionProcessing.Json.csproj", "{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{74CDFB3D-F6F2-4F55-8EF2-115831962F75}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,18 +41,10 @@ Global
 		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10CCCC2F-C7A6-4047-89E9-05CB6BB221EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C595E3D8-CE6C-4819-A4AD-DABF61ED38DD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.Build.0 = Release|Any CPU
-		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{894FDBAE-3D45-4501-BF0E-E94A0508C2FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-
-namespace HttpServerMock.Server.Infrastructure.Logging
+﻿namespace HttpServerMock.Server.Infrastructure.Logging
 {
     public class CustomConsoleLogger : ILogger
     {
@@ -12,7 +9,7 @@ namespace HttpServerMock.Server.Infrastructure.Logging
             _categoryName = categoryName;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -27,7 +24,7 @@ namespace HttpServerMock.Server.Infrastructure.Logging
             return true;
         }
 
-        public IDisposable? BeginScope<TState>(TState state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             return null;
         }

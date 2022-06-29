@@ -1,81 +1,57 @@
-﻿using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Collections;
-using System.Net.Mime;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using HttpServerMock.RequestDefinitions;
+using HttpServerMock.RequestDefinitions.Converters;
+using HttpServerMock.RequestDefinitions.Extensions;
+using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
 {
     public class ConfigureCommandGetHandler : IRequestHandler
     {
-        private readonly IRequestDefinitionStorage _requestDefinitionProvider;
         private readonly ILogger<ConfigureCommandGetHandler> _logger;
+        private readonly IRequestDefinitionStorage _requestDefinitionProvider;
+        private readonly IRequestDefinitionWriterProvider _requestDefinitionWriteProvider;
 
         public ConfigureCommandGetHandler(
+            ILogger<ConfigureCommandGetHandler> logger,
             IRequestDefinitionStorage requestDefinitionProvider,
-            ILogger<ConfigureCommandGetHandler> logger)
+            IRequestDefinitionWriterProvider requestDefinitionWriteProvider)
         {
-            _requestDefinitionProvider = requestDefinitionProvider;
             _logger = logger;
+            _requestDefinitionProvider = requestDefinitionProvider;
+            _requestDefinitionWriteProvider = requestDefinitionWriteProvider;
         }
 
         public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Set configuration");
-
-            var contentType = requestDetails.ContentType;
-            var content = contentType.ToLower() switch
-            {
-                "application/yaml" => GenerateYamlContent(),
-                _ => GenerateJsonContent()
-            };
-
-            return Task.FromResult(content);
+            return Task.FromResult(ProcessGetCommand(requestDetails, cancellationToken));
         }
 
-        private IResponseDetails GenerateYamlContent()
+        private IResponseDetails ProcessGetCommand(IRequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            var serializer = new YamlDotNet.Serialization.Serializer();
+            _logger.LogInformation("Get configuration");
 
-            var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
+            var requestDefinitionWriter = _requestDefinitionWriteProvider.GetWriter();
+
+            var definitionSets = _requestDefinitionProvider.GetDefinitionSets();
+            var fisrstDefinition = definitionSets.FirstOrDefault();
+            if (fisrstDefinition == null)
             {
-                array.Add(item);
-                array.Add(null);
+                return ResponseDetailsFactory.Status404NotFound();
             }
 
-            var yaml = serializer.Serialize(new { map = array });
-
-            return new ResponseDetails
+            var configurationDefinition = ConfigurationDefinitionConverter.ToConfigurationDefinition(fisrstDefinition);
+            if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
             {
-                StatusCode = StatusCodes.Status200OK,
-                Content = yaml,
-                ContentType = "application/yaml"
-            };
-        }
-
-        private IResponseDetails GenerateJsonContent()
-        {
-            var serializer = new YamlDotNet.Serialization.Serializer();
-
-            var array = new ArrayList();
-            foreach (var item in _requestDefinitionProvider.GetDefinitionSets())
-            {
-                array.Add(item);
-                array.Add(null);
+                return ResponseDetailsFactory.Status400BadRequest();
             }
 
-            var json = serializer.Serialize(new { map = array });
-
-            return new ResponseDetails
+            var content = requestDefinitionWriter.Write(ref configurationDefinition);
+            if (content == null)
             {
-                StatusCode = StatusCodes.Status200OK,
-                Content = json,
-                ContentType = MediaTypeNames.Application.Json
-            };
+                return ResponseDetailsFactory.Status400BadRequest();
+            }
+
+            return ResponseDetailsFactory.Status200OK(content);
         }
     }
 }

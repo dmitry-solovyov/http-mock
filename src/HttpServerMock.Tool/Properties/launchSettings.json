@@ -1,7 +1,8 @@
 {
   "profiles": {
     "HttpServerMock.Tool": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "--server * --port 8888 --schema http"
     }
   }
 }

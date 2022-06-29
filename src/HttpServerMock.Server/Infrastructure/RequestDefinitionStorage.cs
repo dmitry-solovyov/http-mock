@@ -1,17 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using HttpServerMock.RequestDefinitions;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
 
 namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestDefinitionStorage : IRequestDefinitionStorage
     {
-        private readonly List<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
+        private readonly ReaderWriterLockSlim _listLock = new ReaderWriterLockSlim();
 
-        public int Count => _requestDefinitionSets.Count;
+        private readonly IList<RequestDefinitionItemSet> _requestDefinitionSets = new List<RequestDefinitionItemSet>();
+
+        public int GetCount() => _requestDefinitionSets.Count;
 
         public void Clear()
         {
@@ -20,22 +19,26 @@ namespace HttpServerMock.Server.Infrastructure
 
         public void AddSet(RequestDefinitionItemSet definitionSet)
         {
-            var foundItems = _requestDefinitionSets
-                .Where(x => string.Equals(x.DefinitionName, definitionSet.DefinitionName))
-                .ToArray();
+            Clear();
 
-            foreach (var foundItem in foundItems)
+            _listLock.EnterReadLock();
+            try
             {
-                _requestDefinitionSets.Remove(foundItem);
-            }
+                var foundItems = _requestDefinitionSets.ToArray();
 
-            _requestDefinitionSets.Add(definitionSet);
+                foreach (var foundItem in foundItems)
+                    _requestDefinitionSets.Remove(foundItem);
+
+                _requestDefinitionSets.Add(definitionSet);
+            }
+            finally
+            {
+                _listLock.ExitReadLock();
+            }
         }
 
-        public RequestDefinitionItem[] FindItems(RequestContext request)
+        public IEnumerable<RequestDefinitionItem> FindItems(RequestContext request)
         {
-            var result = new List<RequestDefinitionItem>();
-
             var context = request.RequestDetails;
 
             foreach (var requestDefinitionSet in _requestDefinitionSets)
@@ -56,16 +59,14 @@ namespace HttpServerMock.Server.Infrastructure
                     if (!match.Success)
                         continue;
 
-                    result.Add(requestDefinition);
+                    yield return requestDefinition;
                 }
             }
-
-            return result.ToArray();
         }
 
-        public IEnumerable<RequestDefinitionItemSet> GetDefinitionSets()
+        public IReadOnlyCollection<RequestDefinitionItemSet> GetDefinitionSets()
         {
-            return _requestDefinitionSets.AsEnumerable();
+            return new ReadOnlyCollection<RequestDefinitionItemSet>(_requestDefinitionSets);
         }
     }
 }
