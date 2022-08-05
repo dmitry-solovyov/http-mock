@@ -2,7 +2,7 @@
 
 ## Configuration request
 
-Schema of the configuration request:
+### Schema of the configuration request:
 
 ```
 Info:
@@ -13,8 +13,9 @@ Map[]
   ┝ Delay
   ┝ Description
   └ Payload
+```
 
-Example of the configuration request:
+### Example of the configuration request:
 
 ```yaml
 Info: Example requests
