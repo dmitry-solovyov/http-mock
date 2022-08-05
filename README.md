@@ -1,33 +1,52 @@
 ﻿# http-mock
 
+## Configuration request
+
 Schema of the configuration request:
 
-Configuration:
-  └ Map[]
-      ┝ url
-      ┝ method
-      ┝ status
-      ┝ delay
-      ┝ description
-      └ payload
+```
+Info:
+Map[]
+  ┝ Url
+  ┝ Method
+  ┝ Status
+  ┝ Delay
+  ┝ Description
+  └ Payload
 
 Example of the configuration request:
 
-info: Checkout requests
-map:
-  - url: /probe
-    description: successful probe action
-    method: get
-    status: 200
-    delay: 200
+```yaml
+Info: Example requests
+Map:
+  - Url: /probe
+    Description: successful probe action
+    Method: get
+    Status: 200
+    Delay: 200
 
-  - url: /probe
-    description: failer probe action
-    method: get
-    status: 502
-    delay: 2000
+  - Url: /probe
+    Description: failer probe action
+    Method: get
+    Status: 502
+    Delay: 2000
 
   - url: /probe/detailed
-    method: post
-    status: 200
-    payload: '{"success":"true"}'
+    Method: post
+    Status: 200
+    Payload: '{"success":"true"}'
+    Headers:
+      'X-ServerHeader': /Example/Redirect
+```
+
+## Install the tool
+
+```powershell
+dotnet tool install -g httpservermock.tool --add-source ./nupkg
+```
+
+## Run the tool
+
+```powershell
+httpservermock --server * --port 8888 --schema http
+```
