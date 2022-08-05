@@ -19,14 +19,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             _logger = logger;
         }
 
-        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            var mockedRequestWithDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(requestDetails);
+            var mockedRequestDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(ref requestDetails);
 
-            return ProcessRequestDefinition(requestDetails, mockedRequestWithDefinition, cancellationToken);
+            return ProcessRequestDefinition(requestDetails, mockedRequestDefinition, cancellationToken);
         }
 
-        private async Task<IResponseDetails> ProcessRequestDefinition(IRequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition, CancellationToken cancellationToken)
+        private async Task<IResponseDetails> ProcessRequestDefinition(RequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition, CancellationToken cancellationToken)
         {
             var requestDefinition = mockedRequestWithDefinition.RequestDefinition;
             if (requestDefinition == null)
@@ -42,7 +42,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
             handled |= await FillDelay(requestDefinition, cancellationToken);
 
-            handled |= FillPayload(requestDetails, requestDefinition, response);
+            handled |= FillPayload(ref requestDetails, requestDefinition, response);
 
             handled |= FillHeaders(requestDefinition, response);
 
@@ -86,7 +86,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private bool FillPayload(IRequestDetails requestDetails, RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
+        private bool FillPayload(ref RequestDetails requestDetails, RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
         {
             var payload = requestDefinition.Then.Payload;
 
@@ -99,7 +99,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
                 foreach (var urlVariable in requestDefinition.When.UrlVariables)
                     while (payload.Contains($"@{urlVariable}"))
                     {
-                        var match = Regex.Match(requestDetails.Uri, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                        var match = Regex.Match(requestDetails.Url, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
                         payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
                     }

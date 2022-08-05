@@ -21,15 +21,13 @@ namespace HttpServerMock.Server.Middleware
 
             var requestHandlerFactory = httpContext.RequestServices.GetRequiredService<IRequestHandlerRouter>();
 
-            var handlerContext = requestHandlerFactory.GetHandler(httpContext);
-            if (handlerContext.RequestDetails == null)
+            if (!requestHandlerFactory.TryGetHandler(httpContext, out var handlerContext))
             {
                 await httpContext.Response.CompleteAsync();
                 return;
             }
 
-            var responseDetails = await handlerContext.RequestHandler
-                .Execute(handlerContext.RequestDetails, cancellationToken)
+            var responseDetails = await handlerContext.RequestHandler.Execute(handlerContext.RequestDetails, cancellationToken)
                 .ConfigureAwait(false);
 
             httpContext.Response.StatusCode = responseDetails.StatusCode;

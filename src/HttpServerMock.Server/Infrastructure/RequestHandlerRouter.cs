@@ -16,24 +16,30 @@ namespace HttpServerMock.Server.Infrastructure
             _requestDetailsProvider = requestDetailsProvider;
         }
 
-        public RequestHandlerContext GetHandler(HttpContext httpContext)
+        public bool TryGetHandler(HttpContext httpContext, out RequestHandlerContext requestHandlerContext)
         {
-            var requestDetails = _requestDetailsProvider.GetRequestDetails(httpContext);
+            if (!_requestDetailsProvider.TryGetRequestDetails(httpContext, out var requestDetails))
+            {
+                requestHandlerContext = default;
+                return false;
+            }
 
             // Try to find a management handler
-            if (TryGetManagementHandler(httpContext, requestDetails, out var managementHandler) && managementHandler != null)
+            if (TryGetManagementHandler(httpContext, ref requestDetails, out var managementHandler) && managementHandler != null)
             {
-                return new RequestHandlerContext(requestDetails, managementHandler);
+                requestHandlerContext = new RequestHandlerContext(requestDetails, managementHandler);
+                return true;
             }
 
             // Otherwise initiate a mock handler
             var requestHandler = httpContext.RequestServices.GetRequiredService<MockedRequestHandler>();
-            return new RequestHandlerContext(requestDetails, requestHandler);
+            requestHandlerContext = new RequestHandlerContext(requestDetails, requestHandler);
+            return true;
         }
 
-        private bool TryGetManagementHandler(HttpContext httpContext, IRequestDetails? requestDetails, out IRequestHandler? result)
+        private bool TryGetManagementHandler(HttpContext httpContext, ref RequestDetails requestDetails, out IRequestHandler? result)
         {
-            if (requestDetails == null || !requestDetails.IsCommandRequest(out var commandName))
+            if (!IsCommandRequest(ref requestDetails, out var commandName))
             {
                 result = null;
                 return false;
@@ -43,24 +49,37 @@ namespace HttpServerMock.Server.Infrastructure
             {
                 _ when HttpMethods.IsGet(requestDetails.HttpMethod) &&
                        StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ConfigureCommandName)
-                    => httpContext.RequestServices.GetService<ConfigureCommandGetHandler>(),
+                    => httpContext.RequestServices.GetRequiredService<ConfigureCommandGetHandler>(),
 
                 _ when HttpMethods.IsPut(requestDetails.HttpMethod) &&
                        StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ConfigureCommandName)
-                    => httpContext.RequestServices.GetService<ConfigureCommandPutHandler>(),
+                    => httpContext.RequestServices.GetRequiredService<ConfigureCommandPutHandler>(),
 
                 _ when HttpMethods.IsPost(requestDetails.HttpMethod) &&
                        StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ResetCounterCommandName)
-                    => httpContext.RequestServices.GetService<ResetCounterCommandHandler>(),
+                    => httpContext.RequestServices.GetRequiredService<ResetCounterCommandHandler>(),
 
                 _ when HttpMethods.IsPost(requestDetails.HttpMethod) &&
                        StringComparer.OrdinalIgnoreCase.Equals(commandName, Constants.HeaderValues.ResetConfigurationCommandName)
-                    => httpContext.RequestServices.GetService<ResetConfigurationCommandHandler>(),
+                    => httpContext.RequestServices.GetRequiredService<ResetConfigurationCommandHandler>(),
 
                 _ => null
             };
 
             return result != null;
+        }
+
+        private static bool IsCommandRequest(ref RequestDetails requestDetails, out string? commandName)
+        {
+            var commandHeader = requestDetails.GetHeaderValue(Constants.HeaderNames.ManagementCommandRequestHeader);
+            if (string.IsNullOrWhiteSpace(commandHeader))
+            {
+                commandName = null;
+                return false;
+            }
+
+            commandName = commandHeader;
+            return true;
         }
     }
 }

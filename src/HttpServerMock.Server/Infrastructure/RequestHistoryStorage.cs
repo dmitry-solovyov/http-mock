@@ -21,26 +21,19 @@ namespace HttpServerMock.Server.Infrastructure
 
         public void Clear() => _requestHistory.Clear();
 
-        public static string GetHistoryItemCacheKey(IRequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Uri}";
+        private static string GetHistoryItemCacheKey(ref RequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Url}";
 
-        public MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails)
+        public MockedRequestDefinition GetMockedRequestWithDefinition(ref RequestDetails requestDetails)
         {
             var requestContext = _requestHistory.AddOrUpdate(
-                GetHistoryItemCacheKey(requestDetails),
-                new RequestContext(requestDetails),
-                (k, existingRequestData) => existingRequestData);
+                key: GetHistoryItemCacheKey(ref requestDetails),
+                addValue: new RequestContext(ref requestDetails),
+                updateValueFactory: (_, existingRequestData) => existingRequestData);
 
             requestContext.IncrementCounter();
 
-            var foundItems = _requestDefinitionProvider.FindItems(requestContext).ToArray();
-            if (!foundItems.Any())
-                return new MockedRequestDefinition(requestContext, null);
-
-            var index = requestContext.Counter <= 0 ? 0 : requestContext.Counter - 1;
-            if (index >= foundItems.Length)
-                index %= foundItems.Length;
-
-            return new MockedRequestDefinition(requestContext, foundItems[index]);
+            var foundItem = _requestDefinitionProvider.FindItem(ref requestContext);
+            return new MockedRequestDefinition(requestContext, foundItem);
         }
     }
 }

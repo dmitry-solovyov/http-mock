@@ -9,6 +9,6 @@ namespace HttpServerMock.Server.Infrastructure.Interfaces
 
         int CurrentItemsCount { get; }
 
-        MockedRequestDefinition GetMockedRequestWithDefinition(IRequestDetails requestDetails);
+        MockedRequestDefinition GetMockedRequestWithDefinition(ref RequestDetails requestDetails);
     }
 }

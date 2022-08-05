@@ -1,6 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.RequestDefinitions.Converters;
-using HttpServerMock.RequestDefinitions.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
@@ -21,12 +20,12 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _requestDefinitionWriteProvider = requestDefinitionWriteProvider;
         }
 
-        public Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            return Task.FromResult(ProcessGetCommand(requestDetails, cancellationToken));
+            return Task.FromResult(ProcessGetCommand(ref requestDetails, cancellationToken));
         }
 
-        private IResponseDetails ProcessGetCommand(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        private IResponseDetails ProcessGetCommand(ref RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Get configuration");
 
@@ -40,7 +39,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             }
 
             var configurationDefinition = ConfigurationDefinitionConverter.ToConfigurationDefinition(fisrstDefinition);
-            if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
+            if (!configurationDefinition.HasData())
             {
                 return ResponseDetailsFactory.Status400BadRequest();
             }

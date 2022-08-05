@@ -4,6 +4,6 @@ namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestDetailsProvider
     {
-        IRequestDetails? GetRequestDetails(HttpContext httpContext);
+        bool TryGetRequestDetails(HttpContext httpContext, out RequestDetails requestDetails);
     }
 }

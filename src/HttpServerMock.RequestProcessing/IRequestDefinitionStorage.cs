@@ -10,7 +10,7 @@ namespace HttpServerMock.RequestDefinitions
 
         void AddSet(RequestDefinitionItemSet definitionSet);
 
-        IEnumerable<RequestDefinitionItem> FindItems(RequestContext request);
+        RequestDefinitionItem? FindItem(ref RequestContext request);
 
         IReadOnlyCollection<RequestDefinitionItemSet> GetDefinitionSets();
     }

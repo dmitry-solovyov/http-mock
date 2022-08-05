@@ -9,7 +9,7 @@
     <ToolCommandName>HttpServerMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
-    <version>1.0.12</version>
+    <version>1.0.14</version>
     <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 

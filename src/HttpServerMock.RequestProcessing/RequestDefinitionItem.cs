@@ -2,7 +2,7 @@
 
 namespace HttpServerMock.RequestDefinitions
 {
-    public class RequestDefinitionItem
+    public record RequestDefinitionItem
     {
         public RequestDefinitionItem(string? description, RequestCondition when, ResponseDetails then)
         {

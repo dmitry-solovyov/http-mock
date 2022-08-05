@@ -1,6 +1,5 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.RequestDefinitions.Converters;
-using HttpServerMock.RequestDefinitions.Extensions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
 
 namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers
@@ -27,7 +26,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _logger = logger;
         }
 
-        public async Task<IResponseDetails> Execute(IRequestDetails requestDetails, CancellationToken cancellationToken)
+        public async Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Set configuration");
 
@@ -41,7 +40,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             var requestDefinitionReader = _requestDefinitionReaderProvider.GetReader();
 
             var configurationDefinition = await requestDefinitionReader.Read(_httpContextAccessor.HttpContext.Request.Body);
-            if (!ConfigurationDefinitionExtensions.HasData(ref configurationDefinition))
+            if (!configurationDefinition.HasData())
             {
                 return ResponseDetailsFactory.Status404NotFound();
             }

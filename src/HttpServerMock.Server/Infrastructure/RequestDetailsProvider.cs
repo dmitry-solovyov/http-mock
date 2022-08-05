@@ -1,19 +1,21 @@
 ﻿using HttpServerMock.RequestDefinitions;
 using HttpServerMock.Server.Infrastructure.Interfaces;
-using HttpServerMock.Server.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace HttpServerMock.Server.Infrastructure
 {
     public class RequestDetailsProvider : IRequestDetailsProvider
     {
-        public IRequestDetails? GetRequestDetails(HttpContext httpContext)
+        public bool TryGetRequestDetails(HttpContext httpContext, out RequestDetails requestDetails)
         {
             var request = httpContext?.Request;
             if (request == null)
-                return null;
+            {
+                requestDetails = default(RequestDetails);
+                return false;
+            }
 
-            var result = new RequestDetails(
+            requestDetails = new RequestDetails(
                 request.Method,
                 request.GetDisplayUrl(),
                 request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString()),
@@ -21,7 +23,7 @@ namespace HttpServerMock.Server.Infrastructure
                 request.ContentType
             );
 
-            return result;
+            return true;
         }
     }
 }

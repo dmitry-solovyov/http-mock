@@ -6,7 +6,7 @@ namespace HttpServerMock.RequestDefinitions
 {
     public class RequestCondition
     {
-        public RequestCondition(string? url, bool caseInsensitive)
+        public RequestCondition(string? url, bool caseInsensitive = true)
         {
             Url = url;
 

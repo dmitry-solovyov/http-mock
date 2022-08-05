@@ -7,6 +7,11 @@ namespace HttpServerMock.RequestDefinitions
         public string? Info { get; set; }
 
         public List<RequestConfigurationDefinition>? Map { get; set; }
+
+        public bool HasData()
+        {
+            return Map?.Count > 0;
+        }
     }
 
     public struct RequestConfigurationDefinition

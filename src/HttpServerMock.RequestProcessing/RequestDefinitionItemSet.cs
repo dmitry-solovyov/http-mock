@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HttpServerMock.RequestDefinitions
 {
@@ -8,11 +9,11 @@ namespace HttpServerMock.RequestDefinitions
         public RequestDefinitionItemSet(string? definitionName, IEnumerable<RequestDefinitionItem> definitionItems)
         {
             DefinitionName = definitionName;
-            DefinitionItems = definitionItems;
+            DefinitionItems = definitionItems.ToArray();
         }
 
         public Guid Id { get; } = Guid.NewGuid();
         public string? DefinitionName { get; }
-        public IEnumerable<RequestDefinitionItem> DefinitionItems { get; }
+        public IReadOnlyCollection<RequestDefinitionItem> DefinitionItems { get; }
     }
 }

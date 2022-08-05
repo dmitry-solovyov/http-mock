@@ -1,38 +1,28 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 
 namespace HttpServerMock.RequestDefinitions
 {
     public class RequestContext
     {
-        public RequestContext(IRequestDetails requestDetails, int counter = 0)
+        public RequestContext(ref RequestDetails requestDetails, int counter = 0)
         {
-            RequestDetails = requestDetails ?? throw new ArgumentNullException(nameof(requestDetails));
-            Counter = counter;
-            RequestDefinition = null;
+            RequestDetails = requestDetails;
+            _counter = counter;
         }
 
-        public RequestContext(RequestContext mockedRequest, RequestDefinitionItem requestDefinition)
-        {
-            RequestDetails = mockedRequest.RequestDetails ?? throw new ArgumentNullException(nameof(mockedRequest));
-            Counter = mockedRequest.Counter;
-            RequestDefinition = requestDefinition ?? throw new ArgumentNullException(nameof(RequestDefinition));
-        }
-
-        public IRequestDetails RequestDetails { get; }
-        public RequestDefinitionItem? RequestDefinition { get; }
+        public RequestDetails RequestDetails { get; }
 
         private int _counter;
 
         public int Counter
         {
             get => _counter;
-            private set => Interlocked.Exchange(ref _counter, value);
+            private set => IncrementCounter(value);
         }
 
-        public RequestContext IncrementCounter()
+        public RequestContext IncrementCounter(int value = 1)
         {
-            Interlocked.Add(ref _counter, 1);
+            Interlocked.Add(ref _counter, value);
             return this;
         }
     }

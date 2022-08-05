@@ -4,6 +4,6 @@ namespace HttpServerMock.Server.Infrastructure.Interfaces
 {
     public interface IRequestHandlerRouter
     {
-        RequestHandlerContext GetHandler(HttpContext httpContext);
+        bool TryGetHandler(HttpContext httpContext, out RequestHandlerContext requestHandlerContext);
     }
 }

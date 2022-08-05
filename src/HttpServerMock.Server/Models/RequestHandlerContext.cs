@@ -5,13 +5,13 @@ namespace HttpServerMock.Server.Models
 {
     public readonly struct RequestHandlerContext
     {
-        public RequestHandlerContext(IRequestDetails? requestDetails, IRequestHandler requestHandler)
+        public RequestHandlerContext(RequestDetails requestDetails, IRequestHandler requestHandler)
         {
             RequestDetails = requestDetails;
             RequestHandler = requestHandler;
         }
 
-        public IRequestDetails? RequestDetails { get; }
+        public RequestDetails RequestDetails { get; }
 
         public IRequestHandler RequestHandler { get; }
     }
