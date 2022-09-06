@@ -9,8 +9,8 @@
     <ToolCommandName>HttpServerMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
-    <version>1.0.14</version>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <version>1.0.15</version>
+    <PackageReleaseNotes>Fix search of mocked requests</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
