@@ -45,6 +45,11 @@ namespace HttpServerMock.Server.Middleware
                 await httpContext.Response.Body.WriteAsync(data, cancellationToken).ConfigureAwait(false);
             }
 
+            if (responseDetails.Delay > 0)
+            {
+                await Task.Delay(responseDetails.Delay, cancellationToken).ConfigureAwait(false);
+            }
+
             await httpContext.Response.CompleteAsync();
         }
     }

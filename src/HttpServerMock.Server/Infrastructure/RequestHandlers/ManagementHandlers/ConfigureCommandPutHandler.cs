@@ -26,7 +26,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _logger = logger;
         }
 
-        public async Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
+        public async ValueTask<Models.ResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Set configuration");
 

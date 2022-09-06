@@ -19,14 +19,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _logger = logger;
         }
 
-        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
+        public ValueTask<Models.ResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Reset configuration. Current number of definition items {_requestDefinitionProvider.GetCount()}");
 
             _requestDefinitionProvider.Clear();
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)ResponseDetailsFactory.Status200OK());
+            return ValueTask.FromResult(ResponseDetailsFactory.Status200OK());
         }
     }
 }

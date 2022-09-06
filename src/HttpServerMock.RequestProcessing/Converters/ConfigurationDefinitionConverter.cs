@@ -24,7 +24,7 @@ public static class ConfigurationDefinitionConverter
         return new RequestDefinitionItem(
             requestConfigurationDefinition.Description,
             new RequestCondition(requestConfigurationDefinition.Url, false),
-            new ResponseDetails(
+            new ResponseDefinition(
                 MediaTypeNames.Application.Json,
                 requestConfigurationDefinition.Method,
                 requestConfigurationDefinition.Payload,

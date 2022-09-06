@@ -16,13 +16,13 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _logger = logger;
         }
 
-        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
+        public ValueTask<Models.ResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Reset counters. Current number of history items {_requestHistoryStorage.CurrentItemsCount}");
 
             _requestHistoryStorage.Clear();
 
-            return Task.FromResult((IResponseDetails)ResponseDetailsFactory.Status200OK());
+            return ValueTask.FromResult(ResponseDetailsFactory.Status200OK());
         }
     }
 }

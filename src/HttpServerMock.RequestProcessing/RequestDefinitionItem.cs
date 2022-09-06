@@ -4,7 +4,7 @@ namespace HttpServerMock.RequestDefinitions
 {
     public record RequestDefinitionItem
     {
-        public RequestDefinitionItem(string? description, RequestCondition when, ResponseDetails then)
+        public RequestDefinitionItem(string? description, RequestCondition when, ResponseDefinition then)
         {
             Description = description;
             When = when ?? throw new ArgumentNullException(nameof(when));
@@ -14,6 +14,6 @@ namespace HttpServerMock.RequestDefinitions
         public Guid Id { get; } = Guid.NewGuid();
         public string? Description { get; internal set; }
         public RequestCondition When { get; internal set; }
-        public ResponseDetails Then { get; internal set; }
+        public ResponseDefinition Then { get; internal set; }
     }
 }

@@ -1,21 +1,22 @@
-﻿using HttpServerMock.RequestDefinitions;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 
 namespace HttpServerMock.Server.Models
 {
-    public struct ResponseDetails : IResponseDetails
+    public struct ResponseDetails
     {
-        public ResponseDetails(int statusCode, string? content, string contentType, IDictionary<string, string>? headers)
+        public ResponseDetails(int statusCode, string? content, string contentType, IDictionary<string, string>? headers, int delay)
         {
             StatusCode = statusCode;
             Content = content;
             ContentType = contentType;
             Headers = headers;
+            Delay = delay;
         }
 
         public int StatusCode { get; set; }
         public IDictionary<string, string>? Headers { get; set; }
         public string? Content { get; set; }
         public string ContentType { get; set; } = MediaTypeNames.Application.Json;
+        public int Delay { get; set; }
     }
 }

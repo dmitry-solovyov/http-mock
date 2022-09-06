@@ -19,14 +19,14 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             _logger = logger;
         }
 
-        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
+        public ValueTask<Models.ResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken = default)
         {
             var mockedRequestDefinition = _requestHistoryStorage.GetMockedRequestWithDefinition(ref requestDetails);
 
-            return ProcessRequestDefinition(requestDetails, mockedRequestDefinition, cancellationToken);
+            return ValueTask.FromResult(ProcessRequestDefinition(requestDetails, mockedRequestDefinition));
         }
 
-        private async Task<IResponseDetails> ProcessRequestDefinition(RequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition, CancellationToken cancellationToken)
+        private Models.ResponseDetails ProcessRequestDefinition(RequestDetails requestDetails, MockedRequestDefinition mockedRequestWithDefinition)
         {
             var requestDefinition = mockedRequestWithDefinition.RequestDefinition;
             if (requestDefinition == null)
@@ -36,15 +36,15 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
             var response = new Models.ResponseDetails();
 
-            handled |= FillContentType(requestDefinition, response);
+            handled |= FillContentType(ref requestDefinition, ref response);
 
-            handled |= FillStatusCode(requestDefinition, response);
+            handled |= FillStatusCode(ref requestDefinition, ref response);
 
-            handled |= await FillDelay(requestDefinition, cancellationToken);
+            handled |= FillDelay(ref requestDefinition, ref response);
 
-            handled |= FillPayload(ref requestDetails, requestDefinition, response);
+            handled |= FillPayload(ref requestDetails, ref requestDefinition, ref response);
 
-            handled |= FillHeaders(requestDefinition, response);
+            handled |= FillHeaders(ref requestDefinition, ref response);
 
             if (handled)
             {
@@ -54,7 +54,8 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return response;
         }
 
-        private static bool FillContentType(RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
+        private static bool FillContentType(
+            ref RequestDefinitionItem requestDefinition, ref Models.ResponseDetails response)
         {
             if (!string.IsNullOrWhiteSpace(requestDefinition.Then.ContentType))
             {
@@ -67,7 +68,7 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
         }
 
         private static bool FillStatusCode(
-            RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
+            ref RequestDefinitionItem requestDefinition, ref Models.ResponseDetails response)
         {
             if (requestDefinition.Then.StatusCode <= 0)
                 return false;
@@ -76,17 +77,17 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private static async ValueTask<bool> FillDelay(
-            RequestDefinitionItem requestDefinition, CancellationToken cancellationToken)
+        private static bool FillDelay(ref RequestDefinitionItem requestDefinition, ref Models.ResponseDetails response)
         {
             if (!requestDefinition.Then.Delay.HasValue || requestDefinition.Then.Delay.Value <= 0)
                 return false;
 
-            await Task.Delay(requestDefinition.Then.Delay.Value, cancellationToken).ConfigureAwait(false);
+            response.Delay = requestDefinition.Then.Delay.Value;
             return true;
         }
 
-        private bool FillPayload(ref RequestDetails requestDetails, RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
+        private bool FillPayload(
+            ref RequestDetails requestDetails, ref RequestDefinitionItem requestDefinition, ref Models.ResponseDetails response)
         {
             var payload = requestDefinition.Then.Payload;
 
@@ -109,7 +110,8 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
             return true;
         }
 
-        private static bool FillHeaders(RequestDefinitionItem requestDefinition, Models.ResponseDetails response)
+        private static bool FillHeaders(
+            ref RequestDefinitionItem requestDefinition, ref Models.ResponseDetails response)
         {
             if (requestDefinition.Then.Headers == null || requestDefinition.Then.Headers.Count == 0)
                 return false;

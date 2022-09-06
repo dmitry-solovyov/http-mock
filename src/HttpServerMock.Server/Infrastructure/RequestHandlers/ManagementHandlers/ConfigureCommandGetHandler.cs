@@ -20,12 +20,12 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandler
             _requestDefinitionWriteProvider = requestDefinitionWriteProvider;
         }
 
-        public Task<IResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
+        public ValueTask<Models.ResponseDetails> Execute(RequestDetails requestDetails, CancellationToken cancellationToken)
         {
-            return Task.FromResult(ProcessGetCommand(ref requestDetails, cancellationToken));
+            return ValueTask.FromResult(ProcessGetCommand(ref requestDetails, cancellationToken));
         }
 
-        private IResponseDetails ProcessGetCommand(ref RequestDetails requestDetails, CancellationToken cancellationToken)
+        private Models.ResponseDetails ProcessGetCommand(ref RequestDetails requestDetails, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Get configuration");
 

@@ -27,17 +27,17 @@ public class RequestDefinitionStorageTests
                 new RequestDefinitionItem(
                     "Probe action (1)",
                     when: new RequestCondition(_getProbeRequestDetails.Url),
-                    then: new ResponseDetails(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>())),
+                    then: new ResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>())),
 
                 new RequestDefinitionItem(
                     "Probe action (2)",
                     when: new RequestCondition(_getProbeRequestDetails.Url),
-                    then: new ResponseDetails(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, null, new Dictionary<string, string>())),
+                    then: new ResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, null, new Dictionary<string, string>())),
 
                 new RequestDefinitionItem(
                     "Put data",
                     when: new RequestCondition("/data"),
-                    then: new ResponseDetails("application/json", "PUT", null, 201, 0, null, new Dictionary<string, string>())),
+                    then: new ResponseDefinition("application/json", "PUT", null, 201, 0, null, new Dictionary<string, string>())),
             });
 
         _requestDefinitionStorage = new RequestDefinitionStorage();

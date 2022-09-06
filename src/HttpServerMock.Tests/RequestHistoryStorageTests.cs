@@ -21,7 +21,7 @@ public class RequestHistoryStorageTests
         _probeGetRequestDefinitionItem = new RequestDefinitionItem(
                     "Probe action (1)",
                     when: new RequestCondition("/probe"),
-                    then: new ResponseDetails("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>()));
+                    then: new ResponseDefinition("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>()));
 
         _probeGetRequestDetails = new RequestDetails("GET", "/probe", new Dictionary<string, string>(), "localhost", "application/json");
 
