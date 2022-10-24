@@ -56,7 +56,7 @@ public static class ConfigurationDefinitionConverter
         {
             Url = requestDefinitionItem.When.Url,
             Description = requestDefinitionItem.Description,
-            //Headers = requestDefinitionItem.Then.Headers,
+            Headers = requestDefinitionItem.Then.Headers?.ToDictionary(x => x.Key, x => x.Value),
             Payload = requestDefinitionItem.Then.Payload,
             Method = requestDefinitionItem.Then.Method,
             Status = requestDefinitionItem.Then.StatusCode,
