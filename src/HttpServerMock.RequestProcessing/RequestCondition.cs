@@ -23,9 +23,9 @@ namespace HttpServerMock.RequestDefinitions
 
         public string? UrlRegexExpression { get; }
 
-        public string[] UrlVariables { get; }
+        public IReadOnlyCollection<string> UrlVariables { get; }
 
-        private static (string? UrlExpression, string[] UrlVariables) NormalizeUrl(string? url)
+        private static (string? UrlExpression, IReadOnlyCollection<string> UrlVariables) NormalizeUrl(string? url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return (url, Array.Empty<string>());
@@ -38,7 +38,7 @@ namespace HttpServerMock.RequestDefinitions
             return (urlExpression, urlVariables);
         }
 
-        private static (string UrlExpression, string[] UrlVariables) NormalizeSearchExpression(string url)
+        private static (string UrlExpression, IReadOnlyCollection<string> UrlVariables) NormalizeSearchExpression(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
                 return (url, Array.Empty<string>());

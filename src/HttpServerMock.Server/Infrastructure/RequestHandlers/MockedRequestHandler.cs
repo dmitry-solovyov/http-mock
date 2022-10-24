@@ -98,12 +98,15 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
             if (requestDefinition.When.UrlRegexExpression != null)
                 foreach (var urlVariable in requestDefinition.When.UrlVariables)
-                    while (payload.Contains($"@{urlVariable}"))
+                {
+                    var regexVarName = $"@{urlVariable}";
+                    while (payload.Contains(regexVarName))
                     {
                         var match = Regex.Match(requestDetails.Url, requestDefinition.When.UrlRegexExpression, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-                        payload = payload.Replace($"@{urlVariable}", match.Groups[urlVariable]?.Value);
+                        payload = payload.Replace(regexVarName, match.Groups[urlVariable]?.Value);
                     }
+                }
 
             response.ContentType = requestDefinition.Then.ContentType;
             response.Content = payload;
