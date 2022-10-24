@@ -130,8 +130,10 @@ namespace HttpServerMock.Server.Infrastructure.RequestHandlers
 
         private static string ReplaceGuids(string payload)
         {
-            while (payload.Contains("@guid"))
-                payload = payload.Replace("@guid", Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
+            const string guidVarName = "@guid";
+
+            while (payload.Contains(guidVarName))
+                payload = payload.Replace(guidVarName, Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
 
             return payload;
         }
