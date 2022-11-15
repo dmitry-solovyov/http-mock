@@ -23,7 +23,7 @@ public static class ConfigurationDefinitionConverter
     {
         return new RequestDefinitionItem(
             requestConfigurationDefinition.Description,
-            new RequestCondition(requestConfigurationDefinition.Url, false),
+            new RequestCondition(requestConfigurationDefinition.Url, true),
             new ResponseDefinition(
                 MediaTypeNames.Application.Json,
                 requestConfigurationDefinition.Method,

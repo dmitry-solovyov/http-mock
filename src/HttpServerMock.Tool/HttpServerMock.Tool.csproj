@@ -9,8 +9,8 @@
     <ToolCommandName>HttpServerMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
-    <version>1.0.16</version>
-    <PackageReleaseNotes>Fix minor issues</PackageReleaseNotes>
+    <version>1.0.17</version>
+    <PackageReleaseNotes>Case insensitive search for request URL</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

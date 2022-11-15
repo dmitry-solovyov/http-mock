@@ -21,7 +21,7 @@ namespace HttpServerMock.Server.Infrastructure
 
         public void Clear() => _requestHistory.Clear();
 
-        private static string GetHistoryItemCacheKey(ref RequestDetails requestDetails) => $"{requestDetails.HttpMethod}_{requestDetails.Url}";
+        private static string GetHistoryItemCacheKey(ref RequestDetails requestDetails) => $"{requestDetails.HttpMethod?.ToLower()}_{requestDetails.Url?.ToLower()}";
 
         public MockedRequestDefinition GetMockedRequestWithDefinition(ref RequestDetails requestDetails)
         {
