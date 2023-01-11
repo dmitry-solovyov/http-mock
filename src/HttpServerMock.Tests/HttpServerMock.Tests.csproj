@@ -19,7 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj" />
     <ProjectReference Include="..\HttpServerMock.Server\HttpServerMock.Server.csproj" />
   </ItemGroup>
 

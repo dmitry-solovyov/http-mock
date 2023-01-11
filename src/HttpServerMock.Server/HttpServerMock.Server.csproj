@@ -12,10 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\HttpServerMock.RequestProcessing\HttpServerMock.RequestDefinitions.csproj" />
+    <PackageReference Include="System.Text.Json" Version="6.0.*" />
+    <PackageReference Include="SharpYaml" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

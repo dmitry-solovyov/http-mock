@@ -1,5 +1,5 @@
 using FluentAssertions;
-using HttpServerMock.RequestDefinitions;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -11,25 +11,25 @@ namespace HttpServerMock.Tests
         [Fact]
         public void Serialize()
         {
-            var config = new ConfigurationDefinition();
+            var config = new ConfigurationBatchDto();
             config.Info = "Test data";
-            config.Map = new List<RequestConfigurationDefinition>
+            config.Map = new List<ConfigurationItemDto>
             {
-                new RequestConfigurationDefinition
+                new ConfigurationItemDto
                 {
                     Url = "/probe",
                     Status = 200,
                     Delay = 100,
                     Description = "Probe endpoint"
                 },
-                new RequestConfigurationDefinition
+                new ConfigurationItemDto
                 {
                     Url = "/swagger",
                     Status = 200,
                     Delay = 200,
                     Description= "Swagger endpoint"
                 },
-                new RequestConfigurationDefinition
+                new ConfigurationItemDto
                 {
                     Url = "/order",
                     Status = 201,
@@ -87,7 +87,7 @@ Map:
             var serializer = new SharpYaml.Serialization.Serializer();
             serializer.Settings.IgnoreUnmatchedProperties = true;
 
-            var result = serializer.Deserialize<ConfigurationDefinition>(yaml);
+            var result = serializer.Deserialize<ConfigurationBatchDto>(yaml);
 
             // Assert
             result.Should().NotBeNull();

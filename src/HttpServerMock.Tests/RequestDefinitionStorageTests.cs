@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
+using HttpServerMock.Server.Infrastructure.RequestProcessing;
 using System.Collections.Generic;
 using Xunit;
 
@@ -8,11 +8,11 @@ namespace HttpServerMock.Tests;
 
 public class RequestDefinitionStorageTests
 {
-    private readonly RequestDefinitionStorage _requestDefinitionStorage;
+    private readonly ConfigurationStorage _configurationStorage;
 
-    private readonly RequestDefinitionItemSet _defaultSet;
+    private readonly ConfigurationStorageItemSet _configurationSet;
 
-    private readonly RequestDetails _getProbeRequestDetails = new RequestDetails(
+    private readonly HttpRequestDetails _getProbeRequestDetails = new HttpRequestDetails(
         "GET",
         "/probe", new Dictionary<string, string>(),
         "localhost",
@@ -20,28 +20,28 @@ public class RequestDefinitionStorageTests
 
     public RequestDefinitionStorageTests()
     {
-        _defaultSet = new RequestDefinitionItemSet(
+        _configurationSet = new ConfigurationStorageItemSet(
             "Test set",
             new[]
             {
-                new RequestDefinitionItem(
+                new ConfigurationStorageItem(
                     "Probe action (1)",
-                    when: new RequestCondition(_getProbeRequestDetails.Url),
-                    then: new ResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemEndpointFilter(_getProbeRequestDetails.Url),
+                    new ConfigurationStorageItemResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>())),
 
-                new RequestDefinitionItem(
+                new ConfigurationStorageItem(
                     "Probe action (2)",
-                    when: new RequestCondition(_getProbeRequestDetails.Url),
-                    then: new ResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemEndpointFilter(_getProbeRequestDetails.Url),
+                    new ConfigurationStorageItemResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, null, new Dictionary<string, string>())),
 
-                new RequestDefinitionItem(
+                new ConfigurationStorageItem(
                     "Put data",
-                    when: new RequestCondition("/data"),
-                    then: new ResponseDefinition("application/json", "PUT", null, 201, 0, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemEndpointFilter("/data"),
+                    new ConfigurationStorageItemResponseDefinition("application/json", "PUT", null, 201, 0, null, new Dictionary<string, string>())),
             });
 
-        _requestDefinitionStorage = new RequestDefinitionStorage();
-        _requestDefinitionStorage.AddSet(_defaultSet);
+        _configurationStorage = new ConfigurationStorage();
+        _configurationStorage.AddSet(_configurationSet);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class RequestDefinitionStorageTests
         var requestContext = new RequestContext(ref requestDetails);
 
         // Act
-        var result = _requestDefinitionStorage.FindItem(ref requestContext);
+        var result = _configurationStorage.FindItem(ref requestContext);
 
         // Assert
         result.Should().NotBeNull();
@@ -72,7 +72,7 @@ public class RequestDefinitionStorageTests
         var requestContext = new RequestContext(ref requestDetails, 2);
 
         // Act
-        var result = _requestDefinitionStorage.FindItem(ref requestContext);
+        var result = _configurationStorage.FindItem(ref requestContext);
 
         // Assert
         result.Should().NotBeNull();
@@ -91,7 +91,7 @@ public class RequestDefinitionStorageTests
         var requestContext = new RequestContext(ref requestDetails, 12);
 
         // Act
-        var result = _requestDefinitionStorage.FindItem(ref requestContext);
+        var result = _configurationStorage.FindItem(ref requestContext);
 
         // Assert
         result.Should().NotBeNull();

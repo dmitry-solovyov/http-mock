@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.Server.Infrastructure;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
+using HttpServerMock.Server.Infrastructure.RequestProcessing;
+using HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers.MockedRequests;
 using Moq;
 using System.Collections.Generic;
 using Xunit;
@@ -11,21 +12,21 @@ public class RequestHistoryStorageTests
 {
     private readonly RequestHistoryStorage _requestHistoryStorage;
 
-    private readonly Mock<IRequestDefinitionStorage> _requestDefinitionStorageMock;
+    private readonly Mock<IConfigurationStorage> _requestDefinitionStorageMock;
 
-    private readonly RequestDefinitionItem _probeGetRequestDefinitionItem;
-    private readonly RequestDetails _probeGetRequestDetails;
+    private readonly ConfigurationStorageItem _probeGetRequestDefinitionItem;
+    private readonly HttpRequestDetails _probeGetRequestDetails;
 
     public RequestHistoryStorageTests()
     {
-        _probeGetRequestDefinitionItem = new RequestDefinitionItem(
+        _probeGetRequestDefinitionItem = new ConfigurationStorageItem(
                     "Probe action (1)",
-                    when: new RequestCondition("/probe"),
-                    then: new ResponseDefinition("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>()));
+                    new ConfigurationStorageItemEndpointFilter("/probe"),
+                    new ConfigurationStorageItemResponseDefinition("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>()));
 
-        _probeGetRequestDetails = new RequestDetails("GET", "/probe", new Dictionary<string, string>(), "localhost", "application/json");
+        _probeGetRequestDetails = new HttpRequestDetails("GET", "/probe", new Dictionary<string, string>(), "localhost", "application/json");
 
-        _requestDefinitionStorageMock = new Mock<IRequestDefinitionStorage>();
+        _requestDefinitionStorageMock = new Mock<IConfigurationStorage>();
 
         _requestHistoryStorage = new RequestHistoryStorage(_requestDefinitionStorageMock.Object);
     }

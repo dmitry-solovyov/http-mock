@@ -1,12 +1,11 @@
-using HttpServerMock.RequestDefinitions;
-using HttpServerMock.RequestDefinitions.ContentTypeProcessors.Json;
-using HttpServerMock.RequestDefinitions.ContentTypeProcessors.Yaml;
-using HttpServerMock.Server.Infrastructure;
-using HttpServerMock.Server.Infrastructure.Interfaces;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement.ConfigurationReaders;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement.ConfigurationWriters;
+using HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
 using HttpServerMock.Server.Infrastructure.Logging;
-using HttpServerMock.Server.Infrastructure.RequestHandlers;
-using HttpServerMock.Server.Infrastructure.RequestHandlers.ManagementHandlers;
-using HttpServerMock.Server.Middleware;
+using HttpServerMock.Server.Infrastructure.RequestProcessing;
+using HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers.ManagementRequests;
+using HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers.MockedRequests;
 using Microsoft.Extensions.Configuration.CommandLine;
 
 namespace HttpServerMock.Server
@@ -70,19 +69,19 @@ namespace HttpServerMock.Server
             services.AddTransient<ResetCounterCommandHandler>();
             services.AddTransient<MockedRequestHandler>();
 
-            services.AddTransient<IRequestDefinitionReaderProvider, RequestDefinitionReaderProvider>();
-            services.AddTransient<IRequestDefinitionWriterProvider, RequestDefinitionWriterProvider>();
+            services.AddTransient<IConfigurationReaderProvider, ConfigurationReaderProvider>();
+            services.AddTransient<IConfigurationWriterProvider, ConfigurationWriterProvider>();
 
-            services.AddTransient<IRequestDefinitionReader, YamlRequestDefinitionReader>();
-            services.AddTransient<IRequestDefinitionWriter, YamlRequestDefinitionWriter>();
-            services.AddTransient<IRequestDefinitionReader, JsonRequestDefinitionReader>();
-            services.AddTransient<IRequestDefinitionWriter, JsonRequestDefinitionWriter>();
+            services.AddTransient<IConfigurationReader, YamlConfigurationReader>();
+            services.AddTransient<IConfigurationWriter, YamlConfigurationWriter>();
+            services.AddTransient<IConfigurationReader, JsonConfigurationReader>();
+            services.AddTransient<IConfigurationWriter, JsonConfigurationWriter>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient<IRequestDetailsProvider, RequestDetailsProvider>();
-            services.AddTransient<IRequestHandlerRouter, RequestHandlerRouter>();
+            services.AddTransient<IHttpRequestDetailsProvider, HttpRequestDetailsProvider>();
+            services.AddTransient<IRequestRouter, RequestRouter>();
 
             services.AddSingleton<IRequestHistoryStorage, RequestHistoryStorage>();
-            services.AddSingleton<IRequestDefinitionStorage, RequestDefinitionStorage>();
+            services.AddSingleton<IConfigurationStorage, ConfigurationStorage>();
         }
 
         public static (ILoggerProvider loggerProvider, ILogger logger) CreateLoggers()
