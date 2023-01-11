@@ -4,45 +4,45 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace HttpServerMock.Tool
+namespace HttpServerMock.Tool;
+
+internal class Program
 {
-    internal class Program
+    private const int DefaultHttpPort = 8888;
+
+    public static void Main(string[] args)
     {
-        private const int DefaultHttpPort = 8888;
-
-        public static void Main(string[] args)
+        if (args.Length == 0 ||
+            args.Contains("/?") ||
+            args.Contains("?") ||
+            args.Contains("--help") ||
+            args.Contains("/help"))
         {
-            if (args.Length == 0 ||
-                args.Contains("/?") ||
-                args.Contains("?") ||
-                args.Contains("--help") ||
-                args.Contains("/help"))
-            {
-                ShowHelp();
-                return;
-            }
-
-            var versionString = (Assembly.GetEntryAssembly() ?? throw new InvalidOperationException())
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-
-            Console.WriteLine($"Starting {nameof(HttpServerMock)} v{versionString}");
-
-            var configurationBuilder = new ConfigurationBuilder()
-                .Add(new CommandLineConfigurationSource { Args = args });
-
-            (var port, var server, var schema) = GetStartupParameters(configurationBuilder.Build());
-            var url = $"{schema}://{server}:{port}";
-
-            Console.WriteLine($"Starting server for url: {url}...");
-
-            Server.Server.StartTool(url);
+            ShowHelp();
+            return;
         }
 
-        private static void ShowHelp()
-        {
-            Console.WriteLine("\nUsage:");
-            Console.Write($"  {nameof(HttpServerMock)}.{nameof(Tool)}");
-            Console.WriteLine(@" --server * --port 8888 --schema http
+        var versionString = (Assembly.GetEntryAssembly() ?? throw new InvalidOperationException())
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+        Console.WriteLine($"Starting {nameof(HttpServerMock)} v{versionString}");
+
+        var configurationBuilder = new ConfigurationBuilder()
+            .Add(new CommandLineConfigurationSource { Args = args });
+
+        (var port, var server, var schema) = GetStartupParameters(configurationBuilder.Build());
+        var url = $"{schema}://{server}:{port}";
+
+        Console.WriteLine($"Starting server for url: {url}...");
+
+        Server.Server.StartTool(url);
+    }
+
+    private static void ShowHelp()
+    {
+        Console.WriteLine("\nUsage:");
+        Console.Write($"  {nameof(HttpServerMock)}.{nameof(Tool)}");
+        Console.WriteLine(@" --server * --port 8888 --schema http
 
 Parameters:
     --port: (required) start service by this port
@@ -61,29 +61,28 @@ Parameters:
             http (default)
             https
 ");
-            Console.ReadKey();
-        }
+        Console.ReadKey();
+    }
 
-        private static (int port, string server, string schema) GetStartupParameters(IConfiguration configuration)
+    private static (int port, string server, string schema) GetStartupParameters(IConfiguration configuration)
+    {
+        if (!int.TryParse(configuration["port"], out var port) || port <= 1000 || port > 65000)
         {
-            if (!int.TryParse(configuration["port"], out var port) || port <= 1000 || port > 65000)
-            {
-                port = DefaultHttpPort;
-            }
-
-            string server;
-            if (string.IsNullOrWhiteSpace(server = configuration["server"]))
-            {
-                server = "*";
-            }
-
-            string schema;
-            if (string.IsNullOrWhiteSpace(schema = configuration["schema"]))
-            {
-                schema = "http";
-            }
-
-            return (port, server, schema);
+            port = DefaultHttpPort;
         }
+
+        string server;
+        if (string.IsNullOrWhiteSpace(server = configuration["server"]))
+        {
+            server = "*";
+        }
+
+        string schema;
+        if (string.IsNullOrWhiteSpace(schema = configuration["schema"]))
+        {
+            schema = "http";
+        }
+
+        return (port, server, schema);
     }
 }

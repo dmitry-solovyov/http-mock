@@ -1,9 +1,8 @@
 ﻿using HttpServerMock.Server.Infrastructure.ConfigurationManagement.ConfigurationReaders;
 
-namespace HttpServerMock.Server.Infrastructure.ConfigurationManagement
+namespace HttpServerMock.Server.Infrastructure.ConfigurationManagement;
+
+public interface IConfigurationReaderProvider
 {
-    public interface IConfigurationReaderProvider
-    {
-        IConfigurationReader GetReader();
-    }
+    IConfigurationReader GetReader();
 }

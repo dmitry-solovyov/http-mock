@@ -1,9 +1,6 @@
-﻿using HttpServerMock.Server.Infrastructure.RequestProcessing;
+﻿namespace HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers;
 
-namespace HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers
+public interface IRequestHandler
 {
-    public interface IRequestHandler
-    {
-        ValueTask<HttpResponseDetails> Execute(HttpRequestDetails requestDetails, CancellationToken cancellationToken);
-    }
+    ValueTask<HttpResponseDetails> Execute(HttpRequestDetails requestDetails, CancellationToken cancellationToken);
 }

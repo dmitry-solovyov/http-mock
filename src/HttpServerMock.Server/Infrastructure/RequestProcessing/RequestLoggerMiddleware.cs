@@ -1,80 +1,79 @@
 ﻿using Microsoft.AspNetCore.Http.Extensions;
 using System.Text;
 
-namespace HttpServerMock.Server.Infrastructure.RequestProcessing
+namespace HttpServerMock.Server.Infrastructure.RequestProcessing;
+
+public class RequestLoggerMiddleware
 {
-    public class RequestLoggerMiddleware
+    private static readonly int LogFirstNCharsFromHeader = 50;
+
+    private readonly RequestDelegate _next;
+    private readonly ILogger<RequestLoggerMiddleware> _logger;
+
+    public RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger)
     {
-        private static readonly int LogFirstNCharsFromHeader = 50;
+        _next = next;
+        _logger = logger;
+    }
 
-        private readonly RequestDelegate _next;
-        private readonly ILogger<RequestLoggerMiddleware> _logger;
+    public async Task Invoke(HttpContext httpContext)
+    {
+        LogStartOfRequest(httpContext);
 
-        public RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger)
+        try
         {
-            _next = next;
-            _logger = logger;
+            await _next(httpContext);
         }
-
-        public async Task Invoke(HttpContext httpContext)
+        catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
         {
-            LogStartOfRequest(httpContext);
-
-            try
-            {
-                await _next(httpContext);
-            }
-            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
-            {
-                _logger.LogInformation($"[Request cancelled] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"EXCEPTION {ex.Message}");
-                _logger.LogDebug(ex.StackTrace);
-                throw;
-            }
-            finally
-            {
-                _logger.LogInformation($"[Finish request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}, response={httpContext.Response?.StatusCode}]");
-            }
+            _logger.LogInformation($"[Request cancelled] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
         }
-
-        private static string LogUrl(HttpRequest request)
+        catch (Exception ex)
         {
-            return $"({request.Method}) {request.GetDisplayUrl()} ";
+            _logger.LogError(ex, $"EXCEPTION {ex.Message}");
+            _logger.LogDebug(ex.StackTrace);
+            throw;
         }
-
-        private void LogStartOfRequest(HttpContext httpContext)
+        finally
         {
-            var logMessage = new StringBuilder($"[Start request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
-            if (httpContext.Request.Headers.Count > 0)
-            {
-                logMessage.AppendLine();
-                logMessage.AppendLine("Headers:");
-                foreach (var headerKey in httpContext.Request.Headers.Keys)
-                {
-                    logMessage.AppendLine($"    {headerKey}={GetFirstChars(httpContext.Request.Headers[headerKey])}");
-                }
-            }
-
-            _logger.LogInformation(logMessage.ToString());
-        }
-
-        private static ReadOnlySpan<char> GetFirstChars(string text)
-        {
-            if (string.IsNullOrEmpty(text) || LogFirstNCharsFromHeader <= 0 || text.Length < LogFirstNCharsFromHeader)
-                return text.AsSpan();
-
-            return $"{text.AsSpan().Slice(0, LogFirstNCharsFromHeader)}...";
+            _logger.LogInformation($"[Finish request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}, response={httpContext.Response?.StatusCode}]");
         }
     }
 
-    public static class RequestLoggerMiddlewareExtensions
+    private static string LogUrl(HttpRequest request)
     {
-        public static void UseRequestLogger(this IApplicationBuilder builder)
+        return $"({request.Method}) {request.GetDisplayUrl()} ";
+    }
+
+    private void LogStartOfRequest(HttpContext httpContext)
+    {
+        var logMessage = new StringBuilder($"[Start request] {LogUrl(httpContext.Request)}[thread={Thread.CurrentThread.ManagedThreadId}]");
+        if (httpContext.Request.Headers.Count > 0)
         {
-            builder.UseMiddleware<RequestLoggerMiddleware>();
+            logMessage.AppendLine();
+            logMessage.AppendLine("Headers:");
+            foreach (var headerKey in httpContext.Request.Headers.Keys)
+            {
+                logMessage.AppendLine($"    {headerKey}={GetFirstChars(httpContext.Request.Headers[headerKey])}");
+            }
         }
+
+        _logger.LogInformation(logMessage.ToString());
+    }
+
+    private static ReadOnlySpan<char> GetFirstChars(string text)
+    {
+        if (string.IsNullOrEmpty(text) || LogFirstNCharsFromHeader <= 0 || text.Length < LogFirstNCharsFromHeader)
+            return text.AsSpan();
+
+        return $"{text.AsSpan().Slice(0, LogFirstNCharsFromHeader)}...";
+    }
+}
+
+public static class RequestLoggerMiddlewareExtensions
+{
+    public static void UseRequestLogger(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<RequestLoggerMiddleware>();
     }
 }

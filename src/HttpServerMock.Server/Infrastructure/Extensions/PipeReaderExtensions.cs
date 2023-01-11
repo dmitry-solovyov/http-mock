@@ -1,45 +1,44 @@
 ﻿using System.IO.Pipelines;
 using System.Text;
 
-namespace HttpServerMock.Server.Infrastructure.Extensions
+namespace HttpServerMock.Server.Infrastructure.Extensions;
+
+public static class PipeReaderExtensions
 {
-    public static class PipeReaderExtensions
+    public static async Task<string> ReadPipeAsync(this PipeReader reader, CancellationToken cancellationToken)
     {
-        public static async Task<string> ReadPipeAsync(this PipeReader reader, CancellationToken cancellationToken)
+        List<byte>? output = null;
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        while (reader.TryRead(out var readResult))
         {
-            List<byte>? output = null;
+            var buffer = readResult.Buffer;
+            var position = buffer.Start;
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            while (reader.TryRead(out var readResult))
+            while (readResult.Buffer.TryGet(ref position, out var memoryLine))
             {
-                var buffer = readResult.Buffer;
-                var position = buffer.Start;
+                cancellationToken.ThrowIfCancellationRequested();
 
-                while (readResult.Buffer.TryGet(ref position, out var memoryLine))
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+                if (memoryLine.IsEmpty)
+                    continue;
 
-                    if (memoryLine.IsEmpty)
-                        continue;
+                output ??= new List<byte>();
 
-                    output ??= new List<byte>();
-
-                    output.AddRange(memoryLine.ToArray());
-                }
-
-                reader.AdvanceTo(buffer.Start, buffer.End);
-
-                if (readResult.IsCompleted)
-                    break;
+                output.AddRange(memoryLine.ToArray());
             }
 
-            await reader.CompleteAsync().ConfigureAwait(false);
+            reader.AdvanceTo(buffer.Start, buffer.End);
 
-            if (output == null)
-                return string.Empty;
-
-            return Encoding.ASCII.GetString(output.ToArray());
+            if (readResult.IsCompleted)
+                break;
         }
+
+        await reader.CompleteAsync().ConfigureAwait(false);
+
+        if (output == null)
+            return string.Empty;
+
+        return Encoding.ASCII.GetString(output.ToArray());
     }
 }

@@ -1,13 +1,12 @@
-﻿namespace HttpServerMock.Server.Infrastructure.Logging
-{
-    public class CustomConsoleLoggerProvider : ILoggerProvider
-    {
-        public ILogger CreateLogger(string categoryName)
-        {
-            return new CustomConsoleLogger(categoryName);
-        }
+﻿namespace HttpServerMock.Server.Infrastructure.Logging;
 
-        public void Dispose()
-        { }
+public class CustomConsoleLoggerProvider : ILoggerProvider
+{
+    public ILogger CreateLogger(string categoryName)
+    {
+        return new CustomConsoleLogger(categoryName);
     }
+
+    public void Dispose()
+    { }
 }
