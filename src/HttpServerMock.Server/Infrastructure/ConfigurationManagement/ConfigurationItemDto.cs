@@ -1,18 +1,11 @@
 ﻿namespace HttpServerMock.Server.Infrastructure.ConfigurationManagement;
 
-public struct ConfigurationItemDto
-{
-    public string? Url { get; set; }
-
-    public string? Description { get; set; }
-
-    public string? Method { get; set; }
-
-    public int? Status { get; set; }
-
-    public int? Delay { get; set; }
-
-    public string? Payload { get; set; }
-
-    public Dictionary<string, string>? Headers { get; set; }
-}
+public record struct ConfigurationItemDto(
+    string? Url,
+    string? Description,
+    string? Method,
+    int? Status,
+    int? Delay,
+    string? Payload,
+    Dictionary<string, string>? Headers,
+    string? ProxyUrl);

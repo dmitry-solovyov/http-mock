@@ -30,7 +30,7 @@ public static class ConfigurationDefinitionConverter
                 requestConfigurationDefinition.Payload,
                 requestConfigurationDefinition.Status ?? (int)HttpStatusCode.OK,
                 requestConfigurationDefinition.Delay,
-                null,
+                requestConfigurationDefinition.ProxyUrl,
                 requestConfigurationDefinition.Headers
             )
         );
@@ -61,6 +61,7 @@ public static class ConfigurationDefinitionConverter
             Method = requestDefinitionItem.Then.Method,
             Status = requestDefinitionItem.Then.StatusCode,
             Delay = requestDefinitionItem.Then.Delay,
+            ProxyUrl = requestDefinitionItem.Then.ProxyUrl,
         };
     }
 }

@@ -34,7 +34,7 @@ public class ConfigureCommandGetHandler : IRequestHandler
         var fisrstDefinition = definitionSets.FirstOrDefault();
         if (fisrstDefinition == null)
         {
-            return ResponseDetailsFactory.Status404NotFound();
+            return ResponseDetailsFactory.Status204NoContent();
         }
 
         var configurationDefinition = ConfigurationDefinitionConverter.ToConfigurationDefinition(fisrstDefinition);

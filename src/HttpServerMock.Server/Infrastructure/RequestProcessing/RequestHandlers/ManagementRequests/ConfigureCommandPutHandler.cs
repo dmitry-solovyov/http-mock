@@ -44,7 +44,7 @@ public class ConfigureCommandPutHandler : IRequestHandler
         var requestDefinitions = ConfigurationDefinitionConverter.ToDefinitionStorageItemSet(ref configurationDefinition);
         if (requestDefinitions == null)
         {
-            return ResponseDetailsFactory.Status204NoContent();
+            return ResponseDetailsFactory.Status400BadRequest();
         }
 
         cancellationToken.ThrowIfCancellationRequested();
