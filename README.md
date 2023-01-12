@@ -40,6 +40,12 @@ Map:
       'X-ServerHeader': /Example/Redirect
 ```
 
+## Create a new version of the package 
+
+```powershell
+dotnet pack --output nupkg -p:TargetFrameworks=net7.0 --runtime win-x64 --configuration Release
+```
+
 ## Install the tool
 
 ```powershell

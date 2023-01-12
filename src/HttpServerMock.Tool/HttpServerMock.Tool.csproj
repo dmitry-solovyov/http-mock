@@ -4,13 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
-
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>HttpServerMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
-
-    <version>1.0.17</version>
-    <PackageReleaseNotes>Case insensitive search for request URL</PackageReleaseNotes>
+    <version>1.0.18</version>
+    <PackageReleaseNotes>Implementation of Proxy URL</PackageReleaseNotes>
+    <StartupObject>HttpServerMock.Tool.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
