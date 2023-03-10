@@ -8,9 +8,7 @@ public class ConfigurationStorageItemEndpointFilter
     {
         Url = url;
 
-        (var urlRegexExpression, var urlVariables) = NormalizeUrl(url);
-        UrlRegexExpression = urlRegexExpression;
-        UrlVariables = urlVariables;
+        (UrlRegexExpression, UrlVariables) = NormalizeUrl(url);
 
         CaseInsensitive = caseInsensitive;
     }
@@ -52,7 +50,7 @@ public class ConfigurationStorageItemEndpointFilter
         if (!url.Contains("@"))
             return (url, fields.ToArray());
 
-        var matchedVariables = Regex.Matches(url, @"(?<name>@[\w]{1,}([\w\-\._]){0,})", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        var matchedVariables = Regex.Matches(url, @"(?<name>@[\w]{1,}([\w\-\._]){0,})", RegexOptions.IgnoreCase | RegexOptions.Singleline, TimeSpan.FromMilliseconds(10));
 
         foreach (Match matchedVariable in matchedVariables)
         {

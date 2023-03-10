@@ -22,7 +22,7 @@ public class RequestHistoryStorageTests
         _probeGetRequestDefinitionItem = new ConfigurationStorageItem(
                     "Probe action (1)",
                     new ConfigurationStorageItemEndpointFilter("/probe"),
-                    new ConfigurationStorageItemResponseDefinition("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>()));
+                    new ConfigurationStorageItemResponseDefinition("application/json", "GET", "{\"data\":\"response data\"}", 200, 0, new Dictionary<string, string>(), null, null));
 
         _probeGetRequestDetails = new HttpRequestDetails("GET", "/probe", new Dictionary<string, string>(), "localhost", "application/json");
 

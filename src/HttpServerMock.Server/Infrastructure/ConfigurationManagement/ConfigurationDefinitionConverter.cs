@@ -30,9 +30,32 @@ public static class ConfigurationDefinitionConverter
                 requestConfigurationDefinition.Payload,
                 requestConfigurationDefinition.Status ?? (int)HttpStatusCode.OK,
                 requestConfigurationDefinition.Delay,
-                requestConfigurationDefinition.ProxyUrl,
-                requestConfigurationDefinition.Headers
+                requestConfigurationDefinition.Headers,
+                ToDefinitionStorageProxyItem(requestConfigurationDefinition.Proxy),
+                ToDefinitionStorageCallbackItem(requestConfigurationDefinition.Callback)
             )
+        );
+    }
+
+    private static ConfigurationStorageItemCallback? ToDefinitionStorageCallbackItem(ConfigurationItemCallbackDto? callback)
+    {
+        if (callback == null)
+            return null;
+
+        return new ConfigurationStorageItemCallback(
+            callback.Value.Url,
+            callback.Value.Async
+        );
+    }
+
+    private static ConfigurationStorageItemProxy? ToDefinitionStorageProxyItem(ConfigurationItemProxyDto? proxy)
+    {
+        if (proxy == null)
+            return null;
+
+        return new ConfigurationStorageItemProxy(
+            proxy.Value.Url,
+            proxy.Value.Async
         );
     }
 
@@ -61,7 +84,30 @@ public static class ConfigurationDefinitionConverter
             Method = requestDefinitionItem.Then.Method,
             Status = requestDefinitionItem.Then.StatusCode,
             Delay = requestDefinitionItem.Then.Delay,
-            ProxyUrl = requestDefinitionItem.Then.ProxyUrl,
+            Proxy = ToConfigurationProxyDefinitionItem(requestDefinitionItem.Then.Proxy),
+            Callback = ToConfigurationCallbackDefinitionItem(requestDefinitionItem.Then.Callback),
         };
+    }
+
+    private static ConfigurationItemProxyDto? ToConfigurationProxyDefinitionItem(ConfigurationStorageItemProxy? proxy)
+    {
+        if (proxy == null)
+            return null;
+
+        return new ConfigurationItemProxyDto(
+            proxy.Url,
+            proxy.Async
+        );
+    }
+
+    private static ConfigurationItemCallbackDto? ToConfigurationCallbackDefinitionItem(ConfigurationStorageItemCallback? callback)
+    {
+        if (callback == null)
+            return null;
+
+        return new ConfigurationItemCallbackDto(
+            callback.Url,
+            callback.Async
+        );
     }
 }

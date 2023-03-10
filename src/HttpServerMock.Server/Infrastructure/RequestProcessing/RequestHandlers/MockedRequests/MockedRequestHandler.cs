@@ -1,5 +1,6 @@
 ﻿using HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
 using System.Net.Mime;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers.MockedRequests;
@@ -32,18 +33,17 @@ public class MockedRequestHandler : IRequestHandler
 
         HttpResponseDetails response;
 
-        if (IsProxyRequest(ref requestDefinition, out var parsedUrl))
+        if (requestDefinition.Then.HasProxy && Uri.TryCreate(requestDefinition.Then.Proxy!.Url, UriKind.Absolute, out var parsedProxyUrl))
         {
-            response = await ProcessProxyRequest(parsedUrl!, requestDefinition, cancellationToken);
+            response = await ProcessProxyRequest(parsedProxyUrl, requestDefinition, cancellationToken);
+        }
+        else if (requestDefinition.Then.HasCallback && Uri.TryCreate(requestDefinition.Then.Callback!.Url, UriKind.Absolute, out var parsedCallbackUrl))
+        {
+            response = ProcessCallbackRequest(parsedCallbackUrl, ref requestDefinition);
         }
         else
         {
-            response = ProcessMockedRequest(ref requestDetails, ref requestDefinition);
-        }
-
-        if (requestDefinition.Then.Delay > 0)
-        {
-            await Task.Delay(requestDefinition.Then.Delay.Value, cancellationToken).ConfigureAwait(false);
+            response = await ProcessMockedRequest(requestDetails, requestDefinition, cancellationToken);
         }
 
         _logger.LogInformation($"Handler description={requestDefinition.Description ?? "N/A"}, Request counter={mockedRequestWithDefinition.MockedRequest.Counter}");
@@ -51,54 +51,55 @@ public class MockedRequestHandler : IRequestHandler
         return response;
     }
 
-    private bool IsProxyRequest(ref ConfigurationStorageItem requestDefinition, out Uri? parsedUrl)
+    private async Task<HttpResponseDetails> ProcessMockedRequest(HttpRequestDetails requestDetails, ConfigurationStorageItem requestDefinition, CancellationToken cancellationToken)
     {
-        parsedUrl = null;
-        return !string.IsNullOrEmpty(requestDefinition.Then.ProxyUrl) && Uri.TryCreate(requestDefinition.Then.ProxyUrl, UriKind.Absolute, out parsedUrl);
-    }
+        var response = FillMockedResponseDetails(ref requestDetails, ref requestDefinition);
 
-    private async Task<HttpResponseDetails> ProcessProxyRequest(Uri proxyUrl, ConfigurationStorageItem requestDefinition, CancellationToken cancellationToken)
-    {
-        var response = new HttpResponseDetails();
-
-        try
-        {
-            var httpMethod = new HttpMethod(requestDefinition.Then.Method!);
-
-            var httpRequestMessage = new HttpRequestMessage(
-                httpMethod,
-                proxyUrl);
-
-            if (requestDefinition.Then.Headers != null)
-                foreach (var thenHeader in requestDefinition.Then.Headers)
-                {
-                    httpRequestMessage.Headers.Add(thenHeader.Key, thenHeader.Value);
-                }
-
-            response.ContentType = requestDefinition.Then.ContentType;
-
-            using var httpClient = new HttpClient();
-            var httpResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-
-            response.Content = await httpResponse.Content.ReadAsStringAsync();
-            response.Headers = httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault() ?? string.Empty);
-            response.StatusCode = (int)httpResponse.StatusCode;
-        }
-        catch (HttpRequestException hex)
-        {
-            response.StatusCode = hex.StatusCode.HasValue ? (int)hex.StatusCode : 0;
-            response.Content = hex.Message;
-        }
-        catch (Exception ex)
-        {
-            response.StatusCode = StatusCodes.Status500InternalServerError;
-            response.Content = ex.Message;
-        }
+        if (requestDefinition.Then.Delay > 0)
+            await Task.Delay(requestDefinition.Then.Delay.Value, cancellationToken).ConfigureAwait(false);
 
         return response;
     }
 
-    private HttpResponseDetails ProcessMockedRequest(ref HttpRequestDetails requestDetails, ref ConfigurationStorageItem requestDefinition)
+    private async Task<HttpResponseDetails> ProcessProxyRequest(Uri proxyUrl, ConfigurationStorageItem requestDefinition, CancellationToken cancellationToken)
+    {
+        if (requestDefinition.Then.Delay > 0)
+            await Task.Delay(requestDefinition.Then.Delay.Value, cancellationToken).ConfigureAwait(false);
+
+        var httpRequestDetails = new HttpRequestDetails();
+        var responeDetails = FillMockedResponseDetails(ref httpRequestDetails, ref requestDefinition);
+        var response = await PullHttpData(proxyUrl, requestDefinition.Then.Method, responeDetails.ContentType, responeDetails.Headers, cancellationToken);
+        return response;
+    }
+
+    private HttpResponseDetails ProcessCallbackRequest(Uri callbackUrl, ref ConfigurationStorageItem requestDefinition)
+    {
+        ConfigurationStorageItem requestDefinitionLocal = requestDefinition;
+
+        var task = Task.Factory.StartNew(
+            () => ScheduleCallbackTask(callbackUrl, requestDefinitionLocal, CancellationToken.None),
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default
+        ).ConfigureAwait(false);
+
+        var response = new HttpResponseDetails();
+        response.StatusCode = StatusCodes.Status200OK;
+        return response;
+    }
+
+    private async Task ScheduleCallbackTask(Uri callbackUrl, ConfigurationStorageItem requestDefinition, CancellationToken cancellationToken)
+    {
+        if (requestDefinition.Then.Delay > 0)
+            await Task.Delay(requestDefinition.Then.Delay.Value, cancellationToken).ConfigureAwait(false);
+
+        var httpRequestDetails = new HttpRequestDetails();
+        var responeDetails = FillMockedResponseDetails(ref httpRequestDetails, ref requestDefinition);
+
+        Task task = PushHttpData(callbackUrl, httpRequestDetails.HttpMethod, responeDetails.ContentType, responeDetails.Headers, requestDefinition.Then.Payload, cancellationToken);
+    }
+
+    private HttpResponseDetails FillMockedResponseDetails(ref HttpRequestDetails requestDetails, ref ConfigurationStorageItem requestDefinition)
     {
         var response = new HttpResponseDetails();
 
@@ -115,8 +116,7 @@ public class MockedRequestHandler : IRequestHandler
         return response;
     }
 
-    private static bool FillContentType(
-        ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
+    private static bool FillContentType(ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
     {
         if (!string.IsNullOrWhiteSpace(requestDefinition.Then.ContentType))
         {
@@ -128,8 +128,7 @@ public class MockedRequestHandler : IRequestHandler
         return false;
     }
 
-    private static bool FillStatusCode(
-        ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
+    private static bool FillStatusCode(ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
     {
         if (requestDefinition.Then.StatusCode <= 0)
             return false;
@@ -147,8 +146,7 @@ public class MockedRequestHandler : IRequestHandler
         return true;
     }
 
-    private bool FillPayload(
-        ref HttpRequestDetails requestDetails, ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
+    private bool FillPayload(ref HttpRequestDetails requestDetails, ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
     {
         var payload = requestDefinition.Then.Payload;
 
@@ -174,8 +172,7 @@ public class MockedRequestHandler : IRequestHandler
         return true;
     }
 
-    private static bool FillHeaders(
-        ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
+    private static bool FillHeaders(ref ConfigurationStorageItem requestDefinition, ref HttpResponseDetails response)
     {
         if (requestDefinition.Then.Headers == null || requestDefinition.Then.Headers.Count == 0)
             return false;
@@ -197,5 +194,76 @@ public class MockedRequestHandler : IRequestHandler
             payload = payload.Replace(guidVarName, Guid.NewGuid().ToString(), StringComparison.OrdinalIgnoreCase);
 
         return payload;
+    }
+
+    private async Task<HttpResponseDetails> PullHttpData(Uri url, string? method, string contentType, IDictionary<string, string>? headers, CancellationToken cancellationToken)
+    {
+        var response = new HttpResponseDetails();
+        try
+        {
+            var httpMethod = new HttpMethod(method ?? HttpMethod.Get.Method);
+
+            var httpRequestMessage = new HttpRequestMessage(
+                httpMethod,
+                url);
+
+            if (headers != null)
+                foreach (var header in headers)
+                {
+                    httpRequestMessage.Headers.Add(header.Key, header.Value);
+                }
+
+            response.ContentType = contentType;
+
+            using var httpClient = new HttpClient();
+            var httpResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+
+            response.Content = await httpResponse.Content.ReadAsStringAsync();
+            response.Headers = httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault() ?? string.Empty);
+            response.StatusCode = (int)httpResponse.StatusCode;
+        }
+        catch (HttpRequestException hex)
+        {
+            response.StatusCode = hex.StatusCode.HasValue ? (int)hex.StatusCode : 0;
+            response.Content = hex.Message;
+        }
+        catch (Exception ex)
+        {
+            response.StatusCode = StatusCodes.Status500InternalServerError;
+            response.Content = ex.Message;
+        }
+        return response;
+    }
+
+    private async Task PushHttpData(Uri url, string? method, string contentType, IDictionary<string, string>? headers, string? content, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var httpMethod = new HttpMethod(method ?? HttpMethod.Get.Method);
+
+            var httpRequestMessage = new HttpRequestMessage(
+                httpMethod,
+                url);
+
+            if (headers != null)
+                foreach (var header in headers)
+                {
+                    httpRequestMessage.Headers.Add(header.Key, header.Value);
+                }
+
+            if (!string.IsNullOrEmpty(content))
+                httpRequestMessage.Content = new StringContent(content, Encoding.UTF8, contentType);
+
+            using var httpClient = new HttpClient();
+            var httpResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+        }
+        catch (HttpRequestException hex)
+        {
+            _logger.LogError("Failed on pushing HTTP data with error {Message}", hex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed on pushing HTTP data with error {Message}", ex.Message);
+        }
     }
 }

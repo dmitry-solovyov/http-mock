@@ -1,30 +1,26 @@
 ﻿namespace HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
 
-public class ConfigurationStorageItemResponseDefinition
+public record class ConfigurationStorageItemResponseDefinition(
+    string ContentType,
+    string? Method,
+    string? Payload,
+    int StatusCode,
+    int? Delay,
+    IReadOnlyDictionary<string, string>? Headers,
+    ConfigurationStorageItemProxy? Proxy,
+    ConfigurationStorageItemCallback? Callback
+)
 {
-    public ConfigurationStorageItemResponseDefinition(
-        string contentType,
-        string? method,
-        string? payload,
-        int statusCode,
-        int? delay,
-        string? proxyUrl,
-        IReadOnlyDictionary<string, string>? headers)
-    {
-        ContentType = contentType;
-        Method = method;
-        Payload = payload;
-        StatusCode = statusCode;
-        Delay = delay;
-        ProxyUrl = proxyUrl;
-        Headers = headers;
-    }
-
-    public string ContentType { get; }
-    public string? Method { get; }
-    public string? Payload { get; }
-    public int StatusCode { get; }
-    public int? Delay { get; }
-    public string? ProxyUrl { get; }
-    public IReadOnlyDictionary<string, string>? Headers { get; }
+    public bool HasProxy => string.IsNullOrEmpty(Proxy?.Url) is not true;
+    public bool HasCallback => string.IsNullOrEmpty(Callback?.Url) is not true;
 }
+
+public record class ConfigurationStorageItemCallback(
+    string? Url,
+    bool? Async
+);
+
+public record class ConfigurationStorageItemProxy(
+    string? Url,
+    bool? Async
+);
