@@ -27,17 +27,18 @@ public class RequestDefinitionStorageTests
                 new ConfigurationStorageItem(
                     "Probe action (1)",
                     new ConfigurationStorageItemEndpointFilter(_getProbeRequestDetails.Url),
-                    new ConfigurationStorageItemResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemResponseDefinition(
+                        _getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 200, 0, new Dictionary<string, string>(), null, null)),
 
                 new ConfigurationStorageItem(
                     "Probe action (2)",
                     new ConfigurationStorageItemEndpointFilter(_getProbeRequestDetails.Url),
-                    new ConfigurationStorageItemResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemResponseDefinition(_getProbeRequestDetails.ContentType, _getProbeRequestDetails.HttpMethod, "{\"data\":\"response data\"}", 500, 100, new Dictionary<string, string>(), null, null)),
 
                 new ConfigurationStorageItem(
                     "Put data",
                     new ConfigurationStorageItemEndpointFilter("/data"),
-                    new ConfigurationStorageItemResponseDefinition("application/json", "PUT", null, 201, 0, null, new Dictionary<string, string>())),
+                    new ConfigurationStorageItemResponseDefinition("application/json", "PUT", null, 201, 0, new Dictionary<string, string>(), null, null)),
             });
 
         _configurationStorage = new ConfigurationStorage();
