@@ -3,23 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{ADF642E9-D1AF-4E95-84B1-803B418D35BF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{ADF642E9-D1AF-4E95-84B1-803B418D35BF}"
 	ProjectSection(SolutionItems) = preProject
-		Docker\Dockerfile.alpine = Docker\Dockerfile.alpine
-		Docker\prepare_files.bat = Docker\prepare_files.bat
-		Docker\publish_docker.bat = Docker\publish_docker.bat
+		Scripts\Dockerfile.alpine = Scripts\Dockerfile.alpine
+		Scripts\publish_docker.bat = Scripts\publish_docker.bat
+		Scripts\run_standalone.ps1 = Scripts\run_standalone.ps1
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tests", "HttpServerMock.Tests\HttpServerMock.Tests.csproj", "{13F8826D-B34C-4F1B-90F3-7B901320C7CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpMock.Tests", "HttpMock.Tests\HttpMock.Tests.csproj", "{13F8826D-B34C-4F1B-90F3-7B901320C7CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Server", "HttpServerMock.Server\HttpServerMock.Server.csproj", "{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpServerMock.Tool", "HttpServerMock.Tool\HttpServerMock.Tool.csproj", "{E06FE8F2-C529-4295-9127-92FF88F6FC80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpMock.Tool", "HttpMock.Tool\HttpMock.Tool.csproj", "{E06FE8F2-C529-4295-9127-92FF88F6FC80}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{74CDFB3D-F6F2-4F55-8EF2-115831962F75}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpMock", "HttpMock\HttpMock.csproj", "{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AB615020-43A2-42C0-BF73-CA467EB72973}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,17 +33,20 @@ Global
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0225A4D8-1574-4A04-8D0B-735B7B89E3EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E06FE8F2-C529-4295-9127-92FF88F6FC80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{13F8826D-B34C-4F1B-90F3-7B901320C7CA} = {AB615020-43A2-42C0-BF73-CA467EB72973}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8302417F-A92E-43C4-BC20-FD7F8AF3AD9A}

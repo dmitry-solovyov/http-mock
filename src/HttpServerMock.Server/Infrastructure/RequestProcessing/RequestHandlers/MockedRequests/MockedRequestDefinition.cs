@@ -1,5 +1,0 @@
-﻿using HttpServerMock.Server.Infrastructure.ConfigurationManagement.Storage;
-
-namespace HttpServerMock.Server.Infrastructure.RequestProcessing.RequestHandlers.MockedRequests;
-
-public record class MockedRequestDefinition(RequestContext MockedRequest, ConfigurationStorageItem? RequestDefinition);

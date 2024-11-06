@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HttpMock.Tool": {
+      "commandName": "Project",
+      "commandLineArgs": "port=58888"
+    }
+  }
+}

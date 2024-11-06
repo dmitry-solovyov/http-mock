@@ -1,0 +1,6 @@
+@HttpMock.HostAddress = http://localhost:58888
+
+POST {{HttpMock.HostAddress}}/api/test
+Accept: application/json
+
+###
