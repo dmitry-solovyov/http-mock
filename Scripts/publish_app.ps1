@@ -6,15 +6,15 @@ function PrepareFilesForTargetEnvironment {
 
   $TargetFramework = "net8.0"
   Write-Host "Publishing project HttpMock.csproj..." -ForegroundColor Yellow
-  dotnet publish -r $TargetEnv -f $TargetFramework --self-contained -p:PublishTrimmed=true -p:PublishReadyToRun=true -p:PublishReadyToRunDir="$PublishFolder" "..\HttpMock\HttpMock.csproj"
+  dotnet publish -r $TargetEnv -f $TargetFramework --self-contained -p:PublishTrimmed=true -p:PublishReadyToRun=true -p:PublishReadyToRunDir="$PublishFolder" "..\src\HttpMock\HttpMock.csproj"
   Write-Host "Done!" -ForegroundColor Green
   Write-Host
 
   Write-Host "Copying files to publish folder..." -ForegroundColor Yellow
-  Write-Debug "Source directory: '..\HttpMock\bin\Release\$TargetFramework\$TargetEnv\publish\'"
+  Write-Debug "Source directory: '..\src\HttpMock\bin\Release\$TargetFramework\$TargetEnv\publish\'"
   Write-Debug "Destination directory: '$PublishFolder\$TargetEnv'"
   New-Item -ItemType Directory -Path "$PublishFolder\$TargetEnv" -ErrorAction Stop > $null
-  Copy-Item -Path "..\HttpMock\bin\Release\$TargetFramework\$TargetEnv\publish\*" -Destination "$PublishFolder\$TargetEnv" -Recurse -Force
+  Copy-Item -Path "..\src\HttpMock\bin\Release\$TargetFramework\$TargetEnv\publish\*" -Destination "$PublishFolder\$TargetEnv" -Recurse -Force
   Write-Host "Done!" -ForegroundColor Green
   Write-Host
 }

@@ -2,5 +2,5 @@
 
 public interface IRequestHandler
 {
-    ValueTask Execute(RequestDetails requestDetails, HttpRequest httpRequest, HttpResponse httpResponse, CancellationToken cancellationToken = default);
+    ValueTask Execute(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default);
 }

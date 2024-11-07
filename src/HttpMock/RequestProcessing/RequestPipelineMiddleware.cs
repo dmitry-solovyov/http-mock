@@ -20,11 +20,11 @@ public class RequestPipelineMiddleware
 
         if (requestRouter.TryGetRouteDetails(httpContext, out var routeDetails))
         {
-            await routeDetails.RequestHandler.Execute(routeDetails.RequestDetails, httpContext.Request, httpContext.Response, cancellationToken).ConfigureAwait(false);
+            await routeDetails.RequestHandler.Execute(routeDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await httpContext.Response.FillContentAsync(StatusCodes.Status501NotImplemented, cancellationToken).ConfigureAwait(false);
+            httpContext.Response.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnhandledRequests);
         }
 
         await httpContext.Response.CompleteAsync().ConfigureAwait(false);

@@ -7,22 +7,18 @@ namespace HttpMock.RequestHandlers.MockedRequestHandlers;
 
 public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpointConfigurationResolver
 {
-    private readonly ILogger<MockedRequestEndpointConfigurationResolver> _logger;
     private readonly IConfigurationStorage _configurationStorage;
 
-    public MockedRequestEndpointConfigurationResolver(
-        ILogger<MockedRequestEndpointConfigurationResolver> logger,
-        IConfigurationStorage configurationStorage)
+    public MockedRequestEndpointConfigurationResolver(IConfigurationStorage configurationStorage)
     {
         _configurationStorage = configurationStorage;
-        _logger = logger;
     }
 
     public bool TryGetEndpointConfiguration(ref readonly RequestDetails requestDetails, out EndpointConfiguration? foundEndpointConfiguration)
     {
         var domain = requestDetails.Domain;
         var httpMethod = requestDetails.HttpMethod;
-        var url = requestDetails.QueryPath;
+        var queryPath = requestDetails.QueryPath;
 
         ArgumentException.ThrowIfNullOrEmpty(domain);
 
@@ -60,8 +56,8 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
 
     public bool IsSameUrl(ref readonly RequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
     {
-        var requestUrl = requestDetails.QueryPath;
-        if (string.IsNullOrEmpty(requestUrl))
+        var queryPath = requestDetails.QueryPath;
+        if (string.IsNullOrEmpty(queryPath))
             return false;
 
         var endpointUrl = endpointConfiguration.When.Url;
@@ -69,7 +65,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
             return false;
 
         var comparison = endpointConfiguration.When.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-        if (string.Equals(requestUrl, endpointUrl, comparison))
+        if (string.Equals(queryPath, endpointUrl, comparison))
         {
             return true;
         }
@@ -80,22 +76,11 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
             if (!endpointConfiguration.When.CaseSensitive)
                 regexOptions |= RegexOptions.IgnoreCase;
 
-            var match = Regex.Match(requestUrl, endpointConfiguration.When.UrlRegexExpression, regexOptions);
+            var match = Regex.Match(queryPath, endpointConfiguration.When.UrlRegexExpression, regexOptions);
             if (match.Success)
                 return true;
         }
 
         return false;
-    }
-
-    private static string? GetUrlWithoutParameters(string? url)
-    {
-        return url?.IndexOf('?') switch
-        {
-            null => default,
-            > 0 => url.Substring(0, url.IndexOf('?')),
-            -1 => url,
-            _ => default
-        };
     }
 }

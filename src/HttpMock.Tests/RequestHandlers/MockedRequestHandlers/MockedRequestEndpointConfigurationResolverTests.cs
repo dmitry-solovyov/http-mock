@@ -4,8 +4,7 @@ using HttpMock.Models;
 using HttpMock.RequestHandlers.MockedRequestHandlers;
 using HttpMock.RequestProcessing;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Moq;
+using System.IO;
 using Xunit;
 
 namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
@@ -19,7 +18,7 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
         {
             var resolver = CreateMockedRequestEndpointConfigurationResolver();
 
-            var requestDetails = new RequestDetails(string.Empty, TestDomainName, HttpMethodType.Post, "/api/v2", "application/json");
+            var requestDetails = new RequestDetails(string.Empty, TestDomainName, HttpMethodType.Post, "/api/v2", "application/json", new MemoryStream());
 
             var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration);
             result.Should().BeTrue();
@@ -41,7 +40,7 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
         {
             var resolver = CreateMockedRequestEndpointConfigurationResolver();
 
-            var requestDetails = new RequestDetails(string.Empty, TestDomainName, HttpMethodType.Post, "/api/v2/duplicated", "application/json");
+            var requestDetails = new RequestDetails(string.Empty, TestDomainName, HttpMethodType.Post, "/api/v2/duplicated", "application/json", new MemoryStream());
 
             // first iteration through the duplicated endpoints
             var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration);
@@ -72,7 +71,7 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
         private static MockedRequestEndpointConfigurationResolver CreateMockedRequestEndpointConfigurationResolver(ConfigurationStorage? configurationStorage = default)
         {
             var storage = configurationStorage ?? CreateConfigurationStorage();
-            var resolver = new MockedRequestEndpointConfigurationResolver(new Mock<ILogger<MockedRequestEndpointConfigurationResolver>>().Object, storage);
+            var resolver = new MockedRequestEndpointConfigurationResolver(storage);
             return resolver;
         }
 

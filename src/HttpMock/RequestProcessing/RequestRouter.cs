@@ -12,61 +12,45 @@ public interface IRequestRouter
 
 public partial class RequestRouter : IRequestRouter
 {
-    private readonly ILogger<RequestRouter> _logger;
     private readonly IRequestDetailsProvider _htpRequestDetailsProvider;
-    private readonly ICommandRequestHandlerProvider _commandRequestHandlerProvider;
 
-    public RequestRouter(
-        ILogger<RequestRouter> logger,
-        IRequestDetailsProvider httpRequestDetailsProvider,
-        ICommandRequestHandlerProvider commandRequestHandlerProvider)
+    public RequestRouter(IRequestDetailsProvider httpRequestDetailsProvider)
     {
-        _logger = logger;
         _htpRequestDetailsProvider = httpRequestDetailsProvider;
-        _commandRequestHandlerProvider = commandRequestHandlerProvider;
     }
 
     public bool TryGetRouteDetails(HttpContext httpContext, out RouteDetails routeDetails)
     {
-        if (!_htpRequestDetailsProvider.TryGetRouteDetails(httpContext, out var requestDetails))
+        if (!_htpRequestDetailsProvider.TryGetRequestDetails(httpContext, out var requestDetails))
         {
             routeDetails = default;
             return false;
         }
 
-        if (TryGetCommandHandler(httpContext, ref requestDetails, out var commandHandler))
-        {
-            routeDetails = new RouteDetails(requestDetails, commandHandler!);
-            _logger.LogDebug($"Command: {requestDetails.CommandName} (handler: {commandHandler!.GetType().Name})");
-            return true;
-        }
+        var requestHandlerType = GetRequestHandlerType(ref requestDetails);
 
-        if (string.IsNullOrEmpty(requestDetails.Domain))
-        {
-            routeDetails = default;
-            return false;
-        }
+        var requestHandler = requestHandlerType != default
+            ? httpContext.RequestServices.GetRequiredService(requestHandlerType) as IRequestHandler
+            : default;
 
-        var requestHandler = httpContext.RequestServices.GetRequiredService<MockedRequestHandler>();
-        routeDetails = new RouteDetails(requestDetails, requestHandler);
-        return true;
+        routeDetails = requestHandler != default ? new RouteDetails(requestDetails, requestHandler) : default;
+        return requestHandler != default;
     }
 
-    private bool TryGetCommandHandler(HttpContext httpContext, ref readonly RequestDetails requestDetails, out ICommandRequestHandler? commandHandler)
+    private Type? GetRequestHandlerType(ref readonly RequestDetails requestDetails)
     {
-        commandHandler = default;
-
-        if (string.IsNullOrEmpty(requestDetails.CommandName))
+        return requestDetails.CommandName switch
         {
-            return false;
-        }
+            null => typeof(MockedRequestHandler),
 
-        var commandHandlerType = _commandRequestHandlerProvider.GetCommandHandlerType(requestDetails.CommandName, requestDetails.HttpMethod);
-        if (commandHandlerType != default)
-        {
-            commandHandler = httpContext.RequestServices.GetRequiredService(commandHandlerType) as ICommandRequestHandler;
-        }
+            var cmd when IsSameCommand(cmd, DomainsCommandHandler.CommandName) => typeof(DomainsCommandHandler),
+            var cmd when IsSameCommand(cmd, DomainConfigurationCommandHandler.CommandName) => typeof(DomainConfigurationCommandHandler),
+            var cmd when IsSameCommand(cmd, UsageCountersCommandHandler.CommandName) => typeof(UsageCountersCommandHandler),
 
-        return commandHandler != default;
+            _ => typeof(UnknownCommandHandler)
+        };
     }
+
+    private static bool IsSameCommand(string? requestedCommand, string expectedCommand) =>
+        expectedCommand.Equals(requestedCommand, StringComparison.OrdinalIgnoreCase);
 }

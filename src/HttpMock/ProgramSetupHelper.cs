@@ -23,16 +23,12 @@ internal static class ProgramSetupHelper
     {
         services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
-        services.AddTransient<GetDomainsCommandHandler>();
-        services.AddTransient<GetDomainConfigurationCommandHandler>();
-        services.AddTransient<SetDomainConfigurationCommandHandler>();
-        services.AddTransient<RemoveDomainConfigurationCommandHandler>();
-        services.AddTransient<ResetCountersCommandHandler>();
-        services.AddTransient<GetStatisticsCommandHandler>();
+        services.AddTransient<DomainsCommandHandler>();
+        services.AddTransient<DomainConfigurationCommandHandler>();
+        services.AddTransient<UsageCountersCommandHandler>();
 
         services.AddTransient<MockedRequestHandler>();
 
-        services.AddSingleton<ICommandRequestHandlerProvider, CommandRequestHandlerProvider>();
         services.AddSingleton<ISerializationProvider, SerializationProvider>();
         services.AddSingleton<ISerialization, JsonSerialization>();
         services.AddSingleton<ISerialization, YamlSerialization>();

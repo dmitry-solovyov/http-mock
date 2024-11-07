@@ -1,7 +1,6 @@
 ﻿using HttpMock.Configuration;
 using HttpMock.Models;
 using HttpMock.RequestProcessing;
-using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,28 +9,23 @@ namespace HttpMock.RequestHandlers.MockedRequestHandlers;
 public class MockedRequestHandler : IRequestHandler
 {
     private const int MaxDelay = 60_000;
-    private const int DefaultStatusCode = StatusCodes.Status200OK;
-    private const string DefaultContentType = MediaTypeNames.Application.Json;
 
-    private readonly ILogger<MockedRequestHandler> _logger;
     private readonly IConfigurationStorage _configurationStorage;
     private readonly IMockedRequestEndpointConfigurationResolver _mockedRequestEndpointConfigurationResolver;
 
     public MockedRequestHandler(
-        ILogger<MockedRequestHandler> logger,
         IConfigurationStorage configurationStorage,
         IMockedRequestEndpointConfigurationResolver mockedRequestEndpointConfigurationResolver)
     {
-        _logger = logger;
         _configurationStorage = configurationStorage;
         _mockedRequestEndpointConfigurationResolver = mockedRequestEndpointConfigurationResolver;
     }
 
-    public async ValueTask Execute(RequestDetails requestDetails, HttpRequest httpRequest, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    public async ValueTask Execute(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(requestDetails.Domain) || !_configurationStorage.IsDomainExists(requestDetails.Domain))
+        if (string.IsNullOrEmpty(requestDetails.Domain))
         {
-            await httpResponse.FillContentAsync(StatusCodes.Status404NotFound, cancellationToken).ConfigureAwait(false);
+            httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
             return;
         }
 
@@ -41,7 +35,7 @@ public class MockedRequestHandler : IRequestHandler
             return;
         }
 
-        await httpResponse.FillContentAsync(StatusCodes.Status404NotFound, cancellationToken).ConfigureAwait(false);
+        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForMockedRequests);
     }
 
     private async ValueTask ApplyEndpointConfiguration(RequestDetails requestDetails, HttpResponse httpResponse, EndpointConfiguration endpointConfiguration, CancellationToken cancellationToken = default)
@@ -58,8 +52,6 @@ public class MockedRequestHandler : IRequestHandler
         {
             await ProcessMockedRequest(requestDetails.QueryPath, endpointConfiguration, httpResponse, cancellationToken).ConfigureAwait(false);
         }
-
-        _logger.LogDebug($"Endpoint description: {endpointConfiguration.Description ?? "N/A"}");
     }
 
     private async Task ProcessProxyRequest(string proxyUrl, EndpointConfiguration endpointConfiguration, HttpResponse httpResponse, CancellationToken cancellationToken)
@@ -84,16 +76,23 @@ public class MockedRequestHandler : IRequestHandler
             using var httpClient = new HttpClient();
             var httpProxyResponse = await httpClient.SendAsync(httpProxyRequestMessage, cancellationToken).ConfigureAwait(false);
 
-            await httpResponse.FillContentAsync((int)httpProxyResponse.StatusCode, httpProxyResponse.Content.ReadAsStream(), endpointConfiguration.Then.ContentType).ConfigureAwait(false);
-            httpResponse.FillHeaders(httpProxyResponse.Headers.ToDictionary(x => x.Key, x => string.Join(',', x.Value)));
+            await httpResponse
+                .WithStatusCode((int)httpProxyResponse.StatusCode)
+                .WithHeaders(httpProxyResponse.Headers.ToDictionary(x => x.Key, x => x.Value?.ToString()))
+                .WithContentAsync(httpProxyResponse.Content.ReadAsStream(), endpointConfiguration.Then.ContentType)
+                .ConfigureAwait(false);
         }
         catch (HttpRequestException hex)
         {
-            httpResponse.FillContent(hex.StatusCode.HasValue ? (int)hex.StatusCode : 0, content: hex.Message);
+            httpResponse
+                .WithStatusCode(hex.StatusCode.HasValue ? (int)hex.StatusCode : 0)
+                .WithContent(hex.Message, Defaults.ContentTypes.ContentTypeForUntypedResponse);
         }
         catch (Exception ex)
         {
-            httpResponse.FillContent(StatusCodes.Status500InternalServerError, content: ex.Message);
+            httpResponse
+                .WithStatusCode(StatusCodes.Status500InternalServerError)
+                .WithContent(ex.Message, Defaults.ContentTypes.ContentTypeForUntypedResponse);
         }
     }
 
@@ -110,7 +109,7 @@ public class MockedRequestHandler : IRequestHandler
             TaskScheduler.Default
         ).ConfigureAwait(false);
 
-        httpResponse.StatusCode = StatusCodes.Status200OK;
+        httpResponse.WithStatusCode(StatusCodes.Status200OK);
     }
 
     private async Task PushHttpData(Uri url, EndpointConfiguration endpointConfiguration, CancellationToken cancellationToken)
@@ -139,13 +138,9 @@ public class MockedRequestHandler : IRequestHandler
             using var httpClient = new HttpClient();
             var _ = await httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
         }
-        catch (HttpRequestException hex)
+        catch
         {
-            _logger.LogError("Failed on pushing HTTP data with error {Message}", hex.Message);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed on pushing HTTP data with error {Message}", ex.Message);
+            ;
         }
     }
 
@@ -155,14 +150,17 @@ public class MockedRequestHandler : IRequestHandler
         if (delay > 0)
             await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
 
+        var statusCode = GetStatusCode(endpointConfiguration);
+
         var headers = GetHeaders(endpointConfiguration);
-        httpResponse.FillHeaders(headers);
 
         var contentType = GetContentType(endpointConfiguration);
-        var statusCode = GetStatusCode(endpointConfiguration);
         var content = GetPayload(queryPath, endpointConfiguration);
 
-        await httpResponse.FillContentAsync(statusCode, content, contentType, cancellationToken).ConfigureAwait(false);
+        await httpResponse
+            .WithStatusCode(statusCode)
+            .WithHeaders(headers)
+            .WithContentAsync(content, contentType, cancellationToken).ConfigureAwait(false);
     }
 
     private static int GetDelay(EndpointConfiguration endpointConfiguration) =>
@@ -174,10 +172,10 @@ public class MockedRequestHandler : IRequestHandler
         };
 
     private static string GetContentType(EndpointConfiguration endpointConfiguration) =>
-        !string.IsNullOrWhiteSpace(endpointConfiguration.Then.ContentType) ? endpointConfiguration.Then.ContentType : DefaultContentType;
+        !string.IsNullOrWhiteSpace(endpointConfiguration.Then.ContentType) ? endpointConfiguration.Then.ContentType : Defaults.ContentTypes.ContentTypeForMockedResponse;
 
     private static int GetStatusCode(EndpointConfiguration endpointConfiguration) =>
-        endpointConfiguration.Then.StatusCode is >= 100 and <= 599 ? endpointConfiguration.Then.StatusCode : DefaultStatusCode;
+        endpointConfiguration.Then.StatusCode is >= 100 and <= 599 ? endpointConfiguration.Then.StatusCode : Defaults.StatusCodes.StatusCodeForMockedRequests;
 
     private string? GetPayload(string queryPath, EndpointConfiguration endpointConfiguration)
     {
@@ -212,12 +210,12 @@ public class MockedRequestHandler : IRequestHandler
         return payload;
     }
 
-    private static Dictionary<string, string>? GetHeaders(EndpointConfiguration endpointConfiguration)
+    private static Dictionary<string, string?>? GetHeaders(EndpointConfiguration endpointConfiguration)
     {
         if (endpointConfiguration.Then.Headers == default || endpointConfiguration.Then.Headers.Count == 0)
             return default;
 
-        var headers = new Dictionary<string, string>();
+        var headers = new Dictionary<string, string?>();
         foreach (var thenHeader in endpointConfiguration.Then.Headers)
         {
             headers[thenHeader.Key] = thenHeader.Value;

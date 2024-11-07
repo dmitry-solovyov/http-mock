@@ -1,6 +1,4 @@
-﻿using System.Net.Mime;
-
-namespace HttpMock.RequestProcessing;
+﻿namespace HttpMock.RequestProcessing;
 
 public class UnhandledExceptionHandlerMiddleware
 {
@@ -17,18 +15,15 @@ public class UnhandledExceptionHandlerMiddleware
         {
             await _next(httpContext);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            httpContext.RequestServices.GetService<ILogger<UnhandledExceptionHandlerMiddleware>>()?
-                .LogError($"Unhandled exception {ex.Message}{Environment.NewLine}{ex.StackTrace}!");
+            var errorMessage = $"Unhandled exception {ex.Message}{Environment.NewLine}{ex.StackTrace}!";
 
-            httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            httpContext.RequestServices.GetService<ILogger<UnhandledExceptionHandlerMiddleware>>()?.LogError(errorMessage);
 
-            if (!httpContext.Response.HasStarted)
-            {
-                await httpContext.Response.WriteAsync("An unexpected error occurred!", CancellationToken.None);
-            }
+            httpContext.Response
+                .WithStatusCode(StatusCodes.Status500InternalServerError)
+                .WithContent(errorMessage);
         }
     }
 }

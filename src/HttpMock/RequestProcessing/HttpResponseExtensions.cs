@@ -1,74 +1,77 @@
-﻿using System.Net.Mime;
-
-namespace HttpMock.RequestProcessing
+﻿namespace HttpMock.RequestProcessing
 {
     public static class HttpResponseExtensions
     {
-        private const string DefaultContentType = MediaTypeNames.Text.Plain;
-
-        public static void FillContent(this HttpResponse httpResponse,
-            int statusCode, string? content = default, string contentType = DefaultContentType, CancellationToken cancellationToken = default)
+        public static HttpResponse? WithStatusCode(this HttpResponse? httpResponse, int statusCode)
         {
-            if (httpResponse.HasStarted)
-                return;
+            if (httpResponse?.HasStarted != false)
+                return default;
 
             httpResponse.StatusCode = statusCode;
-            httpResponse.ContentType = contentType;
+            return httpResponse;
+        }
 
+        public static HttpResponse? WithContentType(this HttpResponse? httpResponse, string contentType)
+        {
+            if (httpResponse?.HasStarted != false)
+                return default;
+
+            httpResponse.ContentType = contentType;
+            return httpResponse;
+        }
+
+        public static HttpResponse? WithContent(this HttpResponse? httpResponse, string content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse)
+        {
+            if (httpResponse?.HasStarted != false)
+                return default;
+
+            httpResponse.ContentType = contentType;
             if (!string.IsNullOrEmpty(content))
             {
                 var data = System.Text.Encoding.UTF8.GetBytes(content);
                 httpResponse.Body.Write(data);
             }
+            return httpResponse;
         }
 
-        public static ValueTask FillContentAsync(this HttpResponse httpResponse, 
-            int statusCode, CancellationToken cancellationToken = default)
+        public static async ValueTask<HttpResponse?> WithContentAsync(this HttpResponse? httpResponse,
+            string? content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse, CancellationToken cancellationToken = default)
         {
-            return FillContentAsync(httpResponse, statusCode, default(string), DefaultContentType, cancellationToken);
-        }
+            if (httpResponse?.HasStarted != false)
+                return default;
 
-        public static ValueTask FillContentAsync(this HttpResponse httpResponse,
-            int statusCode, string? content, CancellationToken cancellationToken = default)
-        {
-            return FillContentAsync(httpResponse, statusCode, content, DefaultContentType, cancellationToken);
-        }
-
-        public static async ValueTask FillContentAsync(this HttpResponse httpResponse,
-            int statusCode, string? content = default, string contentType = DefaultContentType, CancellationToken cancellationToken = default)
-        {
-            if (httpResponse.HasStarted)
-                return;
-
-            httpResponse.StatusCode = statusCode;
             httpResponse.ContentType = contentType;
-
             if (!string.IsNullOrEmpty(content))
             {
                 var buffer = System.Text.Encoding.UTF8.GetBytes(content);
                 await httpResponse.Body.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
             }
+
+            return httpResponse;
         }
 
-        public static async ValueTask FillContentAsync(this HttpResponse httpResponse,
-            int statusCode, Stream contentStream, string contentType = DefaultContentType, CancellationToken cancellationToken = default)
+        public static async ValueTask<HttpResponse?> WithContentAsync(this HttpResponse? httpResponse,
+            Stream contentStream, string contentType, CancellationToken cancellationToken = default)
         {
-            if (httpResponse.HasStarted)
-                return;
+            if (httpResponse?.HasStarted != false)
+                return default;
 
-            httpResponse.StatusCode = statusCode;
             httpResponse.ContentType = contentType;
-
             await contentStream.CopyToAsync(httpResponse.Body, cancellationToken).ConfigureAwait(false);
+
+            return httpResponse;
         }
 
-        public static void FillHeaders(this HttpResponse httpResponse, IDictionary<string, string>? headers = default)
+        public static HttpResponse? WithHeaders(this HttpResponse? httpResponse, IDictionary<string, string?>? headers)
         {
-            if (!httpResponse.HasStarted && headers?.Any() == true)
-            {
+            if (httpResponse?.HasStarted != false)
+                return default;
+
+            if (headers != null)
                 foreach (var header in headers)
                     httpResponse.Headers.TryAdd(header.Key, header.Value);
-            }
+
+            return httpResponse;
         }
     }
 }
