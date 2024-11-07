@@ -1,11 +1,13 @@
 ﻿# HttpMock
 
 The application helps to replace an external service with a mocked instance for quick testing scenarios.
-The mock server can be started as a dotnet tool from the command line or from the Docker container. 
-Once started, the mock server can be provided with a list of mocked endpoints.
+A set of the endpoints can be configured through the HTTP request. Th mocked endpoint can be used instead of the real one.
 The address of the real web service should be replaced with the URL of the mock service.
 The configuration allows the response body, status code and processing delay to be mocked. 
 The response can also be provided with a custom header.
+
+
+The mock server can be started as a dotnet tool from the command line or from the Docker container.
 
 ## Local installation of the application as a tool
 
@@ -88,11 +90,11 @@ Endpoints:
       'X-ServerHeader': /Example/Redirect
 ```
 
-### Configuration setup request (`set-configuration` command)
+### Configuration setup request (`domain-configurations` with PUT HTTP method)
 
 ```Powershell
 $headers = @{
-    "X-HttpMock-Command" = "set-configuration"
+    "X-HttpMock-Command" = "domain-configurations"
     "X-HttpMock-Domain"  = "test-domain"
 }
 
@@ -115,11 +117,11 @@ Invoke-RestMethod @request
 ```
 Setup the configuration for the `test-domain` domain.
 
-### Review configuration request (`get-configuration` command)
+### Review configuration request (`domain-configurations` with GET HTTP method)
 
 ```Powershell
 $headers = @{
-    "X-HttpMock-Command" = "get-configuration"
+    "X-HttpMock-Command" = "domain-configurations"
     "X-HttpMock-Domain"  = "test-domain"
 }
 $request = @{
