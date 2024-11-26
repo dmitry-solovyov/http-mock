@@ -6,25 +6,26 @@ public static class Server
 {
     public static void Start(string[] args)
     {
-        var startupParameters = ProgramArgumentsReader.GetStartupArguments(args);
-        Start(startupParameters, args);
-    }
-
-    public static void Start(StartupArguments startupParameters, string[] args)
-    {
         if (IsHelpRequested(args))
         {
             ShowHelp();
             return;
         }
 
+        var app = CreateWebApplication(args);
+        app.Run();
+    }
+
+    public static WebApplication CreateWebApplication(string[] args)
+    {
+        var startupParameters = ProgramArgumentsReader.GetStartupArguments(args);
+
         var (loggerProvider, logger) = ProgramSetupHelper.CreateLoggers();
         logger.LogInformation("Application starts");
 
         if (!IsPortValid(startupParameters.Port))
         {
-            logger?.LogWarning("Binding port is not specified!");
-            return;
+            throw new InvalidOperationException("Binding port is not specified!");
         }
 
         logger?.LogInformation($"Binding port: {startupParameters.Port}");
@@ -33,7 +34,7 @@ public static class Server
         {
             ApplicationName = "HttpMock",
             Args = args,
-            EnvironmentName = string.Empty
+            EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? string.Empty
         });
         builder.WebHost.ConfigureKestrel(app => app.ListenAnyIP(startupParameters.Port));
         builder.WebHost.UseKestrelCore();
@@ -45,10 +46,9 @@ public static class Server
         ProgramSetupHelper.SetupApplicationServices(builder.Services);
 
         var app = builder.Build();
-
         app.UseUnhandledExceptionHandler();
         app.UseRequestPipeline();
-        app.Run();
+        return app;
     }
 
     private static bool IsHelpRequested(string[] args)

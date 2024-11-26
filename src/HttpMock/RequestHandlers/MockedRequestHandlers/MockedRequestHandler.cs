@@ -35,7 +35,7 @@ public class MockedRequestHandler : IRequestHandler
             return;
         }
 
-        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForMockedRequests);
+        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnknownMockedResponse);
     }
 
     private async ValueTask ApplyEndpointConfiguration(RequestDetails requestDetails, HttpResponse httpResponse, EndpointConfiguration endpointConfiguration, CancellationToken cancellationToken = default)
@@ -175,7 +175,7 @@ public class MockedRequestHandler : IRequestHandler
         !string.IsNullOrWhiteSpace(endpointConfiguration.Then.ContentType) ? endpointConfiguration.Then.ContentType : Defaults.ContentTypes.ContentTypeForMockedResponse;
 
     private static int GetStatusCode(EndpointConfiguration endpointConfiguration) =>
-        endpointConfiguration.Then.StatusCode is >= 100 and <= 599 ? endpointConfiguration.Then.StatusCode : Defaults.StatusCodes.StatusCodeForMockedRequests;
+        endpointConfiguration.Then.StatusCode is >= 100 and <= 599 ? endpointConfiguration.Then.StatusCode : Defaults.StatusCodes.StatusCodeForUnknownMockedResponse;
 
     private string? GetPayload(string queryPath, EndpointConfiguration endpointConfiguration)
     {

@@ -84,7 +84,7 @@ public class DomainConfigurationCommandHandler : ICommandRequestHandler
         var domainConfiguration = ConfigurationModelConverter.DtoToModel.Convert(requestDetails.Domain!, domainConfigurationDto);
         if (domainConfiguration == default)
         {
-            httpResponse.WithStatusCode(StatusCodes.Status404NotFound);
+            httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
             return;
         }
 

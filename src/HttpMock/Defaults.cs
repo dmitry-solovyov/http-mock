@@ -7,7 +7,7 @@ public static class Defaults
     public static class StatusCodes
     {
         public const int StatusCodeForUnhandledRequests = Microsoft.AspNetCore.Http.StatusCodes.Status501NotImplemented;
-        public const int StatusCodeForMockedRequests = Microsoft.AspNetCore.Http.StatusCodes.Status200OK;
+        public const int StatusCodeForUnknownMockedResponse = Microsoft.AspNetCore.Http.StatusCodes.Status404NotFound;
 
     }
 

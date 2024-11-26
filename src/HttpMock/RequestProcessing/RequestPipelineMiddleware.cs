@@ -2,17 +2,16 @@
 
 public class RequestPipelineMiddleware
 {
-    private readonly RequestDelegate _next;
-
     public RequestPipelineMiddleware(RequestDelegate next)
     {
-        _next = next;
     }
 
     public async Task Invoke(HttpContext? httpContext)
     {
         if (httpContext == default)
+        {
             return;
+        }
 
         var cancellationToken = httpContext.RequestAborted;
 

@@ -5,9 +5,8 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{ADF642E9-D1AF-4E95-84B1-803B418D35BF}"
 	ProjectSection(SolutionItems) = preProject
-		Scripts\Dockerfile.alpine = Scripts\Dockerfile.alpine
-		Scripts\publish_docker.bat = Scripts\publish_docker.bat
-		Scripts\run_standalone.ps1 = Scripts\run_standalone.ps1
+		..\Scripts\publish_app.ps1 = ..\Scripts\publish_app.ps1
+		..\Scripts\start_container.ps1 = ..\Scripts\start_container.ps1
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpMock.Tests", "HttpMock.Tests\HttpMock.Tests.csproj", "{13F8826D-B34C-4F1B-90F3-7B901320C7CA}"
@@ -46,6 +45,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{ADF642E9-D1AF-4E95-84B1-803B418D35BF} = {74CDFB3D-F6F2-4F55-8EF2-115831962F75}
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA} = {AB615020-43A2-42C0-BF73-CA467EB72973}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

@@ -54,7 +54,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
         return configurationCandidate != default;
     }
 
-    public bool IsSameUrl(ref readonly RequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
+    public static bool IsSameUrl(ref readonly RequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
     {
         var queryPath = requestDetails.QueryPath;
         if (string.IsNullOrEmpty(queryPath))
