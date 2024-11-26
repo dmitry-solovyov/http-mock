@@ -30,7 +30,6 @@ internal static class ProgramSetupHelper
         services.AddTransient<MockedRequestHandler>();
 
         services.AddSingleton<ISerializationProvider, SerializationProvider>();
-        services.AddSingleton<ISerialization, JsonSerialization>();
         services.AddSingleton<ISerialization, YamlSerialization>();
         services.AddSingleton<IConfigurationStorage, ConfigurationStorage>();
         services.AddSingleton<IRequestDetailsProvider, RequestDetailsProvider>();
