@@ -12,7 +12,6 @@ public class DomainConfigurationDto
 public class EndpointConfigurationDto
 {
     public string? Url { get; set; }
-    public string? Description { get; set; }
     public string? Method { get; set; }
     public string? ContentType { get; set; }
     public int? Status { get; set; }

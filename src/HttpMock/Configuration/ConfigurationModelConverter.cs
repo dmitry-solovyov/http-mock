@@ -19,7 +19,7 @@ internal static class ConfigurationModelConverter
             if (domainConfiguration == default)
                 return default;
 
-            var endpoints = domainConfiguration.Endpoints.Select(Convert).ToArray() ?? Array.Empty<EndpointConfigurationDto>();
+            var endpoints = domainConfiguration.Endpoints?.Select(Convert).ToArray() ?? Array.Empty<EndpointConfigurationDto>();
             return new DomainConfigurationDto { Endpoints = endpoints };
         }
 
@@ -29,7 +29,6 @@ internal static class ConfigurationModelConverter
 
             return new EndpointConfigurationDto
             {
-                Description = endpointConfiguration.Description,
                 Method = endpointConfiguration.When.HttpMethod.ToString(),
                 Url = endpointConfiguration.When.Url,
                 ContentType = endpointConfiguration.Then.ContentType,
@@ -90,7 +89,7 @@ internal static class ConfigurationModelConverter
                 callbackUri?.ToString()
             );
 
-            return new EndpointConfiguration(when, then, endpointConfigurationDto.Description);
+            return new EndpointConfiguration(when, then);
         }
 
         private static (string? UrlRegexExpression, IReadOnlyCollection<string>? UrlVariables) NormalizeUrl(string? url)

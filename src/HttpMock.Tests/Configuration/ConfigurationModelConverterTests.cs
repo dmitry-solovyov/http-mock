@@ -23,7 +23,6 @@ namespace HttpMock.Tests.Configuration
             model.Endpoints.Should().HaveCount(1);
 
             var endpoint = model.Endpoints.ElementAt(0);
-            endpoint.Description.Should().Be("Endpoint with parameters");
 
             endpoint.When.UrlVariables.Should().NotBeNullOrEmpty();
             endpoint.When.UrlVariables.Should().HaveCount(3);
@@ -59,7 +58,6 @@ namespace HttpMock.Tests.Configuration
                         Delay = 123,
                         Status = 201,
                         ContentType = string.Empty,
-                        Description = "Endpoint with parameters",
                         CallbackUrl = "test",
                         ProxyUrl = "http://proxy.url",
                         Headers = new Dictionary<string, string> {

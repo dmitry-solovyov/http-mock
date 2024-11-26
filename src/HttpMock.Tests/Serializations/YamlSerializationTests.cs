@@ -17,13 +17,13 @@ public class YamlSerializationTests
             Endpoints =
             [
                 new EndpointConfigurationDto {
-                    Description = "Probe endpoint", Method= "get", Url= "/probe", ContentType= string.Empty, Status = 201,Delay= 100 },
+                    Method= "get", Url= "/probe", ContentType= string.Empty, Status = 201,Delay= 100 },
 
                 new EndpointConfigurationDto {
-                    Description = "Swagger endpoint", Method= "get", Url="/swagger", ContentType="", Status = 201, Delay = 200 },
+                    Method= "get", Url="/swagger", ContentType="", Status = 201, Delay = 200 },
 
                 new EndpointConfigurationDto {
-                    Description = "Order endpoint", Method= "post", Url="/order", ContentType="", Status = 201, Delay = 300,
+                    Method= "post", Url="/order", ContentType="", Status = 201, Delay = 300,
                     Payload="{\"paymentId\":\"@guid\"}",
                     Headers = new Dictionary<string, string>{ { "Location", "/probe?a=b"}, { "Authorization", "Bearer aaa"} }
                 }
@@ -43,19 +43,16 @@ public class YamlSerializationTests
         var yaml = @"
 Endpoints:
   - Delay: 100
-    Description: Probe endpoint
     Status: 201
     Url: /probe
     
   - Url: /swagger
     Delay: 200
-    Description: Swagger endpoint
     Status: 201
     Foo: bar
     
   - Delay: 300
     Method: POST
-    Description: Order endpoint
     Status: 201
     Url: /order
     Payload: '{""paymentId"":""@guid""}'
@@ -75,7 +72,6 @@ Endpoints:
 
         var firstItem = result.Endpoints!.ElementAt(0);
         firstItem.Delay.Should().Be(100);
-        firstItem.Description.Should().Be("Probe endpoint");
         firstItem.Status.Should().Be(201);
         firstItem.Url.Should().Be("/probe");
         firstItem.Payload.Should().BeNull();
@@ -84,7 +80,6 @@ Endpoints:
 
         var secondItem = result.Endpoints!.ElementAt(1);
         secondItem.Delay.Should().Be(200);
-        secondItem.Description.Should().Be("Swagger endpoint");
         secondItem.Status.Should().Be(201);
         secondItem.Url.Should().Be("/swagger");
         secondItem.Payload.Should().BeNull();
@@ -93,7 +88,6 @@ Endpoints:
 
         var thirdItem = result.Endpoints!.ElementAt(2);
         thirdItem.Delay.Should().Be(300);
-        thirdItem.Description.Should().Be("Order endpoint");
         thirdItem.Status.Should().Be(201);
         thirdItem.Url.Should().Be("/order");
         thirdItem.Payload.Should().Be("{\"paymentId\":\"@guid\"}");

@@ -2,7 +2,7 @@
 
 public sealed record class DomainConfiguration(string Domain, IReadOnlyCollection<EndpointConfiguration> Endpoints);
 
-public sealed record class EndpointConfiguration(EndpointRequestConfiguration When, EndpointResponseConfiguration Then, string? Description = default)
+public sealed record class EndpointConfiguration(EndpointRequestConfiguration When, EndpointResponseConfiguration Then)
 {
     public int CallCounter { get; private set; } = default;
 
