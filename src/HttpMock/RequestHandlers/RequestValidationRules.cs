@@ -1,14 +1,14 @@
-﻿using HttpMock.RequestProcessing;
+﻿using HttpMock.Models;
 
 namespace HttpMock.RequestHandlers;
 
 public static class RequestValidationRules
 {
-    public static bool IsDomainValid(ref readonly RequestDetails requestDetails, out string? errorMessage)
+    public static bool IsDomainValid(ref readonly CommandRequestDetails commandRequestDetails, out string? errorMessage)
     {
-        if (string.IsNullOrEmpty(requestDetails.Domain))
+        if (string.IsNullOrWhiteSpace(commandRequestDetails.Domain))
         {
-            errorMessage = "Domain is not specified!";
+            errorMessage = "Domain is required!";
             return false;
         }
 

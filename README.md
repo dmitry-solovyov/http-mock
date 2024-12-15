@@ -58,7 +58,7 @@ The mocked endpoints should be relative paths.
 
 ```
 Endpoints[]
-  ┝ Url
+  ┝ Path
   ┝ Method
   ┝ Status
   ┝ Delay
@@ -70,19 +70,18 @@ Endpoints[]
 
 ```yaml
 Endpoints:
-  - Url: /probe
+  - Path: /probe
     Description: successful probe action
-    Method: get
     Status: 200
     Delay: 50
 
-  - Url: /probe
+  - Path: /probe
     Description: failer probe action
     Method: get
     Status: 502
     Delay: 2000
 
-  - url: /probe/detailed
+  - Path: /probe/detailed
     Method: post
     Status: 200
     Payload: '{"success":"true"}'
@@ -99,7 +98,7 @@ $headers = @{
 }
 
 $body = "Endpoints:
-  - Url: /probe
+  - Path: /probe
     Description: successful probe action
     Method: get
     Status: 200

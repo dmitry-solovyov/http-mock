@@ -4,6 +4,6 @@ internal class Program
 {
     public static void Main(string[] args)
     {
-        Server.Start(args);
+        Application.Start(args);
     }
 }

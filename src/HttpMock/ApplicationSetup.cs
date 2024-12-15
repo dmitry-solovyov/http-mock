@@ -7,7 +7,7 @@ using HttpMock.Serializations;
 
 namespace HttpMock;
 
-internal static class ProgramSetupHelper
+internal static class ApplicationSetup
 {
     internal static (ILoggerProvider loggerProvider, ILogger logger) CreateLoggers()
     {
@@ -21,16 +21,17 @@ internal static class ProgramSetupHelper
 
     internal static void SetupApplicationServices(IServiceCollection services)
     {
-        services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-        services.AddTransient<DomainsCommandHandler>();
-        services.AddTransient<DomainConfigurationCommandHandler>();
-        services.AddTransient<UsageCountersCommandHandler>();
-
-        services.AddTransient<MockedRequestHandler>();
+        services.AddSingleton<IUnknownCommandHandler, UnknownCommandHandler>();
+        services.AddSingleton<DomainsCommandHandler>();
+        services.AddSingleton<DomainConfigurationCommandHandler>();
+        services.AddSingleton<UsageCountersCommandHandler>();
+        services.AddSingleton<IMockedRequestHandler, MockedRequestHandler>();
 
         services.AddSingleton<ISerializationProvider, SerializationProvider>();
         services.AddSingleton<ISerialization, YamlSerialization>();
+
         services.AddSingleton<IConfigurationStorage, ConfigurationStorage>();
         services.AddSingleton<IRequestDetailsProvider, RequestDetailsProvider>();
         services.AddSingleton<IRequestRouter, RequestRouter>();

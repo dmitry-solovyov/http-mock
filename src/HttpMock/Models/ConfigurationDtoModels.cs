@@ -11,13 +11,11 @@ public class DomainConfigurationDto
 [YamlSerializable]
 public class EndpointConfigurationDto
 {
-    public string? Url { get; set; }
+    public string? Path { get; set; }
     public string? Method { get; set; }
     public string? ContentType { get; set; }
-    public int? Status { get; set; }
-    public int? Delay { get; set; }
+    public ushort? Status { get; set; }
+    public ushort Delay { get; set; } = 0;
     public string? Payload { get; set; }
-    public Dictionary<string, string>? Headers { get; set; }
-    public string? ProxyUrl { get; set; }
-    public string? CallbackUrl { get; set; }
+    public Dictionary<string, string?>? Headers { get; set; }
 }

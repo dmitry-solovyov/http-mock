@@ -2,12 +2,7 @@
 
 public class CustomConsoleLogger : ILogger
 {
-    private readonly string _categoryName;
-
-    public CustomConsoleLogger(string categoryName)
-    {
-        _categoryName = categoryName;
-    }
+    public CustomConsoleLogger() { }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {

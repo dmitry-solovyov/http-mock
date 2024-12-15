@@ -1,13 +1,12 @@
-﻿using HttpMock.RequestHandlers.CommandRequestHandlers;
-using HttpMock.RequestHandlers.MockedRequestHandlers;
+﻿using HttpMock.Models;
+using HttpMock.RequestHandlers.CommandRequestHandlers;
 
 namespace HttpMock.RequestProcessing;
 
-public readonly record struct RouteDetails(RequestDetails RequestDetails, IRequestHandler RequestHandler);
-
 public interface IRequestRouter
 {
-    bool TryGetRouteDetails(HttpContext httpContext, out RouteDetails routeDetails);
+    bool TryGetMockedRouteDetails(HttpContext httpContext, out MockedRouteDetails routeDetails);
+    bool TryGetCommandRouteDetails(HttpContext httpContext, out CommandRouteDetails commandRouteDetails);
 }
 
 public partial class RequestRouter : IRequestRouter
@@ -19,38 +18,45 @@ public partial class RequestRouter : IRequestRouter
         _htpRequestDetailsProvider = httpRequestDetailsProvider;
     }
 
-    public bool TryGetRouteDetails(HttpContext httpContext, out RouteDetails routeDetails)
+    public bool TryGetMockedRouteDetails(HttpContext httpContext, out MockedRouteDetails routeDetails)
     {
-        if (!_htpRequestDetailsProvider.TryGetRequestDetails(httpContext, out var requestDetails))
+        if (!_htpRequestDetailsProvider.TryGetRequestDetails(httpContext, out var mockedRequestDetails))
         {
             routeDetails = default;
             return false;
         }
 
-        var requestHandlerType = GetRequestHandlerType(ref requestDetails);
-
-        var requestHandler = requestHandlerType != default
-            ? httpContext.RequestServices.GetRequiredService(requestHandlerType) as IRequestHandler
-            : default;
-
-        routeDetails = requestHandler != default ? new RouteDetails(requestDetails, requestHandler) : default;
-        return requestHandler != default;
+        var requestHandler = httpContext.RequestServices.GetRequiredService<IMockedRequestHandler>();
+        routeDetails = new MockedRouteDetails(mockedRequestDetails, requestHandler);
+        return true;
     }
 
-    private Type? GetRequestHandlerType(ref readonly RequestDetails requestDetails)
+    public bool TryGetCommandRouteDetails(HttpContext httpContext, out CommandRouteDetails commandRouteDetails)
     {
-        return requestDetails.CommandName switch
+        if (!_htpRequestDetailsProvider.TryGetCommandRequestDetails(httpContext, out var commandRequestDetails))
         {
-            null => typeof(MockedRequestHandler),
+            commandRouteDetails = default;
+            return false;
+        }
 
-            var cmd when IsSameCommand(cmd, DomainsCommandHandler.CommandName) => typeof(DomainsCommandHandler),
-            var cmd when IsSameCommand(cmd, DomainConfigurationCommandHandler.CommandName) => typeof(DomainConfigurationCommandHandler),
-            var cmd when IsSameCommand(cmd, UsageCountersCommandHandler.CommandName) => typeof(UsageCountersCommandHandler),
+        var commandHandlerType = GetCommandRequestHandlerType(commandRequestDetails.CommandName);
+        var commandHandler = (ICommandRequestHandler)httpContext.RequestServices.GetRequiredService(commandHandlerType);
+        commandRouteDetails = new CommandRouteDetails(commandRequestDetails, commandHandler);
+        return true;
+    }
+
+    private static Type GetCommandRequestHandlerType(ReadOnlySpan<char> commandName)
+    {
+        return commandName switch
+        {
+            var cmd when IsCommandName(cmd, DomainsCommandHandler.CommandName) => typeof(DomainsCommandHandler),
+            var cmd when IsCommandName(cmd, DomainConfigurationCommandHandler.CommandName) => typeof(DomainConfigurationCommandHandler),
+            var cmd when IsCommandName(cmd, UsageCountersCommandHandler.CommandName) => typeof(UsageCountersCommandHandler),
 
             _ => typeof(UnknownCommandHandler)
         };
     }
 
-    private static bool IsSameCommand(string? requestedCommand, string expectedCommand) =>
-        expectedCommand.Equals(requestedCommand, StringComparison.OrdinalIgnoreCase);
+    private static bool IsCommandName(ReadOnlySpan<char> requestedCommand, ReadOnlySpan<char> expectedCommand) =>
+        expectedCommand.SequenceEqual(requestedCommand, CharComparer.OrdinalIgnoreCase);
 }

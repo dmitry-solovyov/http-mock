@@ -1,3 +1,3 @@
 using HttpMock;
 
-Server.Start(args);
+Application.Start(args);

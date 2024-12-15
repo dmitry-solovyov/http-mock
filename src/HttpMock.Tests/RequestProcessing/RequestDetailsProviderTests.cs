@@ -2,13 +2,27 @@
 using HttpMock.RequestProcessing;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using System;
 using Xunit;
 
 namespace HttpMock.Tests.RequestProcessing;
 
 public class RequestDetailsProviderTests
 {
-    private const string TestDomainName = "testDomain";
+    [Fact]
+    public void TryGetCommandRequestDetails_HttpContextIsEmpty_ExpectDefaultValuesAssigned()
+    {
+        var httpContext = GetEmptyHttpContextMock();
+
+        var result = new RequestDetailsProvider().TryGetCommandRequestDetails(httpContext.Object, out var commandRequestDetails);
+
+        result.Should().BeFalse();
+
+        commandRequestDetails.HttpMethod.Should().Be(HttpMethodType.None);
+        commandRequestDetails.ContentType.Should().BeNull();
+        commandRequestDetails.CommandName.Should().BeNull();
+        commandRequestDetails.Domain.Should().BeNull();
+    }
 
     [Fact]
     public void TryGetRequestDetails_HttpContextIsEmpty_ExpectDefaultValuesAssigned()
@@ -20,42 +34,56 @@ public class RequestDetailsProviderTests
         result.Should().BeTrue();
 
         requestDetails.HttpMethod.Should().Be(HttpMethodType.None);
-        requestDetails.ContentType.Should().BeEmpty();
-        requestDetails.CommandName.Should().BeNull();
-        requestDetails.QueryPath.Should().Be("/");
+        requestDetails.Path.Should().BeEmpty();
         requestDetails.Domain.Should().BeEmpty();
     }
 
     [Theory]
-    [InlineData("get", "", "/", "", null)]
-    [InlineData("post", "", "/", "", null)]
-    [InlineData("get", "test-domain", "/", "", null)]
-    [InlineData("get", "test-domain", "/api/endpoint", "", null)]
-    [InlineData("get", "test-domain", "/api/endpoint", "?param1=@value1", null)]
-    [InlineData("delete", "test-domain", "/", "", "test-command")]
+    [InlineData("get", "/", "", "", "", default)]
+    [InlineData("post", "/", "", "", "", default)]
+    [InlineData("get", "/test-domain", "", "test-domain", "", default)]
+    [InlineData("get", "/test-domain/api/endpoint", "", "test-domain", "/api/endpoint", default)]
+    [InlineData("get", "/test-domain/api/endpoint", "?param1=@value1", "test-domain", "/api/endpoint?param1=@value1", "/api/endpoint")]
+    [InlineData("delete", "/test-domain", "", "test-domain", "", default)]
+    [InlineData("delete", "/test-domain/", "", "test-domain", "/", default)]
     public void TryGetRequestDetails_ExpectValidRequestDetails(
-        string httpMethod, string domain, string path, string queryString, string? commandName)
+        string httpMethod, string path, string queryString, string expectedDomain, string expectedPath, string? expectedPathRange)
     {
-        var httpContext = GetHttpContextMock(
-            httpMethod, domain, path, queryString, commandName);
+        var httpContext = GetHttpContextMock(httpMethod, path, queryString);
 
         var result = new RequestDetailsProvider().TryGetRequestDetails(httpContext.Object, out var requestDetails);
 
         result.Should().BeTrue();
 
-        requestDetails.HttpMethod.Should().Be(HttpMethodTypeParser.Parse(httpMethod));
+        requestDetails.HttpMethod.Should().Be(HttpMethodTypeParser.Parse(httpMethod.AsSpan()));
+        requestDetails.Domain.Should().Be(expectedDomain);
+        requestDetails.Path.Should().Be(expectedPath);
+        requestDetails.Path[requestDetails.PathPart.Range].Should().Be(expectedPathRange ?? expectedPath);
+    }
+
+    [Theory]
+    [InlineData("get", "test-command", "test-domain")]
+    [InlineData("get", "test-command", "")]
+    public void TryGetCommandRequestDetails_ExpectValidRequestDetails(string httpMethod, string commandName, string domain)
+    {
+        var httpContext = GetHttpContextMockForCommand(httpMethod, commandName, domain);
+
+        var result = new RequestDetailsProvider().TryGetCommandRequestDetails(httpContext.Object, out var requestDetails);
+
+        result.Should().BeTrue();
+
+        requestDetails.HttpMethod.Should().Be(HttpMethodTypeParser.Parse(httpMethod.AsSpan()));
         requestDetails.Domain.Should().Be(domain);
-        requestDetails.QueryPath.Should().Be($"{path}{queryString}");
         requestDetails.CommandName.Should().Be(commandName);
     }
 
     [Theory]
     [InlineData("/test-domain/api/endpoint", "test-domain")]
     [InlineData("/", "")]
-    [InlineData("//", "")]
-    public void TryGetRequestDetails_ExpectDomainExtractedFromUrl(string queryPath, string expectedDomain)
+    [InlineData("//", "/")]
+    public void TryGetRequestDetails_ExpectDomainExtractedFromUrl(string path, string expectedDomain)
     {
-        var httpContext = GetHttpContextMock("get", "", queryPath, "");
+        var httpContext = GetHttpContextMock("get", path, "");
 
         var result = new RequestDetailsProvider().TryGetRequestDetails(httpContext.Object, out var requestDetails);
 
@@ -63,8 +91,6 @@ public class RequestDetailsProviderTests
 
         requestDetails.Domain.Should().Be(expectedDomain);
     }
-
-    private RequestDetailsProvider CreateRequestDetailsProvider() => new();
 
     private static Mock<HttpContext> GetEmptyHttpContextMock()
     {
@@ -81,15 +107,14 @@ public class RequestDetailsProviderTests
         return httpContextMock;
     }
 
-    private static Mock<HttpContext> GetHttpContextMock(string httpMethod = "GET", string domain = TestDomainName, string path = "/api/endpoint", string queryString = "?param1=value1&param2=@value2", string? commandName = null)
+    private static Mock<HttpContext> GetHttpContextMockForCommand(string httpMethod, string commandName, string domain)
     {
         Mock<HttpRequest> httpRequestMock = new();
         httpRequestMock.Setup(x => x.Method).Returns(httpMethod);
         httpRequestMock.Setup(x => x.PathBase).Returns(new PathString(string.Empty));
-        httpRequestMock.Setup(x => x.Path).Returns(new PathString($"{(string.IsNullOrEmpty(domain) ? string.Empty : "/" + domain)}{path}"));
-        httpRequestMock.Setup(x => x.QueryString).Returns(new QueryString(queryString));
+        httpRequestMock.Setup(x => x.Path).Returns(new PathString("/"));
 
-        if (string.IsNullOrEmpty(commandName))
+        if (string.IsNullOrEmpty(commandName) && string.IsNullOrEmpty(domain))
         {
             httpRequestMock.Setup(x => x.Headers).Returns(new HeaderDictionary());
         }
@@ -97,9 +122,25 @@ public class RequestDetailsProviderTests
         {
             httpRequestMock.Setup(x => x.Headers).Returns(new HeaderDictionary
             {
-                { "x-httpmock-command", new(commandName) }
+                { "x-httpMock-domain", new(domain) },
+                { "x-httpMock-command", new(commandName) }
             });
         }
+        httpRequestMock.Setup(x => x.ContentType).Returns(string.Empty);
+
+        Mock<HttpContext> httpContextMock = new();
+        httpContextMock.Setup(x => x.Request).Returns(httpRequestMock.Object);
+        return httpContextMock;
+    }
+
+    private static Mock<HttpContext> GetHttpContextMock(string httpMethod, string path, string queryString)
+    {
+        Mock<HttpRequest> httpRequestMock = new();
+        httpRequestMock.Setup(x => x.Method).Returns(httpMethod);
+        httpRequestMock.Setup(x => x.PathBase).Returns(new PathString(string.Empty));
+        httpRequestMock.Setup(x => x.Path).Returns(new PathString(path));
+        httpRequestMock.Setup(x => x.QueryString).Returns(new QueryString(queryString));
+        httpRequestMock.Setup(x => x.Headers).Returns(new HeaderDictionary());
         httpRequestMock.Setup(x => x.ContentType).Returns(string.Empty);
 
         Mock<HttpContext> httpContextMock = new();

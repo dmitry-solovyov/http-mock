@@ -2,7 +2,7 @@
 
 public class CustomConsoleLoggerProvider : ILoggerProvider
 {
-    public ILogger CreateLogger(string categoryName) => new CustomConsoleLogger(GetLastName(categoryName));
+    public ILogger CreateLogger(string categoryName) => new CustomConsoleLogger();
 
     private static string GetLastName(string input)
     {

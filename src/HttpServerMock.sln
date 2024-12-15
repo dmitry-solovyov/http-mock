@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpMock", "HttpMock\HttpMo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AB615020-43A2-42C0-BF73-CA467EB72973}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpMock.PerformanceTests", "HttpMock.PerformanceTests\HttpMock.PerformanceTests.csproj", "{2D0E93EA-8520-4DE6-8418-738A02F5B62B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D42B93E5-E0C7-4AB2-B092-24B1D3C6AD88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -47,6 +53,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{ADF642E9-D1AF-4E95-84B1-803B418D35BF} = {74CDFB3D-F6F2-4F55-8EF2-115831962F75}
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA} = {AB615020-43A2-42C0-BF73-CA467EB72973}
+		{2D0E93EA-8520-4DE6-8418-738A02F5B62B} = {AB615020-43A2-42C0-BF73-CA467EB72973}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8302417F-A92E-43C4-BC20-FD7F8AF3AD9A}

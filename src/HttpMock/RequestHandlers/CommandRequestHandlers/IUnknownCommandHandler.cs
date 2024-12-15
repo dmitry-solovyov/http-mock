@@ -2,4 +2,4 @@
 
 namespace HttpMock.RequestHandlers.CommandRequestHandlers;
 
-public interface ICommandRequestHandler : IRequestHandler;
+public interface IUnknownCommandHandler : ICommandRequestHandler;

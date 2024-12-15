@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using HttpMock.Extensions;
+using HttpMock.Helpers;
+using HttpMock.Models;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace HttpMock.RequestProcessing;
 
-public readonly record struct RequestDetails(string? CommandName, string Domain, HttpMethodType HttpMethod, string QueryPath, string ContentType, Stream RequestBody);
-
 public interface IRequestDetailsProvider
 {
-    bool TryGetRequestDetails(HttpContext httpContext, out RequestDetails requestDetails);
+    bool TryGetCommandRequestDetails(HttpContext httpContext, out CommandRequestDetails commandRequestDetails);
+
+    bool TryGetRequestDetails(HttpContext httpContext, out MockedRequestDetails requestDetails);
 }
 
 public class RequestDetailsProvider : IRequestDetailsProvider
@@ -14,7 +17,31 @@ public class RequestDetailsProvider : IRequestDetailsProvider
     private const string CommandNameHeader = "X-HttpMock-Command";
     private const string CommandDomainHeader = "X-HttpMock-Domain";
 
-    public bool TryGetRequestDetails(HttpContext httpContext, out RequestDetails requestDetails)
+    public bool TryGetCommandRequestDetails(HttpContext httpContext, out CommandRequestDetails commandRequestDetails)
+    {
+        var request = httpContext?.Request;
+        if (request == default)
+        {
+            commandRequestDetails = default;
+            return false;
+        }
+
+        var commandName = request.Headers.GetValue(CommandNameHeader);
+        if (string.IsNullOrEmpty(commandName))
+        {
+            commandRequestDetails = default;
+            return false;
+        }
+
+        var domain = request.Headers.GetValue(CommandDomainHeader) ?? string.Empty;
+        var httpMethodType = request.GetHttpMethodType();
+        var contentType = request.GetNormalizedContentType();
+
+        commandRequestDetails = new CommandRequestDetails(commandName, domain, httpMethodType, contentType, request.Body);
+        return true;
+    }
+
+    public bool TryGetRequestDetails(HttpContext httpContext, out MockedRequestDetails requestDetails)
     {
         var request = httpContext?.Request;
         if (request == default)
@@ -23,64 +50,17 @@ public class RequestDetailsProvider : IRequestDetailsProvider
             return false;
         }
 
-        var headers = request.Headers.ToDictionary(x => x.Key, x => x.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+        var requestPath = request.GetEncodedPathAndQuery();
 
-        GetCommandNameFromHeader(headers, out var commandName);
+        var requestPathSpan = requestPath.AsSpan();
+        var (domainSegment, pathSegment) = PathStringHelper.SplitDomainAndPath(in requestPathSpan);
 
-        GetDomainAndQueryPathFromUrl(request.GetEncodedPathAndQuery(), out var domainFromUrl, out var queryPath);
+        var domain = requestPath[domainSegment.Range];
+        var path = requestPath[pathSegment.Range];
 
-        GetDomainFromHeader(headers, out var domainFromHeader);
+        var httpMethodType = request.GetHttpMethodType();
 
-        var domain = domainFromHeader ?? domainFromUrl ?? string.Empty;
-
-        var httpMethodType = HttpMethodTypeParser.Parse(request.Method);
-
-        var contentType = GetNormalizedContentType(request.ContentType);
-
-        requestDetails = new RequestDetails(commandName, domain, httpMethodType, queryPath, contentType, request.Body);
+        requestDetails = new MockedRequestDetails(domain, httpMethodType, path);
         return true;
-    }
-
-    private static void GetDomainAndQueryPathFromUrl(string inputUrl, out string? domain, out string queryPath)
-    {
-        if (!string.IsNullOrWhiteSpace(inputUrl))
-        {
-            var inputUrlSpan = inputUrl.AsSpan();
-            if (inputUrlSpan[0] == '/')
-                inputUrlSpan = inputUrlSpan.TrimStart('/');
-
-            var index = inputUrlSpan.IndexOf('/');
-            if (index > 0)
-            {
-                domain = inputUrlSpan.Slice(0, index).ToString();
-                queryPath = inputUrlSpan.Slice(index).ToString();
-                return;
-            }
-        }
-
-        domain = default;
-        queryPath = inputUrl;
-    }
-
-    private static void GetCommandNameFromHeader(Dictionary<string, string> headers, out string? commandName) =>
-        IsValuePresentInHeader(headers, CommandNameHeader, out commandName);
-
-    private static void GetDomainFromHeader(Dictionary<string, string> headers, out string? domain) =>
-        IsValuePresentInHeader(headers, CommandDomainHeader, out domain);
-
-    private static bool IsValuePresentInHeader(Dictionary<string, string> headers, string headerKey, out string? headerValue) =>
-        headers.TryGetValue(headerKey, out headerValue) && !string.IsNullOrEmpty(headerValue);
-
-    private static string GetNormalizedContentType(string? contentType)
-    {
-        if (contentType == null)
-        {
-            contentType = Defaults.ContentTypes.DefaultRequestContentType;
-        }
-        else if (contentType.IndexOf(';') >= 0)
-        {
-            contentType = contentType.Substring(0, contentType.IndexOf(';'));
-        }
-        return contentType;
     }
 }

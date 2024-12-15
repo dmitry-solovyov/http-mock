@@ -2,24 +2,27 @@
 
 public class RequestPipelineMiddleware
 {
-    public RequestPipelineMiddleware(RequestDelegate next)
+    public RequestPipelineMiddleware(RequestDelegate _)
     {
     }
 
+#pragma warning disable S2325
     public async Task Invoke(HttpContext? httpContext)
     {
         if (httpContext == default)
-        {
             return;
-        }
 
         var cancellationToken = httpContext.RequestAborted;
 
-        var requestRouter = httpContext.RequestServices.GetRequiredService<IRequestRouter>();
+        var router = httpContext.RequestServices.GetRequiredService<IRequestRouter>();
 
-        if (requestRouter.TryGetRouteDetails(httpContext, out var routeDetails))
+        if (router.TryGetCommandRouteDetails(httpContext, out var commandRouteDetails))
         {
-            await routeDetails.RequestHandler.Execute(routeDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
+            await commandRouteDetails.RequestHandler.Execute(commandRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
+        }
+        else if (router.TryGetMockedRouteDetails(httpContext, out var mockedRouteDetails))
+        {
+            await mockedRouteDetails.RequestHandler.Execute(mockedRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -29,6 +32,7 @@ public class RequestPipelineMiddleware
         await httpContext.Response.CompleteAsync().ConfigureAwait(false);
     }
 }
+#pragma warning restore S2325
 
 public static class RequestHandlerPipelineMiddlewareExtensions
 {

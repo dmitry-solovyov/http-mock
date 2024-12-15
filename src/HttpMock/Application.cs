@@ -2,7 +2,7 @@
 
 namespace HttpMock;
 
-public static class Server
+public static class Application
 {
     public static void Start(string[] args)
     {
@@ -20,7 +20,7 @@ public static class Server
     {
         var startupParameters = ProgramArgumentsReader.GetStartupArguments(args);
 
-        var (loggerProvider, logger) = ProgramSetupHelper.CreateLoggers();
+        var (loggerProvider, logger) = ApplicationSetup.CreateLoggers();
         logger.LogInformation("Application starts");
 
         if (!IsPortValid(startupParameters.Port))
@@ -28,7 +28,7 @@ public static class Server
             throw new InvalidOperationException("Binding port is not specified!");
         }
 
-        logger?.LogInformation($"Binding port: {startupParameters.Port}");
+        logger?.LogInformation("Binding port: {Port}", startupParameters.Port);
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
@@ -43,7 +43,7 @@ public static class Server
         if (!startupParameters.IsQuiet)
             builder.Logging.AddProvider(loggerProvider);
 
-        ProgramSetupHelper.SetupApplicationServices(builder.Services);
+        ApplicationSetup.SetupApplicationServices(builder.Services);
 
         var app = builder.Build();
         app.UseUnhandledExceptionHandler();

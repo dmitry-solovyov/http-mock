@@ -20,7 +20,9 @@
             return httpResponse;
         }
 
-        public static HttpResponse? WithContent(this HttpResponse? httpResponse, string content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse)
+        public static async Task<HttpResponse?> WithContent(this HttpResponse? httpResponse,
+            string content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse,
+            CancellationToken cancellationToken = default)
         {
             if (httpResponse?.HasStarted != false)
                 return default;
@@ -29,13 +31,14 @@
             if (!string.IsNullOrEmpty(content))
             {
                 var data = System.Text.Encoding.UTF8.GetBytes(content);
-                httpResponse.Body.Write(data);
+                await httpResponse.BodyWriter.WriteAsync(data, cancellationToken).ConfigureAwait(false);
             }
             return httpResponse;
         }
 
         public static async ValueTask<HttpResponse?> WithContentAsync(this HttpResponse? httpResponse,
-            string? content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse, CancellationToken cancellationToken = default)
+            string? content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse,
+            CancellationToken cancellationToken = default)
         {
             if (httpResponse?.HasStarted != false)
                 return default;
@@ -44,7 +47,7 @@
             if (!string.IsNullOrEmpty(content))
             {
                 var buffer = System.Text.Encoding.UTF8.GetBytes(content);
-                await httpResponse.Body.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+                await httpResponse.BodyWriter.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
             }
 
             return httpResponse;
@@ -62,7 +65,7 @@
             return httpResponse;
         }
 
-        public static HttpResponse? WithHeaders(this HttpResponse? httpResponse, IDictionary<string, string?>? headers)
+        public static HttpResponse? WithHeaders(this HttpResponse? httpResponse, IReadOnlyDictionary<string, string?>? headers)
         {
             if (httpResponse?.HasStarted != false)
                 return default;

@@ -3,6 +3,7 @@
 public class UnhandledExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private ILogger<UnhandledExceptionHandlerMiddleware>? _logger;
 
     public UnhandledExceptionHandlerMiddleware(RequestDelegate next)
     {
@@ -19,9 +20,10 @@ public class UnhandledExceptionHandlerMiddleware
         {
             var errorMessage = $"Unhandled exception {ex.Message}{Environment.NewLine}{ex.StackTrace}!";
 
-            httpContext.RequestServices.GetService<ILogger<UnhandledExceptionHandlerMiddleware>>()?.LogError(errorMessage);
+            _logger ??= httpContext.RequestServices.GetService<ILogger<UnhandledExceptionHandlerMiddleware>>();
+            _logger?.LogError(errorMessage);
 
-            httpContext.Response
+            await httpContext.Response
                 .WithStatusCode(StatusCodes.Status500InternalServerError)
                 .WithContent(errorMessage);
         }

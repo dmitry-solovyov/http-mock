@@ -1,5 +1,7 @@
 ﻿using HttpMock.Configuration;
+using HttpMock.Models;
 using HttpMock.RequestProcessing;
+using System.Text;
 
 namespace HttpMock.RequestHandlers.CommandRequestHandlers;
 
@@ -14,32 +16,33 @@ public class DomainsCommandHandler : ICommandRequestHandler
 
     public const string CommandName = "domains";
 
-    public async ValueTask Execute(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    public async ValueTask Execute(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        var handleResult = requestDetails.HttpMethod switch
+        var handleResult = commandRequestDetails.HttpMethod switch
         {
-            HttpMethodType.Get => Get(requestDetails, httpResponse, cancellationToken),
-            _ => Unknown(requestDetails, httpResponse, cancellationToken),
+            HttpMethodType.Get => Get(httpResponse, cancellationToken),
+            _ => Unknown(httpResponse),
         };
 
         await handleResult.ConfigureAwait(false);
     }
 
-    private async ValueTask Get(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    private async ValueTask Get(HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        var content = string.Join(Environment.NewLine, _configurationStorage.GetDomains());
+        var sb = new StringBuilder();
+        sb.AppendJoin(Environment.NewLine, _configurationStorage.GetDomains());
+        var content = sb.ToString();
 
         cancellationToken.ThrowIfCancellationRequested();
 
         await httpResponse
-            .WithStatusCode(StatusCodes.Status200OK)
+            .WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedReadCommands)
             .WithContentAsync(content, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask Unknown(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    private static ValueTask Unknown(HttpResponse httpResponse)
     {
-        await httpResponse
-            .WithStatusCode(StatusCodes.Status405MethodNotAllowed)
-            .WithContentAsync($"Cannot handle command '{CommandName}'", cancellationToken: cancellationToken);
+        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnhandledMethod);
+        return ValueTask.CompletedTask;
     }
 }
