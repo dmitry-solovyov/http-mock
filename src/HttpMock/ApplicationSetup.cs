@@ -24,8 +24,7 @@ internal static class ApplicationSetup
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
         services.AddSingleton<IUnknownCommandHandler, UnknownCommandHandler>();
-        services.AddSingleton<DomainsCommandHandler>();
-        services.AddSingleton<DomainConfigurationCommandHandler>();
+        services.AddSingleton<ConfigurationCommandHandler>();
         services.AddSingleton<UsageCountersCommandHandler>();
         services.AddSingleton<IMockedRequestHandler, MockedRequestHandler>();
 
@@ -33,7 +32,6 @@ internal static class ApplicationSetup
         services.AddSingleton<ISerialization, YamlSerialization>();
 
         services.AddSingleton<IConfigurationStorage, ConfigurationStorage>();
-        services.AddSingleton<IRequestDetailsProvider, RequestDetailsProvider>();
         services.AddSingleton<IRequestRouter, RequestRouter>();
         services.AddSingleton<IMockedRequestEndpointConfigurationResolver, MockedRequestEndpointConfigurationResolver>();
     }

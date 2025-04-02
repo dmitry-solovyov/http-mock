@@ -29,9 +29,9 @@ dotnet tool install -g httpmock.tool --add-source ./nupkg
 
 Install the application as a global tool (`-g` parameter).
 
-or command line for a specific version `1.0.1`:
+or command line for a specific version `1.0.0`:
 ```powershell
-dotnet tool install -g httpmock.tool --add-source ./nupkg --version 1.0.1
+dotnet tool install -g httpmock.tool --add-source ./nupkg --version 1.0.0
 ```
 
 ### Uninstall the tool
@@ -49,10 +49,7 @@ Binds the tool to port 58888. Quiet mode (parameter value `1`) allows the tool t
 
 ## Configuring running application
 
-The application can run multiple configuration instances called `domains`. The domain allows the configuration settings to be managed separately.
-The mocked endpoint should be present in the endpoint URL. 
-The domain should be specified in the address of the mocked service: `http://0.0.0.0/{domain-name}/`.
-The mocked endpoints should be relative paths.
+The mocked endpoint should be available by the relative address specified in the configuration: `http://0.0.0.0/{mocked-endpoint-path}`.
 
 ### Schema of the configuration request:
 
@@ -89,12 +86,11 @@ Endpoints:
       'X-ServerHeader': /Example/Redirect
 ```
 
-### Configuration setup request (`domain-configurations` with PUT HTTP method)
+### Configuration setup request (PUT method)
 
 ```Powershell
 $headers = @{
-    "X-HttpMock-Command" = "domain-configurations"
-    "X-HttpMock-Domain"  = "test-domain"
+    "X-HttpMock-Command" = "configurations"
 }
 
 $body = "Endpoints:
@@ -114,14 +110,13 @@ $request = @{
 
 Invoke-RestMethod @request
 ```
-Setup the configuration for the `test-domain` domain.
+Setup the configuration of the mocked endpoints.
 
-### Review configuration request (`domain-configurations` with GET HTTP method)
+### Review configuration request (GET method)
 
 ```Powershell
 $headers = @{
-    "X-HttpMock-Command" = "domain-configurations"
-    "X-HttpMock-Domain"  = "test-domain"
+    "X-HttpMock-Command" = "configurations"
 }
 $request = @{
     Method      = 'GET'
@@ -132,18 +127,16 @@ $request = @{
 
 Invoke-RestMethod @request
 ```
-Review the configuration for the `test-domain` domain.
+Review the configuration of the mocked endpoints.
 
-### Configuration setup request
-
-Example of the mocked request:
+### Test the mocked endpoint
 
 ```Powershell
 $request = @{
     Method = 'GET'
-    Uri    = "http://localhost:58888/test-domain/probe"
+    Uri    = "http://localhost:58888/probe"
 }
 
 Invoke-RestMethod @request
 ```
-Invoke `/probe` request configured for the `test-domain` domain.
+Invoke `/probe` request configured before.

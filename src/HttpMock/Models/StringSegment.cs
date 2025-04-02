@@ -2,6 +2,8 @@
 
 public readonly struct StringSegment
 {
+    private static Lazy<StringSegment> EmptySegment = new(() => new(0, 0));
+
     public StringSegment()
     {
         Start = 0;
@@ -16,14 +18,26 @@ public readonly struct StringSegment
 
     public StringSegment(int start, int end)
     {
-        if (start > ushort.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(start), "Value exceeds supported limits!");
+        if (start < 0 || start > ushort.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(start), "Start value exceeds supported limits!");
 
-        if (end > ushort.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(end), "Value exceed supported limits!");
+        if (end < 0 || end > ushort.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(end), "End value exceed supported limits!");
 
         Start = (ushort)start;
         End = (ushort)end;
+    }
+
+    public StringSegment(Range range)
+    {
+        if (range.Start.IsFromEnd || range.End.IsFromEnd)
+            throw new ArgumentOutOfRangeException(nameof(range), "Range with IsFromEnd is not supported!");
+
+        if (range.Start.Value > ushort.MaxValue || range.End.Value > ushort.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(range), "Range values exceed supported limits!");
+
+        Start = (ushort)range.Start.Value;
+        End = (ushort)range.End.Value;
     }
 
     public ushort Start { get; init; }
@@ -32,16 +46,9 @@ public readonly struct StringSegment
     public int Length => End - Start;
     public Range Range => Start..End;
 
-    public static StringSegment FromRange(Range range)
-    {
-        if (range.Start.IsFromEnd || range.End.IsFromEnd)
-            throw new ArgumentOutOfRangeException(nameof(range), "Range with IsFromEnd is not supported!");
+    public bool IsEmpty => End == Start;
 
-        if (range.Start.Value > ushort.MaxValue || range.End.Value > ushort.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(range), "Range values exceed supported limits!");
-
-        return new((ushort)range.Start.Value, (ushort)range.End.Value);
-    }
+    public static StringSegment Empty => EmptySegment.Value;
 }
 
 

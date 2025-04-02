@@ -9,25 +9,25 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
 {
     public class MockedRequestEndpointConfigurationResolverTests
     {
-        private const string TestDomainName = "testDomain";
-
         [Fact]
         public void TryGetEndpointConfiguration_EmptyQueryParameters_ExpectStatisticsUpdated()
         {
             var resolver = CreateMockedRequestEndpointConfigurationResolver();
 
-            var requestDetails = new MockedRequestDetails(TestDomainName, HttpMethodType.Get, "/api/v1");
+            var requestDetails = new RequestDetails(HttpMethodType.Get, "/api/v1");
 
-            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration);
+            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration, out var foundVariables);
             result.Should().BeTrue();
 
             foundEndpointConfiguration.Should().NotBeNull();
             foundEndpointConfiguration!.CallCounter.Should().Be(1);
 
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
+            foundVariables.Should().BeNull();
+
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out _, out var _);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out _, out var _);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out _, out var _);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration, out var _);
 
             foundEndpointConfiguration.Should().NotBeNull();
             foundEndpointConfiguration!.CallCounter.Should().Be(5);
@@ -38,32 +38,66 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
         {
             var resolver = CreateMockedRequestEndpointConfigurationResolver();
 
-            var requestDetails = new MockedRequestDetails(TestDomainName, HttpMethodType.Post, "/api/v7/duplicated");
+            var requestDetails = new RequestDetails(HttpMethodType.Post, "/api/v7/duplicated");
 
             // first iteration through the duplicated endpoints
-            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration);
+            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration, out var foundVariables);
             result.Should().BeTrue();
 
             foundEndpointConfiguration.Should().NotBeNull();
             foundEndpointConfiguration!.CallCounter.Should().Be(1);
             foundEndpointConfiguration.Then.Delay.Should().Be(0);
 
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
+            foundVariables.Should().BeNull();
+
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration, out var _);
             foundEndpointConfiguration!.CallCounter.Should().Be(1);
             foundEndpointConfiguration.Then.Delay.Should().Be(150);
 
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration, out var _);
             foundEndpointConfiguration!.CallCounter.Should().Be(1);
             foundEndpointConfiguration.Then.Delay.Should().Be(0);
 
             // second iteration through the duplicated endpoints
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration, out var _);
             foundEndpointConfiguration!.CallCounter.Should().Be(2);
             foundEndpointConfiguration.Then.Delay.Should().Be(0);
 
-            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration);
+            _ = resolver.TryGetEndpointConfiguration(ref requestDetails, out foundEndpointConfiguration, out var _);
             foundEndpointConfiguration!.CallCounter.Should().Be(2);
             foundEndpointConfiguration.Then.Delay.Should().Be(150);
+        }
+
+        [Fact]
+        public void TryGetEndpointConfiguration_WhenPathContainsVariables_ExpectVariablesExtractedCorrectly()
+        {
+            var resolver = CreateMockedRequestEndpointConfigurationResolver();
+
+            var requestPath = "/api/v5/codeValue/items?Param1=Param1Value&Param2=Param2Value";
+            var requestDetails = new RequestDetails(HttpMethodType.Get, requestPath);
+
+            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration, out var foundVariables);
+            result.Should().BeTrue();
+
+            foundEndpointConfiguration.Should().NotBeNull();
+            foundEndpointConfiguration!.CallCounter.Should().Be(1);
+            foundEndpointConfiguration.When.Path.Should().Be("/api/v5/@code/items?Param1=@a&Param2=@b");
+
+            foundVariables.Should().NotBeNull();
+            foundVariables.Should().HaveCount(3);
+
+            var codeVariable = foundVariables![0];
+            var param1Variable = foundVariables[1];
+            var param2Variable = foundVariables[2];
+
+            foundEndpointConfiguration.When.Path[codeVariable.Name.Range].Should().Be("@code");
+            requestPath[codeVariable.Value.Range].Should().Be("codeValue");
+
+            foundEndpointConfiguration.When.Path[param1Variable.Name.Range].Should().Be("@a");
+            requestPath[param1Variable.Value.Range].Should().Be("Param1Value");
+
+            foundEndpointConfiguration.When.Path[param2Variable.Name.Range].Should().Be("@b");
+            requestPath[param2Variable.Value.Range].Should().Be("Param2Value");
         }
 
         [Theory]
@@ -87,10 +121,10 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
         {
             var resolver = CreateMockedRequestEndpointConfigurationResolver();
 
-            var requestDetails = new MockedRequestDetails(TestDomainName, HttpMethodType.Get, queryParameter);
+            var requestDetails = new RequestDetails(HttpMethodType.Get, queryParameter);
 
             // first iteration through the duplicated endpoints
-            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var foundEndpointConfiguration);
+            var result = resolver.TryGetEndpointConfiguration(ref requestDetails, out var _, out var _);
             result.Should().Be(expectedResult);
         }
 
@@ -103,14 +137,14 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
 
         private static ConfigurationStorage CreateConfigurationStorage()
         {
-            var domain = CreateMockDomainConfiguration();
+            var configuration = CreateMockConfiguration();
 
             var storage = new ConfigurationStorage();
-            storage.ConfigureDomain(domain);
+            storage.SetConfiguration(configuration);
             return storage;
         }
 
-        private static DomainConfiguration CreateMockDomainConfiguration()
+        private static Models.Configuration CreateMockConfiguration()
         {
             EndpointConfiguration[] endpoints =
             [
@@ -143,8 +177,8 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
                 ),
             ];
 
-            var domain = new DomainConfiguration(TestDomainName, endpoints);
-            return domain;
+            var configuration = new Models.Configuration(endpoints);
+            return configuration;
         }
     }
 }

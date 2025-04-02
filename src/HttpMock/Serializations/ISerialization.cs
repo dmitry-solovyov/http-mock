@@ -6,9 +6,9 @@ namespace HttpMock.Serializations
     {
         string SupportedContentType { get; }
 
-        DomainConfigurationDto? Deserialize(string content);
-        ValueTask<DomainConfigurationDto?> DeserializeAsync(Stream contentStream, CancellationToken cancellationToken = default);
-        string Serialize(DomainConfigurationDto model);
-        ValueTask SerializeAsync(DomainConfigurationDto model, Stream contentStream, CancellationToken cancellationToken = default);
+        ConfigurationDto? Deserialize(string content);
+        ValueTask<ConfigurationDto?> DeserializeAsync(Stream contentStream, CancellationToken cancellationToken = default);
+        string Serialize(ConfigurationDto model);
+        ValueTask SerializeAsync(ConfigurationDto model, Stream contentStream, CancellationToken cancellationToken = default);
     }
 }

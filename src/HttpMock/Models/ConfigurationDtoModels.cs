@@ -3,7 +3,7 @@
 namespace HttpMock.Models;
 
 [YamlSerializable]
-public class DomainConfigurationDto
+public class ConfigurationDto
 {
     public EndpointConfigurationDto[]? Endpoints { get; set; }
 }

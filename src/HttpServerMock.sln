@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AB615020
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpMock.PerformanceTests", "HttpMock.PerformanceTests\HttpMock.PerformanceTests.csproj", "{2D0E93EA-8520-4DE6-8418-738A02F5B62B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpMock.Tests.Integration", "HttpMock.Tests.Integration\HttpMock.Tests.Integration.csproj", "{B6AA9B06-93CE-45F0-806D-398FA87733E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D0E93EA-8520-4DE6-8418-738A02F5B62B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6AA9B06-93CE-45F0-806D-398FA87733E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6AA9B06-93CE-45F0-806D-398FA87733E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6AA9B06-93CE-45F0-806D-398FA87733E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6AA9B06-93CE-45F0-806D-398FA87733E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,6 +60,7 @@ Global
 		{ADF642E9-D1AF-4E95-84B1-803B418D35BF} = {74CDFB3D-F6F2-4F55-8EF2-115831962F75}
 		{13F8826D-B34C-4F1B-90F3-7B901320C7CA} = {AB615020-43A2-42C0-BF73-CA467EB72973}
 		{2D0E93EA-8520-4DE6-8418-738A02F5B62B} = {AB615020-43A2-42C0-BF73-CA467EB72973}
+		{B6AA9B06-93CE-45F0-806D-398FA87733E2} = {AB615020-43A2-42C0-BF73-CA467EB72973}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8302417F-A92E-43C4-BC20-FD7F8AF3AD9A}

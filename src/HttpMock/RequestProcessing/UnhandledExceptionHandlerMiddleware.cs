@@ -21,7 +21,7 @@ public class UnhandledExceptionHandlerMiddleware
             var errorMessage = $"Unhandled exception {ex.Message}{Environment.NewLine}{ex.StackTrace}!";
 
             _logger ??= httpContext.RequestServices.GetService<ILogger<UnhandledExceptionHandlerMiddleware>>();
-            _logger?.LogError(errorMessage);
+            _logger?.LogError(ex, errorMessage);
 
             await httpContext.Response
                 .WithStatusCode(StatusCodes.Status500InternalServerError)

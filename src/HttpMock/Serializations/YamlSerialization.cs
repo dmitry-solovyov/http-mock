@@ -13,7 +13,7 @@ public class YamlSerialization : ISerialization
 
     private const int MaximumRecursion = 10;
 
-    public string Serialize(DomainConfigurationDto model)
+    public string Serialize(ConfigurationDto model)
     {
         var serializer = BuildSerializer();
 
@@ -22,7 +22,7 @@ public class YamlSerialization : ISerialization
         return yaml;
     }
 
-    public ValueTask SerializeAsync(DomainConfigurationDto model, Stream contentStream, CancellationToken cancellationToken = default)
+    public ValueTask SerializeAsync(ConfigurationDto model, Stream contentStream, CancellationToken cancellationToken = default)
     {
         var serializer = BuildSerializer();
 
@@ -48,21 +48,21 @@ public class YamlSerialization : ISerialization
 
     #region Deserialization 
 
-    public DomainConfigurationDto? Deserialize(string content)
+    public ConfigurationDto? Deserialize(string content)
     {
         var deserializer = BuildDeserialize();
-        var result = deserializer.Deserialize<DomainConfigurationDto>(content);
+        var result = deserializer.Deserialize<ConfigurationDto>(content);
         return result;
     }
 
-    public async ValueTask<DomainConfigurationDto?> DeserializeAsync(Stream contentStream, CancellationToken cancellationToken = default)
+    public async ValueTask<ConfigurationDto?> DeserializeAsync(Stream contentStream, CancellationToken cancellationToken = default)
     {
         var deserializer = BuildDeserialize();
 
         TextReader textReader = new StreamReader(contentStream);
         var yaml = await textReader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
 
-        var result = deserializer.Deserialize<DomainConfigurationDto>(yaml);
+        var result = deserializer.Deserialize<ConfigurationDto>(yaml);
         return result;
     }
 

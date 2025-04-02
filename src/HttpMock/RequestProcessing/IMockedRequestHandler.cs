@@ -4,5 +4,5 @@ namespace HttpMock.RequestProcessing;
 
 public interface IMockedRequestHandler : IRequestHandler
 {
-    ValueTask Execute(MockedRequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default);
+    ValueTask Execute(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default);
 }

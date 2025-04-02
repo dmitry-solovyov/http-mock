@@ -47,7 +47,7 @@ public static class Application
 
         var app = builder.Build();
         app.UseUnhandledExceptionHandler();
-        app.UseRequestPipeline();
+        app.UseMiddleware<RequestPipelineMiddleware>();
         return app;
     }
 

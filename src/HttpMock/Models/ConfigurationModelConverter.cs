@@ -7,13 +7,13 @@ internal static class ConfigurationModelConverter
 {
     internal static class ModelToDto
     {
-        public static DomainConfigurationDto? Convert(DomainConfiguration? domainConfiguration)
+        public static ConfigurationDto? Convert(Configuration? configuration)
         {
-            if (domainConfiguration == default)
+            if (configuration == default)
                 return default;
 
-            var endpoints = domainConfiguration.Endpoints?.Select(Convert).ToArray() ?? [];
-            return new DomainConfigurationDto { Endpoints = endpoints };
+            var endpoints = configuration.Endpoints?.Select(Convert).ToArray() ?? [];
+            return new ConfigurationDto { Endpoints = endpoints };
         }
 
         private static EndpointConfigurationDto Convert(EndpointConfiguration endpointConfiguration)
@@ -37,20 +37,21 @@ internal static class ConfigurationModelConverter
         private const HttpMethodType DefaultHttpMethodType = HttpMethodType.Get;
         private const string DefaultContentType = MediaTypeNames.Application.Json;
 
-        public static DomainConfiguration? Convert(string domain, DomainConfigurationDto? domainConfigurationDto)
+        public static Configuration? Convert(ConfigurationDto? configurationDto)
         {
-            ArgumentException.ThrowIfNullOrEmpty(domain);
-
-            if (domainConfigurationDto == default)
+            if (configurationDto == default)
                 return default;
 
-            var endpoints = domainConfigurationDto.Endpoints?.Select(Convert).ToArray() ?? [];
-            return new DomainConfiguration(domain, endpoints);
+            var endpoints = configurationDto.Endpoints?.Select(Convert).ToArray() ?? [];
+            return new Configuration(endpoints);
         }
 
         private static EndpointConfiguration Convert(EndpointConfigurationDto endpointConfigurationDto)
         {
             ArgumentException.ThrowIfNullOrEmpty(endpointConfigurationDto.Path);
+
+            if (!endpointConfigurationDto.Path.StartsWith('/'))
+                throw new ArgumentOutOfRangeException(nameof(endpointConfigurationDto), "Path should start with '/' symbol!");
 
             var statusCode = endpointConfigurationDto.Status ?? DefaultStatusCode;
 

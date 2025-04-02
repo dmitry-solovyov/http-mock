@@ -6,7 +6,7 @@ public class RequestPipelineMiddleware
     {
     }
 
-#pragma warning disable S2325
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S2325:Methods and properties that don't access instance data should be static", Justification = "<Pending>")]
     public async Task Invoke(HttpContext? httpContext)
     {
         if (httpContext == default)
@@ -16,28 +16,12 @@ public class RequestPipelineMiddleware
 
         var router = httpContext.RequestServices.GetRequiredService<IRequestRouter>();
 
-        if (router.TryGetCommandRouteDetails(httpContext, out var commandRouteDetails))
-        {
-            await commandRouteDetails.RequestHandler.Execute(commandRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
-        }
-        else if (router.TryGetMockedRouteDetails(httpContext, out var mockedRouteDetails))
-        {
-            await mockedRouteDetails.RequestHandler.Execute(mockedRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
-        }
-        else
+        var isHandled = await router.TryExecuteRequestHandler(httpContext, cancellationToken).ConfigureAwait(false);
+        if(!isHandled)
         {
             httpContext.Response.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnhandledRequests);
         }
 
         await httpContext.Response.CompleteAsync().ConfigureAwait(false);
-    }
-}
-#pragma warning restore S2325
-
-public static class RequestHandlerPipelineMiddlewareExtensions
-{
-    public static void UseRequestPipeline(this IApplicationBuilder builder)
-    {
-        builder.UseMiddleware<RequestPipelineMiddleware>();
     }
 }

@@ -5,12 +5,12 @@ using HttpMock.Serializations;
 
 namespace HttpMock.RequestHandlers.CommandRequestHandlers;
 
-public class DomainConfigurationCommandHandler : ICommandRequestHandler
+public class ConfigurationCommandHandler : ICommandRequestHandler
 {
     private readonly IConfigurationStorage _configurationStorage;
     private readonly ISerializationProvider _serializationProvider;
 
-    public DomainConfigurationCommandHandler(
+    public ConfigurationCommandHandler(
         IConfigurationStorage configurationStorage,
         ISerializationProvider serializationProvider)
     {
@@ -18,22 +18,15 @@ public class DomainConfigurationCommandHandler : ICommandRequestHandler
         _serializationProvider = serializationProvider;
     }
 
-    public const string CommandName = "domain-configurations";
+    public const string CommandName = "configurations";
 
     public async ValueTask Execute(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (!RequestValidationRules.IsDomainValid(ref commandRequestDetails, out var errorMessage))
-        {
-            await httpResponse.WithStatusCode(StatusCodes.Status400BadRequest)
-                .WithContentAsync(errorMessage, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
         var handleResult = commandRequestDetails.HttpMethod switch
         {
             HttpMethodType.Get => Get(commandRequestDetails, httpResponse, cancellationToken),
             HttpMethodType.Put => Put(commandRequestDetails, httpResponse, cancellationToken),
-            HttpMethodType.Delete => Delete(commandRequestDetails, httpResponse, cancellationToken),
+            HttpMethodType.Delete => Delete(httpResponse, cancellationToken),
             _ => Unknown(httpResponse),
         };
 
@@ -42,14 +35,14 @@ public class DomainConfigurationCommandHandler : ICommandRequestHandler
 
     private async ValueTask Get(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (!_configurationStorage.TryGetDomainConfiguration(commandRequestDetails.Domain, out var domainConfiguration))
+        if (!_configurationStorage.TryGetConfiguration(out var configuration))
         {
             httpResponse.WithStatusCode(StatusCodes.Status404NotFound);
             return;
         }
 
-        var domainConfigurationDto = ConfigurationModelConverter.ModelToDto.Convert(domainConfiguration);
-        if (domainConfigurationDto == default)
+        var configurationDto = ConfigurationModelConverter.ModelToDto.Convert(configuration);
+        if (configurationDto == default)
         {
             httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
             return;
@@ -64,7 +57,7 @@ public class DomainConfigurationCommandHandler : ICommandRequestHandler
             return;
         }
 
-        await serializer.SerializeAsync(domainConfigurationDto, httpResponse.Body, cancellationToken).ConfigureAwait(false);
+        await serializer.SerializeAsync(configurationDto, httpResponse.Body, cancellationToken).ConfigureAwait(false);
 
         httpResponse.WithStatusCode(StatusCodes.Status200OK);
     }
@@ -78,52 +71,40 @@ public class DomainConfigurationCommandHandler : ICommandRequestHandler
             return;
         }
 
-        var domainConfigurationDto = await serializer.DeserializeAsync(commandRequestDetails.RequestBody, cancellationToken).ConfigureAwait(false);
+        var configurationDto = await serializer.DeserializeAsync(commandRequestDetails.RequestBody, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var domainConfiguration = ConfigurationModelConverter.DtoToModel.Convert(commandRequestDetails.Domain!, domainConfigurationDto);
-        if (domainConfiguration == default)
+        var configuration = ConfigurationModelConverter.DtoToModel.Convert(configurationDto);
+        if (configuration == default)
         {
             httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
             return;
         }
 
-        domainConfiguration = domainConfiguration with { Domain = commandRequestDetails.Domain ?? string.Empty };
-
-        _configurationStorage.ConfigureDomain(domainConfiguration);
+        _configurationStorage.SetConfiguration(configuration);
 
         await httpResponse
             .WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedUpdateCommands)
-            .WithContentAsync($"Configured domain: {domainConfiguration.Domain}", cancellationToken: cancellationToken).ConfigureAwait(false);
+            .WithContentAsync($"Configured endpoints: {configuration.Endpoints?.Length}", cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private async ValueTask Delete(CommandRequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    private async ValueTask Delete(HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (!RequestValidationRules.IsDomainValid(ref requestDetails, out var errorMessage))
-        {
-            await httpResponse
-                .WithStatusCode(StatusCodes.Status400BadRequest)
-                .WithContentAsync(errorMessage, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return;
-        }
+        var existingEndpoints = _configurationStorage.TryGetConfiguration(out var configuration)
+            ? configuration!.Endpoints?.Length
+            : -1;
 
-        cancellationToken.ThrowIfCancellationRequested();
-
-        if (!_configurationStorage.TryRemoveDomain(requestDetails.Domain!))
-        {
-            httpResponse.WithStatusCode(StatusCodes.Status404NotFound);
-            return;
-        }
+        _configurationStorage.RemoveConfiguration();
 
         await httpResponse
             .WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedUpdateCommands)
-            .WithContentAsync($"Domain removed: {requestDetails.Domain}", cancellationToken: cancellationToken).ConfigureAwait(false);
+            .WithContentAsync($"Removed endpoints: {existingEndpoints}", cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static ValueTask Unknown(HttpResponse httpResponse)
     {
-        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnhandledMethod);
+        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnknownCommandMethodType);
         return ValueTask.CompletedTask;
     }
 }

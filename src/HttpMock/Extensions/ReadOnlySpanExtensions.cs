@@ -30,12 +30,11 @@ public static class ReadOnlySpanExtensions
         if (!input.Contains(separator))
             return default;
 
-        var occurrences = input.GetOccurrencesCount(separator);
-        var expectParts = occurrences + 1;
-        var partBounds = new Range[expectParts];
-        Span<Range> urlParameterRanges = new(partBounds);
+        var occurrences = input.Count(separator);
+        var partBounds = new Range[occurrences + 1];
+        Span<Range> urlParameterRanges = partBounds.AsSpan();
 
-        input.Split(urlParameterRanges, separator, StringSplitOptions.RemoveEmptyEntries);
+        input.Split(partBounds, separator, StringSplitOptions.None);
         return urlParameterRanges;
     }
 
@@ -44,7 +43,7 @@ public static class ReadOnlySpanExtensions
         if (!input.Contains(separator))
             return [new StringSegment(0, input.Length)];
 
-        var occurrences = input.GetOccurrencesCount(separator);
+        var occurrences = input.Count(separator);
         var expectParts = occurrences + 1;
         Span<StringSegment> partBounds = stackalloc StringSegment[expectParts];
 
@@ -80,16 +79,14 @@ public static class ReadOnlySpanExtensions
         return result;
     }
 
-    public static int GetOccurrencesCount(this ref readonly ReadOnlySpan<char> input, in char value)
+    public static Range[] SplitByNew(this ref readonly ReadOnlySpan<char> input, in char separator)
     {
-        var count = 0;
+        var occurrences = input.Count(separator);
+        if (occurrences == 0)
+            return [0..input.Length];
 
-        foreach (var c in input)
-        {
-            if (c == value)
-                count++;
-        }
-
-        return count;
+        var result = new Range[occurrences + 1];
+        input.Split(result, separator, StringSplitOptions.None);
+        return result;
     }
 }

@@ -11,7 +11,7 @@ public class YamlSerializationTests
     [Fact]
     public void Serialize()
     {
-        var config = new DomainConfigurationDto
+        var config = new ConfigurationDto
         {
             Endpoints =
             [

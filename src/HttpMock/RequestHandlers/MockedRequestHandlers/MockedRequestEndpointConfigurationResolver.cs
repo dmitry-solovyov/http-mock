@@ -1,5 +1,4 @@
 ﻿using HttpMock.Configuration;
-using HttpMock.Extensions;
 using HttpMock.Models;
 
 namespace HttpMock.RequestHandlers.MockedRequestHandlers;
@@ -7,161 +6,204 @@ namespace HttpMock.RequestHandlers.MockedRequestHandlers;
 public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpointConfigurationResolver
 {
     private readonly IConfigurationStorage _configurationStorage;
+    private enum SegmentsComparisonOutcome { NoEqual = 0, Equal, EqualAsVariable, EqualAny }
 
     public MockedRequestEndpointConfigurationResolver(IConfigurationStorage configurationStorage)
     {
         _configurationStorage = configurationStorage;
     }
 
-    public bool TryGetEndpointConfiguration(ref readonly MockedRequestDetails requestDetails, out EndpointConfiguration? foundEndpointConfiguration)
+    public bool TryGetEndpointConfiguration(
+        ref readonly RequestDetails requestDetails,
+        out EndpointConfiguration? foundEndpointConfiguration, out List<PathVariable>? foundVariables)
     {
-        if (!_configurationStorage.TryGetDomainConfiguration(requestDetails.Domain, out DomainConfiguration? domainConfiguration))
+        if (!_configurationStorage.TryGetConfiguration(out Models.Configuration configuration))
         {
             foundEndpointConfiguration = default;
+            foundVariables = default;
             return false;
         }
 
         EndpointConfiguration? configurationCandidate = default;
+        List<PathVariable>? variablesForCandidate = default;
 
-        foreach (var endpointConfiguration in domainConfiguration!.Endpoints)
+        foreach (var endpointConfiguration in configuration!.Endpoints)
         {
             if (requestDetails.HttpMethod != endpointConfiguration.When.HttpMethod)
                 continue;
 
-            var samePath = HasSamePath(in requestDetails, endpointConfiguration);
+            var (samePath, pathVariables) = HasSamePath(in requestDetails, endpointConfiguration);
             if (!samePath)
                 continue;
 
-            var sameQueryParameters = HasSameQueryParameters(in requestDetails, endpointConfiguration);
+            var (sameQueryParameters, queryVariables) = HasSameQueryParameters(in requestDetails, endpointConfiguration);
             if (!sameQueryParameters)
                 continue;
 
-            if (configurationCandidate == default)
+            if (configurationCandidate == default || endpointConfiguration.CallCounter < configurationCandidate.CallCounter)
             {
                 configurationCandidate = endpointConfiguration;
-            }
-            else if (endpointConfiguration.CallCounter < configurationCandidate.CallCounter)
-            {
-                configurationCandidate = endpointConfiguration;
+                variablesForCandidate = MergeVariables(pathVariables, queryVariables);
             }
         }
 
         configurationCandidate?.IncreaseCounter();
 
         foundEndpointConfiguration = configurationCandidate;
+        foundVariables = variablesForCandidate;
         return configurationCandidate != default;
     }
 
-    public static bool HasSamePath(ref readonly MockedRequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
+    public static (bool Result, List<PathVariable>? Variables) HasSamePath(ref readonly RequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
     {
-        var path = requestDetails.GetPathWithoutParameters();
-        var requestPathSegments = path.SplitBy('/');
-        var configPathSegments = endpointConfiguration.When.PathSegments;
-        var configPath = endpointConfiguration.When.Path.AsSpan();
+        var requestPathSpan = requestDetails.Path.AsSpan();
+        var requestPath = requestDetails.PathParts.PathWithoutQuery;
 
-        if (requestPathSegments.Length != configPathSegments.Length)
-            return false;
+        var configPathSpan = endpointConfiguration.When.Path.AsSpan();
+        var configPath = endpointConfiguration.When.PathParts.PathWithoutQuery;
 
-        var variables = new List<PathVariable>();
+        if (requestPath.Subdirectories.Length != configPath.Subdirectories.Length)
+            return (false, default);
 
-        for (int segmentIndex = 0; segmentIndex < requestPathSegments.Length; segmentIndex++)
+        List<PathVariable>? variables = null;
+
+        for (int subdirectoryIndex = 0; subdirectoryIndex < requestPath.Subdirectories.Length; subdirectoryIndex++)
         {
-            var requestPathSegment = requestPathSegments[segmentIndex];
-            var requestSegmentValue = path[requestPathSegment.Range];
+            var requestPathSubdirectory = requestPath.Subdirectories[subdirectoryIndex];
+            var requestSegmentValue = requestPathSpan[requestPathSubdirectory.Segment.Range];
 
-            var configPathSegment = configPathSegments[segmentIndex];
-            var configSegmentValue = configPath[configPathSegment.Range];
+            var configPathSubdirectory = configPath.Subdirectories[subdirectoryIndex];
+            var configSegmentValue = configPathSpan[configPathSubdirectory.Segment.Range];
 
             var comparisonResult = CompareSegments(in requestSegmentValue, in configSegmentValue);
             if (comparisonResult == SegmentsComparisonOutcome.NoEqual)
-                return false;
+                return (false, default);
 
             if (comparisonResult == SegmentsComparisonOutcome.EqualAsVariable)
-                variables.Add(new(configPathSegment, requestPathSegment));
+            {
+                variables ??= [];
+                variables.Add(new(new StringSegment(configPathSubdirectory.Segment.Start, configPathSubdirectory.Segment.End), requestPathSubdirectory.Segment));
+            }
         }
 
-        return true;
+        return (true, variables);
     }
 
-    public record struct PathVariable(StringSegment VariableConfigName, StringSegment PathVariableValue);
+    public record struct PathVariable(StringSegment Name, StringSegment Value);
 
-    public enum SegmentsComparisonOutcome { NoEqual, Equal, EqualAsVariable, EqualAny }
-
-    public static bool HasSameQueryParameters(ref readonly MockedRequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
+    public static (bool Result, List<PathVariable>? Variables) HasSameQueryParameters(ref readonly RequestDetails requestDetails, EndpointConfiguration endpointConfiguration)
     {
         var requestPath = requestDetails.Path;
         var requestPathSpan = requestPath.AsSpan();
 
-        var configQueryParameters = endpointConfiguration.When.QueryParameters;
+        var configQueryParameters = endpointConfiguration.When.PathParts.Query.Parameters;
         if (configQueryParameters == null || configQueryParameters.Length == 0)
-            return true;
+            return (true, default);
 
-        var variables = new List<PathVariable>();
+        List<PathVariable>? variables = null;
 
         foreach (var configQueryParameter in configQueryParameters)
         {
             var configPathSpan = endpointConfiguration.When.Path.AsSpan();
-            var configNameSpan = configPathSpan[configQueryParameter.Name.Range];
-            var configValueSpan = configPathSpan[configQueryParameter.Value.Range];
+            var configNameSpan = configPathSpan[configQueryParameter.NameSegment.Range];
 
-            var requestQueryParameters = requestDetails.QueryParameters;
+            var requestQueryParameters = requestDetails.PathParts.Query.Parameters;
 
-            if (configValueSpan[0] == '@' && (requestQueryParameters == null || requestQueryParameters.Length == 0))
+            if (configQueryParameter.IsVariable && (requestQueryParameters?.Length).GetValueOrDefault() == 0)
                 continue;
-
-            var configValueIsEmpty = configValueSpan.IsEmpty;
-            var configValueIsVariable = !configValueIsEmpty && configValueSpan[0] == '@';
 
             var requestQueryParameter = FindParameterWithName(in requestPathSpan, requestQueryParameters, in configNameSpan);
-            if (requestQueryParameter == null)
-            {
-                if (configValueIsEmpty)
-                    continue;
 
-                if (configValueIsVariable)
+            var (isEqual, foundVariable) = HasSameParameterValue(in requestPathSpan, in configPathSpan, requestQueryParameter, configQueryParameter);
+            if (isEqual)
+            {
+                if (foundVariable != null)
                 {
-                    variables.Add(new(configQueryParameter.Value, default));
-                    continue;
+                    variables ??= [];
+                    variables.Add(new(configQueryParameter.ValueSegment, foundVariable.Value.Value));
                 }
-                return false;
-            }
 
-            if (configValueIsVariable)
-            {
-                variables.Add(new(configQueryParameter.Value, requestQueryParameter.Value.Value));
                 continue;
             }
-
-            QueryParameterRef queryParameter = requestQueryParameter.Value;
-            if (!configValueSpan.SequenceEqual(requestPath[queryParameter.Value.Range], CharComparer.OrdinalIgnoreCase))
-                return false;
+            return (false, default);
         }
 
-        return true;
+        return (true, variables);
     }
 
-    private static QueryParameterRef? FindParameterWithName(ref readonly ReadOnlySpan<char> path, QueryParameterRef[]? parameters, ref readonly ReadOnlySpan<char> parameterName)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3267:Loops should be simplified with \"LINQ\" expressions", Justification = "<Pending>")]
+    private static QueryParameterPart? FindParameterWithName(ref readonly ReadOnlySpan<char> path, QueryParameterPart[]? parameters, ref readonly ReadOnlySpan<char> parameterName)
     {
-        if (parameters != null && parameters.Length > 0)
-        {
+        if (parameters != default)
             foreach (var requestQueryParameter in parameters)
             {
-                if (path[requestQueryParameter.Name.Range].SequenceEqual(parameterName, CharComparer.OrdinalIgnoreCase))
+                if (path[requestQueryParameter.NameSegment.Range].SequenceEqual(parameterName, CharComparer.OrdinalIgnoreCase))
                     return requestQueryParameter;
             }
-        }
+
         return default;
+    }
+
+    public static (bool IsEqual, PathVariable? Variable) HasSameParameterValue(
+        ref readonly ReadOnlySpan<char> requestPath,
+        ref readonly ReadOnlySpan<char> configPath,
+        QueryParameterPart? requestQueryParameter,
+        QueryParameterPart configQueryParameter)
+    {
+        if (configQueryParameter.ValueSegment.IsEmpty)
+        {
+            if ((requestQueryParameter == null || requestQueryParameter.Value.ValueSegment.IsEmpty))
+            {
+                return (true, default);
+            }
+
+            if (!requestQueryParameter.Value.ValueSegment.IsEmpty)
+            {
+                return (false, default);
+            }
+        }
+
+        var parameterValueSegment = requestQueryParameter?.ValueSegment ?? default;
+        if (configQueryParameter.IsVariable)
+            return (true, new(configQueryParameter.NameSegment, parameterValueSegment));
+
+        var configValueSpan = configPath[configQueryParameter.ValueSegment.Range];
+        var requestParamValueSpan = requestPath[parameterValueSegment.Range];
+
+        var comparisonResult = CompareSegments(in requestParamValueSpan, in configValueSpan);
+        if (comparisonResult == SegmentsComparisonOutcome.NoEqual)
+            return (false, default);
+
+        if (comparisonResult == SegmentsComparisonOutcome.EqualAsVariable)
+            return (true, new(configQueryParameter.NameSegment, parameterValueSegment));
+
+        return (true, default);
     }
 
     private static SegmentsComparisonOutcome CompareSegments(
         ref readonly ReadOnlySpan<char> requestSegmentValue, ref readonly ReadOnlySpan<char> configSegmentValue)
     {
-        if (configSegmentValue[0] == '@')
+        if ((configSegmentValue.Length >= 1 && configSegmentValue[0] == '@') ||
+            (configSegmentValue.Length >= 2 && configSegmentValue[0] == '/' && configSegmentValue[1] == '@'))
             return SegmentsComparisonOutcome.EqualAsVariable;
 
         if (requestSegmentValue.Equals(configSegmentValue, StringComparison.OrdinalIgnoreCase))
             return SegmentsComparisonOutcome.Equal;
 
         return SegmentsComparisonOutcome.NoEqual;
+    }
+
+    private static List<PathVariable>? MergeVariables(List<PathVariable>? variables1, List<PathVariable>? variables2)
+    {
+        if (variables1 == default && variables2 == default)
+            return default;
+
+        if (variables1 == default)
+            return variables2;
+
+        if (variables2 == default)
+            return variables1;
+
+        return variables1!.Concat(variables2!).ToList();
     }
 }

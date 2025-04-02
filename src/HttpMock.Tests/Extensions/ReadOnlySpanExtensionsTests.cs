@@ -82,11 +82,11 @@ namespace HttpMock.Tests.Extensions
         [InlineData("part1&part2&part3", '&', 2)]
         [InlineData("part1&part2&part3", '1', 1)]
         [InlineData("&part1&part2&part3&", '&', 4)]
-        public void GetOccurrencesCount(string input, char searchFor, int expectedResult)
+        public void Count(string input, char searchFor, ushort expectedResult)
         {
             var span = input.AsSpan();
 
-            var result = span.GetOccurrencesCount(searchFor);
+            var result = span.Count(searchFor);
 
             result.Should().Be(expectedResult);
         }

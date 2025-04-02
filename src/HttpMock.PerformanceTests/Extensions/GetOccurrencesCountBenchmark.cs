@@ -11,14 +11,14 @@ public class GetOccurrencesCountBenchmark
     private static readonly string Url = "/part1/part2/part3/part4/part1/part2/part3/part4";
 
     [Benchmark(Baseline = true)]
-    public void GetOccurrencesCount()
+    public void Count()
     {
         var url = Url.AsSpan();
-        url.GetOccurrencesCount('/');
+        url.Count('/');
     }
 
     [Benchmark]
-    public void GetOccurrencesCountNew()
+    public void GetOccurrencesCount_IndexOfAfter()
     {
         var url = Url.AsSpan();
         var count = 0;

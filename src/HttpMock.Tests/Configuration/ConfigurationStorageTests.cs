@@ -6,14 +6,12 @@ namespace HttpMock.Tests.Configuration
 {
     public class ConfigurationStorageTests
     {
-        private const string TestDomainName = "testDomain";
-
         [Fact]
-        public void IsDomainExists_WhenConfigurationEmpty_ExpectFalse()
+        public void TryGetConfiguration_WhenConfigurationEmpty_ExpectFalse()
         {
             var storage = new ConfigurationStorage();
 
-            var result = storage.IsDomainExists(TestDomainName);
+            var result = storage.TryGetConfiguration(out var _);
 
             result.Should().BeFalse();
         }

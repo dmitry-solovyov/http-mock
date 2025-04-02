@@ -1,39 +1,39 @@
-﻿using HttpMock.Models;
+﻿using HttpMock.Extensions;
+using HttpMock.Models;
 using HttpMock.RequestHandlers.CommandRequestHandlers;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace HttpMock.RequestProcessing;
 
 public interface IRequestRouter
 {
-    bool TryGetMockedRouteDetails(HttpContext httpContext, out MockedRouteDetails routeDetails);
-    bool TryGetCommandRouteDetails(HttpContext httpContext, out CommandRouteDetails commandRouteDetails);
+    ValueTask<bool> TryExecuteRequestHandler(HttpContext httpContext, CancellationToken cancellationToken = default);
 }
 
 public partial class RequestRouter : IRequestRouter
 {
-    private readonly IRequestDetailsProvider _htpRequestDetailsProvider;
+    private const string CommandNameHeader = "X-HttpMock-Command";
 
-    public RequestRouter(IRequestDetailsProvider httpRequestDetailsProvider)
+    public async ValueTask<bool> TryExecuteRequestHandler(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
-        _htpRequestDetailsProvider = httpRequestDetailsProvider;
-    }
-
-    public bool TryGetMockedRouteDetails(HttpContext httpContext, out MockedRouteDetails routeDetails)
-    {
-        if (!_htpRequestDetailsProvider.TryGetRequestDetails(httpContext, out var mockedRequestDetails))
+        if (TryGetCommandRouteDetails(httpContext, out var commandRouteDetails))
         {
-            routeDetails = default;
-            return false;
+            await commandRouteDetails.RequestHandler.Execute(commandRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
+            return true;
         }
 
-        var requestHandler = httpContext.RequestServices.GetRequiredService<IMockedRequestHandler>();
-        routeDetails = new MockedRouteDetails(mockedRequestDetails, requestHandler);
-        return true;
+        if (TryGetRouteDetails(httpContext, out var mockedRouteDetails))
+        {
+            await mockedRouteDetails.RequestHandler.Execute(mockedRouteDetails.RequestDetails, httpContext.Response, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+
+        return false;
     }
 
-    public bool TryGetCommandRouteDetails(HttpContext httpContext, out CommandRouteDetails commandRouteDetails)
+    private static bool TryGetCommandRouteDetails(HttpContext httpContext, out CommandRouteDetails commandRouteDetails)
     {
-        if (!_htpRequestDetailsProvider.TryGetCommandRequestDetails(httpContext, out var commandRequestDetails))
+        if (!TryGetCommandRequestDetails(httpContext, out var commandRequestDetails))
         {
             commandRouteDetails = default;
             return false;
@@ -49,14 +49,65 @@ public partial class RequestRouter : IRequestRouter
     {
         return commandName switch
         {
-            var cmd when IsCommandName(cmd, DomainsCommandHandler.CommandName) => typeof(DomainsCommandHandler),
-            var cmd when IsCommandName(cmd, DomainConfigurationCommandHandler.CommandName) => typeof(DomainConfigurationCommandHandler),
+            var cmd when IsCommandName(cmd, ConfigurationCommandHandler.CommandName) => typeof(ConfigurationCommandHandler),
             var cmd when IsCommandName(cmd, UsageCountersCommandHandler.CommandName) => typeof(UsageCountersCommandHandler),
 
-            _ => typeof(UnknownCommandHandler)
+            _ => typeof(IUnknownCommandHandler)
         };
     }
 
     private static bool IsCommandName(ReadOnlySpan<char> requestedCommand, ReadOnlySpan<char> expectedCommand) =>
         expectedCommand.SequenceEqual(requestedCommand, CharComparer.OrdinalIgnoreCase);
+
+    private static bool TryGetCommandRequestDetails(HttpContext httpContext, out CommandRequestDetails commandRequestDetails)
+    {
+        var request = httpContext?.Request;
+        if (request == default)
+        {
+            commandRequestDetails = default;
+            return false;
+        }
+
+        var commandName = request.Headers.GetValue(CommandNameHeader);
+        if (string.IsNullOrEmpty(commandName))
+        {
+            commandRequestDetails = default;
+            return false;
+        }
+
+        var httpMethodType = request.GetHttpMethodType();
+        var contentType = request.GetNormalizedContentType();
+
+        commandRequestDetails = new CommandRequestDetails(commandName, httpMethodType, contentType, request.Body);
+        return true;
+    }
+
+    private static bool TryGetRouteDetails(HttpContext httpContext, out RouteDetails routeDetails)
+    {
+        if (!TryGetRequestDetails(httpContext, out var requestDetails))
+        {
+            routeDetails = default;
+            return false;
+        }
+
+        var requestHandler = httpContext.RequestServices.GetRequiredService<IMockedRequestHandler>();
+        routeDetails = new RouteDetails(requestDetails, requestHandler);
+        return true;
+    }
+
+    private static bool TryGetRequestDetails(HttpContext httpContext, out RequestDetails requestDetails)
+    {
+        var request = httpContext?.Request;
+        if (request == default)
+        {
+            requestDetails = default;
+            return false;
+        }
+
+        var path = request.GetEncodedPathAndQuery();
+        var httpMethodType = request.GetHttpMethodType();
+
+        requestDetails = new RequestDetails(httpMethodType, path);
+        return true;
+    }
 }

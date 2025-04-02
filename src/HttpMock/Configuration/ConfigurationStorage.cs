@@ -1,68 +1,52 @@
-﻿using HttpMock.Models;
-using System.Collections.Concurrent;
-using System.Collections.Immutable;
+﻿namespace HttpMock.Configuration;
 
-namespace HttpMock.Configuration;
+public interface IConfigurationStorage
+{
+    void SetConfiguration(Models.Configuration configuration);
+    bool TryGetConfiguration(out Models.Configuration configuration);
+    void RemoveConfiguration();
+    public void ResetUsageCounters();
+}
+
 
 public sealed class ConfigurationStorage : IConfigurationStorage
 {
     private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
-    private readonly ConcurrentDictionary<string, DomainConfiguration> _domainConfigurations = new();
+    private Models.Configuration? _configuration = default;
 
-    public int DomainsCount => _domainConfigurations.Count;
-
-    public void ConfigureDomain(DomainConfiguration domainConfiguration)
+    public void SetConfiguration(Models.Configuration configuration)
     {
-        ArgumentNullException.ThrowIfNull(domainConfiguration);
-        ArgumentException.ThrowIfNullOrEmpty(domainConfiguration.Domain);
-
-        _domainConfigurations.AddOrUpdate(domainConfiguration.Domain, domainConfiguration, (_, __) => domainConfiguration);
+        ArgumentNullException.ThrowIfNull(configuration);
+        _configuration = configuration;
     }
 
-    public bool IsDomainExists(string? domain)
+    public void RemoveConfiguration()
     {
-        if (string.IsNullOrEmpty(domain))
-            return false;
-
-        return _domainConfigurations.ContainsKey(domain);
+        _configuration = null;
     }
 
-    public bool TryRemoveDomain(string? domain)
+    public bool TryGetConfiguration(out Models.Configuration configuration)
     {
-        ArgumentException.ThrowIfNullOrEmpty(domain);
-
-        return _domainConfigurations.TryRemove(domain, out _);
-    }
-
-    public bool TryGetDomainConfiguration(string? domain, out DomainConfiguration domainConfiguration)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(domain);
-
-        if (_domainConfigurations.TryGetValue(domain, out var foundDomain) && foundDomain != default)
+        if (_configuration == null)
         {
-            domainConfiguration = foundDomain;
-            return true;
+            configuration = new Models.Configuration([]);
+            return false;
         }
 
-        domainConfiguration = default!;
-        return false;
+        configuration = _configuration;
+        return true;
     }
 
-    public IReadOnlyCollection<string> GetDomains() => _domainConfigurations.Keys.ToImmutableArray();
-
-    public void ResetUsageCounters(string? domain)
+    public void ResetUsageCounters()
     {
-        ArgumentException.ThrowIfNullOrEmpty(domain);
-
-        if (!_domainConfigurations.TryGetValue(domain, out var domainConfiguration))
+        if (_configuration == null)
             return;
 
         _semaphore.Wait();
-
         try
         {
-            foreach (var endpointConfiguration in domainConfiguration.Endpoints)
+            foreach (var endpointConfiguration in _configuration.Endpoints)
             {
                 endpointConfiguration.ResetCounter();
             }
@@ -72,5 +56,4 @@ public sealed class ConfigurationStorage : IConfigurationStorage
             _semaphore.Release();
         }
     }
-
 }

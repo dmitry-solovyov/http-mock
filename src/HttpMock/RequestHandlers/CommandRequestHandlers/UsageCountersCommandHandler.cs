@@ -15,17 +15,17 @@ public class UsageCountersCommandHandler(IConfigurationStorage configurationStor
     {
         var handleResult = commandRequestDetails.HttpMethod switch
         {
-            HttpMethodType.Get => Get(commandRequestDetails, httpResponse, cancellationToken),
-            HttpMethodType.Delete => Delete(commandRequestDetails, httpResponse, cancellationToken),
+            HttpMethodType.Get => Get(httpResponse, cancellationToken),
+            HttpMethodType.Delete => Delete(httpResponse),
             _ => Unknown(httpResponse),
         };
 
         await handleResult.ConfigureAwait(false);
     }
 
-    private async ValueTask Get(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    private async ValueTask Get(HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (!_configurationStorage.TryGetDomainConfiguration(commandRequestDetails.Domain, out var domainConfiguration))
+        if (!_configurationStorage.TryGetConfiguration(out var configuration))
         {
             httpResponse.WithStatusCode(StatusCodes.Status404NotFound);
             return;
@@ -33,17 +33,7 @@ public class UsageCountersCommandHandler(IConfigurationStorage configurationStor
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var requiredOutputStringLength = CalculateRequiredOutputStringLength(domainConfiguration);
-
-        var sb = new StringBuilder(requiredOutputStringLength);
-        foreach (var endpointConfiguration in domainConfiguration.Endpoints)
-        {
-            sb.Append(endpointConfiguration.When.Path);
-            sb.Append(" - ");
-            sb.Append(endpointConfiguration.CallCounter);
-            sb.AppendLine();
-        }
-        var content = sb.ToString();
+        var content = GetContentForUsageStatistics(configuration);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -52,32 +42,40 @@ public class UsageCountersCommandHandler(IConfigurationStorage configurationStor
             .WithContentAsync(content, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private ValueTask Delete(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    private ValueTask Delete(HttpResponse httpResponse)
     {
-        if (!_configurationStorage.TryGetDomainConfiguration(commandRequestDetails.Domain, out var domainConfiguration))
-        {
-            httpResponse.WithStatusCode(StatusCodes.Status404NotFound);
-            return ValueTask.CompletedTask;
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        _configurationStorage.ResetUsageCounters(domainConfiguration.Domain);
+        _configurationStorage.ResetUsageCounters();
 
         httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedUpdateCommands);
+
         return ValueTask.CompletedTask;
     }
 
     private static ValueTask Unknown(HttpResponse httpResponse)
     {
-        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnhandledMethod);
+        httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnknownCommandMethodType);
         return ValueTask.CompletedTask;
     }
 
-    private static int CalculateRequiredOutputStringLength(DomainConfiguration domainConfiguration)
+    private static string GetContentForUsageStatistics(Models.Configuration configuration)
+    {
+        var requiredOutputStringLength = CalculateRequiredOutputStringLength(configuration);
+
+        var sb = new StringBuilder(requiredOutputStringLength);
+        foreach (var endpointConfiguration in configuration.Endpoints)
+        {
+            sb.Append(endpointConfiguration.When.Path);
+            sb.Append(" - ");
+            sb.Append(endpointConfiguration.CallCounter);
+            sb.AppendLine();
+        }
+        return sb.ToString();
+    }
+
+    private static int CalculateRequiredOutputStringLength(Models.Configuration configuration)
     {
         var requiredLength = 0;
-        foreach (var endpointConfiguration in domainConfiguration!.Endpoints)
+        foreach (var endpointConfiguration in configuration!.Endpoints)
             requiredLength += endpointConfiguration.When.Path.Length + 5;
 
         return requiredLength;

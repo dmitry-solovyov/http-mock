@@ -7,7 +7,7 @@ namespace HttpMock.PerformanceTests.Helpers
     [Orderer(SummaryOrderPolicy.FastestToSlowest, MethodOrderPolicy.Declared)]
     public class StringHelpersBenchmark
     {
-        private static readonly string Url = "/domain-name/api/v2?param1=value&param2=value2";
+        private static readonly string Url = "/api/v2?param1=value&param2=value2";
 
         private const char slash = '/';
 

@@ -1,6 +1,7 @@
 ﻿using HttpMock.Models;
 using HttpMock.RequestProcessing;
 using System.Text;
+using static HttpMock.RequestHandlers.MockedRequestHandlers.MockedRequestEndpointConfigurationResolver;
 
 namespace HttpMock.RequestHandlers.MockedRequestHandlers;
 
@@ -15,23 +16,18 @@ public class MockedRequestHandler : IMockedRequestHandler
         _mockedRequestEndpointConfigurationResolver = mockedRequestEndpointConfigurationResolver;
     }
 
-    public async ValueTask Execute(MockedRequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
+    public async ValueTask Execute(RequestDetails requestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
     {
-        if (_mockedRequestEndpointConfigurationResolver.TryGetEndpointConfiguration(ref requestDetails, out var endpointConfiguration))
+        if (_mockedRequestEndpointConfigurationResolver.TryGetEndpointConfiguration(ref requestDetails, out var endpointConfiguration, out var foundVariables))
         {
-            await ApplyEndpointConfiguration(requestDetails, httpResponse, endpointConfiguration!, cancellationToken).ConfigureAwait(false);
+            await ApplyEndpointConfiguration(requestDetails, httpResponse, endpointConfiguration!, foundVariables, cancellationToken).ConfigureAwait(false);
             return;
         }
 
         httpResponse.WithStatusCode(Defaults.StatusCodes.StatusCodeForUnknownMockedResponse);
     }
 
-    private static ValueTask ApplyEndpointConfiguration(MockedRequestDetails requestDetails, HttpResponse httpResponse, EndpointConfiguration endpointConfiguration, CancellationToken cancellationToken = default)
-    {
-        return ProcessMockedRequest(requestDetails.Path, endpointConfiguration, httpResponse, cancellationToken);
-    }
-
-    private static async ValueTask ProcessMockedRequest(string queryPath, EndpointConfiguration endpointConfiguration, HttpResponse httpResponse, CancellationToken cancellationToken)
+    private static async ValueTask ApplyEndpointConfiguration(RequestDetails requestDetails, HttpResponse httpResponse, EndpointConfiguration endpointConfiguration, List<PathVariable>? foundVariables, CancellationToken cancellationToken = default)
     {
         var delay = GetDelay(endpointConfiguration);
         if (delay > 0)
@@ -39,7 +35,7 @@ public class MockedRequestHandler : IMockedRequestHandler
 
         var statusCode = GetStatusCode(endpointConfiguration);
         var contentType = GetContentType(endpointConfiguration);
-        var content = GetPayload(queryPath, endpointConfiguration);
+        var content = GetPayload(requestDetails, endpointConfiguration, foundVariables);
 
         await httpResponse
             .WithStatusCode(statusCode)
@@ -61,38 +57,38 @@ public class MockedRequestHandler : IMockedRequestHandler
     private static ushort GetStatusCode(EndpointConfiguration endpointConfiguration) =>
         endpointConfiguration.Then.StatusCode is >= 100 and <= 599 ? endpointConfiguration.Then.StatusCode : Defaults.StatusCodes.StatusCodeForUnknownMockedResponse;
 
-    private static string? GetPayload(string queryPath, EndpointConfiguration endpointConfiguration)
+    private static string? GetPayload(RequestDetails requestDetails, EndpointConfiguration endpointConfiguration, List<PathVariable>? foundVariables)
     {
         var payload = endpointConfiguration.Then.Payload;
-        if (!string.IsNullOrWhiteSpace(payload))
+        if (!string.IsNullOrWhiteSpace(payload) && payload.IndexOf('@') != -1)
         {
-            //var payloadRawContent = new StringBuilder(payload);
+            var payloadRawContent = new StringBuilder(payload);
 
-            //paylopayloadRawContentad = ReplaceGuids(payloadRawContent);
+            ReplaceGuids(payloadRawContent);
+            ReplacePathVariables(requestDetails, payloadRawContent, endpointConfiguration, foundVariables);
 
-            //if (endpointConfiguration.When.PathRegex != default && endpointConfiguration.When.PathVariables != default)
-            //    foreach (var urlVariable in endpointConfiguration.When.PathVariables)
-            //    {
-            //        var regexVarName = urlVariable;
-            //        while (payload.Contains(regexVarName))
-            //        {
-            //            var match = Regex.Match(queryPath, endpointConfiguration.When.PathRegex, RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            //            payload = payload.Replace(regexVarName, match.Groups[urlVariable[1..]]?.Value);
-            //        }
-            //    }
+            payload = payloadRawContent.ToString();
         }
         return payload;
+    }
+
+    private static void ReplacePathVariables(RequestDetails requestDetails, StringBuilder payload, EndpointConfiguration endpointConfiguration, List<PathVariable>? foundVariables)
+    {
+        if (foundVariables == default)
+            return;
+
+        foreach (var variable in foundVariables)
+        {
+            var varName = endpointConfiguration.When.Path.AsSpan()[variable.Name.Range].ToString();
+            var varValue = requestDetails.Path.AsSpan()[variable.Value.Range].ToString();
+
+            payload = payload.Replace(varName, varValue);
+        }
     }
 
     private static void ReplaceGuids(StringBuilder payload)
     {
         const string guidVarName = "@guid";
-
-        var comparison = StringComparison.OrdinalIgnoreCase;
-
-        //while (payload.Sp.IndexOf(guidVarName, comparison) != -1)
-        //    payload = payload.Replace(guidVarName, Guid.NewGuid().ToString(), comparison);
-
-        //return payload;
+        payload.Replace(guidVarName, Guid.NewGuid().ToString());
     }
 }

@@ -7,7 +7,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>HttpMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
     <PackageReleaseNotes>HttpMock tool</PackageReleaseNotes>
     <StartupObject>HttpMock.Tool.Program</StartupObject>
   </PropertyGroup>

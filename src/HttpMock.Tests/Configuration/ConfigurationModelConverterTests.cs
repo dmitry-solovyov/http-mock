@@ -7,30 +7,25 @@ namespace HttpMock.Tests.Configuration
 {
     public class ConfigurationModelConverterTests
     {
-        [Fact]
-        public void DtoToModel_ExpectDomainConfigurationCreatedWithValidSettings()
+        [Theory]
+        [InlineData("/api/v1/@urlPart?Param1=@urlValue1&Param2=urlValue2")]
+        public void DtoToModel_ExpectConfigurationCreatedWithValidSettings(string originalPath)
         {
-            var path = "/api/v1/@urlPart?Param1=@urlValue1&Param2=urlValue2";
+            var dto = CreateConfigurationDto(originalPath);
 
-            var dto = CreateDomainConfigurationDto(path);
+            // Act
+            var model = ConfigurationModelConverter.DtoToModel.Convert(dto);
 
-            var model = ConfigurationModelConverter.DtoToModel.Convert("test-domain", dto);
-
+            // Arrange
             model.Should().NotBeNull();
-            model!.Domain.Should().Be("test-domain");
 
-            model.Endpoints.Should().NotBeNullOrEmpty();
+            model!.Endpoints.Should().NotBeNullOrEmpty();
             model.Endpoints.Should().HaveCount(1);
 
             var endpoint = model.Endpoints[0];
 
-            endpoint.When.Path.Should().Be(path);
-
-            endpoint.When.QueryParameters.Should().NotBeNullOrEmpty();
-            endpoint.When.QueryParameters.Should().HaveCount(2);
-            var param1 = endpoint.When.QueryParameters![0];
-            endpoint.When.Path[param1.Name.Range].Should().Be("Param1");
-            endpoint.When.Path[param1.Value.Range].Should().Be("@urlValue1");
+            endpoint.When.Path.Should().Be(originalPath);
+            endpoint.When.PathParts.Should().NotBeNull();
 
             endpoint.When.HttpMethod.Should().Be(HttpMethodType.Put);
 
@@ -42,9 +37,9 @@ namespace HttpMock.Tests.Configuration
             endpoint.Then.Headers.Should().ContainKeys("headerKey1", "headerKey2");
         }
 
-        private static DomainConfigurationDto CreateDomainConfigurationDto(string? path = "/api/v1/@urlPart?Param1=@urlValue1&Param2=urlValue2")
+        private static ConfigurationDto CreateConfigurationDto(string? path = "/api/v1/@urlPart?Param1=@urlValue1&Param2=urlValue2")
         {
-            var dto = new DomainConfigurationDto
+            var dto = new ConfigurationDto
             {
                 Endpoints =
                 [
@@ -56,7 +51,7 @@ namespace HttpMock.Tests.Configuration
                         Delay = 123,
                         Status = 201,
                         ContentType = string.Empty,
-                        Headers = new Dictionary<string, string> {
+                        Headers = new Dictionary<string, string?> {
                             { "headerKey1", "value1" },
                             { "headerKey2", "value2" },
                         }
