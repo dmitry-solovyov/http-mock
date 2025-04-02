@@ -16,7 +16,7 @@ The mock server can be started as a dotnet tool from the command line or from th
 Working folder: `\src\HttpMock.Tool`
 
 ```powershell
-dotnet pack --output nupkg -p:TargetFrameworks=net8.0 --runtime win-x64 --configuration Release
+dotnet pack --output nupkg -p:TargetFrameworks=net9.0 --runtime win-x64 --configuration Release
 ```
 
 The resulted package will be placed in the `/nupkg` directory.
