@@ -57,9 +57,9 @@ public class ConfigurationCommandHandler : ICommandRequestHandler
             return;
         }
 
-        await serializer.SerializeAsync(configurationDto, httpResponse.Body, cancellationToken).ConfigureAwait(false);
+        httpResponse.WithStatusCode(StatusCodes.Status200OK).WithContentType(commandRequestDetails.ContentType);
 
-        httpResponse.WithStatusCode(StatusCodes.Status200OK);
+        await serializer.SerializeAsync(configurationDto, httpResponse.Body, cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask Put(CommandRequestDetails commandRequestDetails, HttpResponse httpResponse, CancellationToken cancellationToken = default)
@@ -86,7 +86,8 @@ public class ConfigurationCommandHandler : ICommandRequestHandler
 
         await httpResponse
             .WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedUpdateCommands)
-            .WithContentAsync($"Configured endpoints: {configuration.Endpoints?.Length}", cancellationToken: cancellationToken).ConfigureAwait(false);
+            .WithContentAsync($"Configured endpoints: {configuration.Endpoints?.Length}", cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async ValueTask Delete(HttpResponse httpResponse, CancellationToken cancellationToken = default)
@@ -99,7 +100,8 @@ public class ConfigurationCommandHandler : ICommandRequestHandler
 
         await httpResponse
             .WithStatusCode(Defaults.StatusCodes.StatusCodeForProcessedUpdateCommands)
-            .WithContentAsync($"Removed endpoints: {existingEndpoints}", cancellationToken: cancellationToken).ConfigureAwait(false);
+            .WithContentAsync($"Removed endpoints: {existingEndpoints}", cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static ValueTask Unknown(HttpResponse httpResponse)

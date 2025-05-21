@@ -40,7 +40,7 @@ public static class PathStringHelper
             new QueryParts(queryRange, parameters));
     }
 
-    public static QueryParameterPart[]? GetQueryParameters(ref readonly ReadOnlySpan<char> input, int questionCharPos)
+    private static QueryParameterPart[]? GetQueryParameters(ref readonly ReadOnlySpan<char> input, int questionCharPos)
     {
         if (questionCharPos == -1 || questionCharPos == input.Length)
             return default;
@@ -122,7 +122,7 @@ public static class PathStringHelper
         return (questionCharPos, numberSignCharPos);
     }
 
-    internal static SubdirectoryPart[] GetPathSubdirectories(ref readonly ReadOnlySpan<char> input, int questionCharPos)
+    private static SubdirectoryPart[] GetPathSubdirectories(ref readonly ReadOnlySpan<char> input, int questionCharPos)
     {
         if (questionCharPos == 0 || input.Length == 0)
             return [];

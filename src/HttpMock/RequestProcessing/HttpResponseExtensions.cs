@@ -4,7 +4,7 @@
     {
         public static HttpResponse? WithStatusCode(this HttpResponse? httpResponse, int statusCode)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             httpResponse.StatusCode = statusCode;
@@ -13,7 +13,7 @@
 
         public static HttpResponse? WithContentType(this HttpResponse? httpResponse, string contentType)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             httpResponse.ContentType = contentType;
@@ -24,7 +24,7 @@
             string content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse,
             CancellationToken cancellationToken = default)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             httpResponse.ContentType = contentType;
@@ -40,7 +40,7 @@
             string? content, string contentType = Defaults.ContentTypes.ContentTypeForUntypedResponse,
             CancellationToken cancellationToken = default)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             httpResponse.ContentType = contentType;
@@ -56,7 +56,7 @@
         public static async ValueTask<HttpResponse?> WithContentAsync(this HttpResponse? httpResponse,
             Stream contentStream, string contentType, CancellationToken cancellationToken = default)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             httpResponse.ContentType = contentType;
@@ -67,7 +67,7 @@
 
         public static HttpResponse? WithHeaders(this HttpResponse? httpResponse, IReadOnlyDictionary<string, string?>? headers)
         {
-            if (httpResponse?.HasStarted != false)
+            if (IsResponseEmptyOrStarted(httpResponse, out httpResponse))
                 return default;
 
             if (headers != null)
@@ -75,6 +75,18 @@
                     httpResponse.Headers.TryAdd(header.Key, header.Value);
 
             return httpResponse;
+        }
+
+        private static bool IsResponseEmptyOrStarted(HttpResponse? httpResponse, out HttpResponse verifiedHttpResponse)
+        {
+            if (httpResponse == null || httpResponse.HasStarted)
+            {
+                verifiedHttpResponse = httpResponse!;
+                return true;
+            }
+
+            verifiedHttpResponse = httpResponse!;
+            return false;
         }
     }
 }
