@@ -27,8 +27,8 @@ public class BasicTests : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-        //response.EnsureSuccessStatusCode(); // Status Code 200-299
-        //"text/html; charset=utf-8".Should().Be(response.Content.Headers.ContentType?.ToString());
+        response.EnsureSuccessStatusCode(); // Status Code 200-299
+        "text/html; charset=utf-8".Should().Be(response.Content.Headers.ContentType?.ToString());
     }
 
     [Fact]

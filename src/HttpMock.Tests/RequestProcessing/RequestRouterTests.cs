@@ -3,7 +3,10 @@ using HttpMock.RequestHandlers.CommandRequestHandlers;
 using HttpMock.RequestProcessing;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using NaughtyStrings;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -38,8 +41,8 @@ public class RequestRouterTests
             .Returns(_configurationCommandHandlerMock.Object);
 
         _serviceProviderMock
-            .Setup(x => x.GetService(It.Is<Type>(t => t != typeof(IMockedRequestHandler) && 
-                                                      t != typeof(ConfigurationCommandHandler) && 
+            .Setup(x => x.GetService(It.Is<Type>(t => t != typeof(IMockedRequestHandler) &&
+                                                      t != typeof(ConfigurationCommandHandler) &&
                                                       t != typeof(IUnknownCommandHandler))))
             .Returns(_mockedRequestHandlerMock.Object);
 
@@ -73,6 +76,19 @@ public class RequestRouterTests
         var parsedHttpMethod = HttpMethodTypeParser.Parse(httpMethod.AsSpan());
         _mockedRequestHandlerMock.Verify(x => x.Execute(
             It.Is<Models.RequestDetails>(r => r.HttpMethod == parsedHttpMethod && r.Path == expectedPath),
+            It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()));
+    }
+
+    [Theory(Skip = "Extended testing")]
+    [MemberData(nameof(TestCasesWithNaughtyStrings), MemberType = typeof(RequestRouterTests))]
+    public async Task TryGetRequestDetails_NaughtyString_ExpectValidRequestDetails(string testString)
+    {
+        var httpContext = GetHttpContextMock("get", $"/api/{testString}", string.Empty);
+
+        await _router.TryExecuteRequestHandler(httpContext.Object);
+
+        _mockedRequestHandlerMock.Verify(x => x.Execute(
+            It.Is<Models.RequestDetails>(r => r.Path == $"/api/{testString}"),
             It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()));
     }
 
@@ -161,4 +177,6 @@ public class RequestRouterTests
         httpContextMock.Setup(x => x.RequestServices).Returns(_serviceProviderMock.Object);
         return httpContextMock;
     }
+
+    public static IEnumerable<object[]> TestCasesWithNaughtyStrings => TheNaughtyStrings.All.Select(x => new object[] { x });
 }
