@@ -1,5 +1,6 @@
 ﻿using HttpMock.Extensions;
 using HttpMock.Models;
+using System.Collections.Immutable;
 
 namespace HttpMock.Helpers;
 
@@ -40,13 +41,13 @@ public static class PathStringHelper
             new QueryParts(queryRange, parameters));
     }
 
-    private static QueryParameterPart[]? GetQueryParameters(ref readonly ReadOnlySpan<char> input, int questionCharPos)
+    private static ImmutableArray<QueryParameterPart> GetQueryParameters(ref readonly ReadOnlySpan<char> input, int questionCharPos)
     {
         if (questionCharPos == -1 || questionCharPos == input.Length)
-            return default;
+            return [];
 
         if (questionCharPos + 1 == input.Length)
-            return default;
+            return [];
 
         var urlParamsSpan = input[(questionCharPos + 1)..input.Length];
         var separatorCount = urlParamsSpan.Count(AmpersandChar);
@@ -103,7 +104,7 @@ public static class PathStringHelper
             offset += paramRange.End.Value + 1;
         }
 
-        return urlParametersList;
+        return urlParametersList.ToImmutableArray();
     }
 
     internal static (int QuestionCharPos, int NumberSignCharPos) GetPathSplitterPositions(ref readonly ReadOnlySpan<char> input)
@@ -122,7 +123,7 @@ public static class PathStringHelper
         return (questionCharPos, numberSignCharPos);
     }
 
-    private static SubdirectoryPart[] GetPathSubdirectories(ref readonly ReadOnlySpan<char> input, int questionCharPos)
+    private static ImmutableArray<SubdirectoryPart> GetPathSubdirectories(ref readonly ReadOnlySpan<char> input, int questionCharPos)
     {
         if (questionCharPos == 0 || input.Length == 0)
             return [];
@@ -151,6 +152,6 @@ public static class PathStringHelper
             startPosition = nextPosition;
         }
 
-        return subdirectories;
+        return subdirectories.ToImmutableArray();
     }
 }

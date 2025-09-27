@@ -109,7 +109,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
 
             var requestQueryParameters = requestDetails.PathParts.Query.Parameters;
 
-            if (configQueryParameter.IsVariable && (requestQueryParameters?.Length).GetValueOrDefault() == 0)
+            if (configQueryParameter.IsVariable && requestQueryParameters.Length == 0)
                 continue;
 
             var requestQueryParameter = FindParameterWithName(in requestPathSpan, requestQueryParameters, in configNameSpan);
@@ -132,7 +132,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3267:Loops should be simplified with \"LINQ\" expressions", Justification = "<Pending>")]
-    private static QueryParameterPart? FindParameterWithName(ref readonly ReadOnlySpan<char> path, QueryParameterPart[]? parameters, ref readonly ReadOnlySpan<char> parameterName)
+    private static QueryParameterPart? FindParameterWithName(ref readonly ReadOnlySpan<char> path, IEnumerable<QueryParameterPart> parameters, ref readonly ReadOnlySpan<char> parameterName)
     {
         if (parameters != default)
             foreach (var requestQueryParameter in parameters)
