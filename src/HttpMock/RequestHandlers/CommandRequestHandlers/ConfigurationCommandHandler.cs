@@ -75,10 +75,24 @@ public class ConfigurationCommandHandler : ICommandRequestHandler
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var configuration = ConfigurationModelConverter.DtoToModel.Convert(configurationDto);
-        if (configuration == default)
+        Models.Configuration? configuration;
+
+        try
         {
-            httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
+            configuration = ConfigurationModelConverter.DtoToModel.Convert(configurationDto);
+            if (configuration == default)
+            {
+                httpResponse.WithStatusCode(StatusCodes.Status400BadRequest);
+                return;
+            }
+        }
+        catch (Exception)
+        {
+            await httpResponse
+                .WithStatusCode(StatusCodes.Status400BadRequest)
+                .WithContentAsync("Invalid configuration format!", Defaults.ContentTypes.ContentTypeForUntypedResponse)
+                .ConfigureAwait(false);
+
             return;
         }
 
