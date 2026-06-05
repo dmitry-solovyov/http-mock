@@ -25,19 +25,6 @@ public static class ReadOnlySpanExtensions
         return offset + nextPosition;
     }
 
-    public static Span<Range> SplitByOld(this ref readonly ReadOnlySpan<char> input, in char separator)
-    {
-        if (!input.Contains(separator))
-            return default;
-
-        var occurrences = input.Count(separator);
-        var partBounds = new Range[occurrences + 1];
-        Span<Range> urlParameterRanges = partBounds.AsSpan();
-
-        input.Split(partBounds, separator, StringSplitOptions.None);
-        return urlParameterRanges;
-    }
-
     public static StringSegment[] SplitBy(this ref readonly ReadOnlySpan<char> input, in char separator)
     {
         if (!input.Contains(separator))

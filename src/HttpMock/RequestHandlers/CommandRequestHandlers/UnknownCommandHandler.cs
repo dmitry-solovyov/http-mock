@@ -9,6 +9,7 @@ public class UnknownCommandHandler : IUnknownCommandHandler
     {
         await httpResponse
             .WithStatusCode(Defaults.StatusCodes.StatusCodeForUnknownCommand)
-            .WithContentAsync("Command name is unknown!", cancellationToken: cancellationToken);
+            .WithContentAsync("Command name is unknown!", cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 }

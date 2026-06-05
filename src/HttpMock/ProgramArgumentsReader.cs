@@ -2,14 +2,14 @@
 
 namespace HttpMock;
 
-public readonly record struct StartupArguments(int Port, bool IsQuiet);
+public readonly record struct StartupArguments(int Port, bool IsQuiet, bool IsHelpRequested);
 
-public class ProgramArgumentsReader
+public static class ProgramArgumentsReader
 {
     internal static StartupArguments GetStartupArguments(string[] args)
     {
         if (args?.Any() != true)
-            return default;
+            return new StartupArguments(0, false, true);
 
         var configurationBuilder = new ConfigurationBuilder()
             .Add(new CommandLineConfigurationSource { Args = args });
@@ -23,7 +23,9 @@ public class ProgramArgumentsReader
         var portValue = GetParameterInArgs(configuration, "port");
         int.TryParse(portValue, out var port);
 
-        return new StartupArguments(port, isQuiet);
+        var isHelpRequested = IsHelpRequested(args);
+
+        return new StartupArguments(port, isQuiet, isHelpRequested);
     }
 
     private static string? GetParameterInArgs(IConfiguration configuration, string parameterName)
@@ -34,4 +36,13 @@ public class ProgramArgumentsReader
 
         return parameterValue;
     }
+
+    private static bool IsHelpRequested(string[] args)
+    {
+        return args.Contains("/?") ||
+               args.Contains("?") ||
+               args.Contains("--help") ||
+               args.Contains("/help");
+    }
+
 }

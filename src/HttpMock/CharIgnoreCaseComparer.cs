@@ -13,7 +13,7 @@ public static class CharComparer
 
 public sealed class CharIgnoreCaseComparer : IEqualityComparer<char>
 {
-    public bool Equals(char x, char y) => Char.ToLower(x) == Char.ToLower(y);
+    public bool Equals(char x, char y) => Char.ToLowerInvariant(x) == Char.ToLowerInvariant(y);
 
-    public int GetHashCode([DisallowNull] char obj) => Char.ToLower(obj).GetHashCode();
+    public int GetHashCode([DisallowNull] char obj) => Char.ToLowerInvariant(obj).GetHashCode();
 }

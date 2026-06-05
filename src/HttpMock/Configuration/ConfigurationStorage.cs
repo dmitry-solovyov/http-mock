@@ -11,31 +11,58 @@ public interface IConfigurationStorage
 
 public sealed class ConfigurationStorage : IConfigurationStorage
 {
-    private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+    private SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
     private Models.Configuration? _configuration = default;
 
     public void SetConfiguration(Models.Configuration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        _configuration = configuration;
+        _semaphore.Wait();
+        try
+        {
+            _configuration = configuration;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public void RemoveConfiguration()
     {
-        _configuration = null;
+        if (_configuration == null)
+            return;
+
+        _semaphore.Wait();
+        try
+        {
+            _configuration = null;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public bool TryGetConfiguration(out Models.Configuration configuration)
     {
-        if (_configuration == null)
+        _semaphore.Wait();
+        try
         {
-            configuration = new Models.Configuration([]);
-            return false;
-        }
+            if (_configuration == null)
+            {
+                configuration = new Models.Configuration([]);
+                return false;
+            }
 
-        configuration = _configuration;
-        return true;
+            configuration = _configuration;
+            return true;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public void ResetUsageCounters()
@@ -46,10 +73,11 @@ public sealed class ConfigurationStorage : IConfigurationStorage
         _semaphore.Wait();
         try
         {
-            foreach (var endpointConfiguration in _configuration.Endpoints)
-            {
-                endpointConfiguration.ResetCounter();
-            }
+            if (_configuration != null)
+                foreach (var endpointConfiguration in _configuration.Endpoints)
+                {
+                    endpointConfiguration.ResetCounter();
+                }
         }
         finally
         {

@@ -115,11 +115,7 @@ public static class PathStringHelper
         {
             questionCharPos = input.Length;
         }
-        var numberSignCharPos = input.IndexOfAfter(NumberSignChar, questionCharPos);
-        if (numberSignCharPos == -1)
-        {
-            numberSignCharPos = input.Length;
-        }
+        var numberSignCharPos = input.IndexOfAfter(NumberSignChar, questionCharPos, pointToEndOfRangeIfNotFound: true);
         return (questionCharPos, numberSignCharPos);
     }
 

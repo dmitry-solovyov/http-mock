@@ -1,12 +1,13 @@
 ﻿using HttpMock.Configuration;
 using HttpMock.Models;
+using System.Collections.Immutable;
 
 namespace HttpMock.RequestHandlers.MockedRequestHandlers;
 
 public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpointConfigurationResolver
 {
     private readonly IConfigurationStorage _configurationStorage;
-    private enum SegmentsComparisonOutcome { NoEqual = 0, Equal, EqualAsVariable, EqualAny }
+    private enum SegmentsComparisonOutcome { NoEqual = 0, Equal, EqualAsVariable }
 
     public MockedRequestEndpointConfigurationResolver(IConfigurationStorage configurationStorage)
     {
@@ -132,7 +133,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3267:Loops should be simplified with \"LINQ\" expressions", Justification = "<Pending>")]
-    private static QueryParameterPart? FindParameterWithName(ref readonly ReadOnlySpan<char> path, IEnumerable<QueryParameterPart> parameters, ref readonly ReadOnlySpan<char> parameterName)
+    private static QueryParameterPart? FindParameterWithName(ref readonly ReadOnlySpan<char> path, ImmutableArray<QueryParameterPart> parameters, ref readonly ReadOnlySpan<char> parameterName)
     {
         if (parameters != default)
             foreach (var requestQueryParameter in parameters)
@@ -150,17 +151,10 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
         QueryParameterPart? requestQueryParameter,
         QueryParameterPart configQueryParameter)
     {
-        if (configQueryParameter.ValueSegment.IsEmpty)
+        if (configQueryParameter.ValueSegment.IsEmpty &&
+            (requestQueryParameter == null || requestQueryParameter.Value.ValueSegment.IsEmpty))
         {
-            if ((requestQueryParameter == null || requestQueryParameter.Value.ValueSegment.IsEmpty))
-            {
-                return (true, default);
-            }
-
-            if (!requestQueryParameter.Value.ValueSegment.IsEmpty)
-            {
-                return (false, default);
-            }
+            return (true, default);
         }
 
         var parameterValueSegment = requestQueryParameter?.ValueSegment ?? default;
@@ -204,6 +198,7 @@ public class MockedRequestEndpointConfigurationResolver : IMockedRequestEndpoint
         if (variables2 == default)
             return variables1;
 
-        return variables1!.Concat(variables2!).ToList();
+        variables1.AddRange(variables2);
+        return variables1;
     }
 }

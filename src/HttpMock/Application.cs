@@ -4,36 +4,39 @@ namespace HttpMock;
 
 public static class Application
 {
+    private const int MIN_PORT = 1024;
+    private const int MAX_PORT = 65535;
+
     public static void Start(string[] args)
     {
-        if (IsHelpRequested(args))
+        var startupParameters = ProgramArgumentsReader.GetStartupArguments(args);
+        if (startupParameters.IsHelpRequested)
         {
             ShowHelp();
             return;
         }
 
-        var app = CreateWebApplication(args);
+        var app = CreateWebApplication(startupParameters);
         app.Run();
     }
 
-    public static WebApplication CreateWebApplication(string[] args)
+    public static WebApplication CreateWebApplication(StartupArguments startupParameters)
     {
-        var startupParameters = ProgramArgumentsReader.GetStartupArguments(args);
 
         var (loggerProvider, logger) = ApplicationSetup.CreateLoggers();
         logger.LogInformation("Application starts");
 
         if (!IsPortValid(startupParameters.Port))
         {
-            throw new InvalidOperationException("Binding port is not specified!");
+            throw new InvalidOperationException("Port is not specified!");
         }
 
-        logger?.LogInformation("Binding port: {Port}", startupParameters.Port);
+        logger?.LogInformation("Port: {Port}", startupParameters.Port);
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
             ApplicationName = "HttpMock",
-            Args = args,
+            Args = [],
             EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? string.Empty
         });
         builder.WebHost.ConfigureKestrel(app => app.ListenAnyIP(startupParameters.Port));
@@ -51,28 +54,21 @@ public static class Application
         return app;
     }
 
-    private static bool IsHelpRequested(string[] args)
-    {
-        return args.Length == 0 ||
-               args.Contains("/?") ||
-               args.Contains("?") ||
-               args.Contains("--help") ||
-               args.Contains("/help");
-    }
-
     private static void ShowHelp()
     {
-        Console.WriteLine("\nUsage:");
-        Console.Write(
-        """
-        {nameof(HttpMock)} port=00000 [quiet=0]
+        Console.WriteLine(
+        $"""
+        Usage:
+        {nameof(HttpMock).ToLower()} --port=00000 [--quiet=0]
 
         Parameters:
-            port: (required) bind service to this port
+            port: (required) bind service to this port (allowed range: {MIN_PORT} .. {MAX_PORT})
             quiet: (optional) run the application without console output
+
+        Press any key . . .
         """);
         Console.ReadKey();
     }
 
-    private static bool IsPortValid(int port) => port > 1023 && port <= 65535;
+    private static bool IsPortValid(int port) => port >= MIN_PORT && port <= MAX_PORT;
 }

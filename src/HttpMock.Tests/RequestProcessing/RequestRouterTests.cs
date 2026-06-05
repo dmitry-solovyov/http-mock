@@ -75,7 +75,7 @@ public class RequestRouterTests
 
         var parsedHttpMethod = HttpMethodTypeParser.Parse(httpMethod.AsSpan());
         _mockedRequestHandlerMock.Verify(x => x.Execute(
-            It.Is<Models.RequestDetails>(r => r.HttpMethod == parsedHttpMethod && r.Path == expectedPath),
+            It.Is<HttpMock.Models.RequestDetails>(r => r.HttpMethod == parsedHttpMethod && r.Path == expectedPath),
             It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()));
     }
 
@@ -88,7 +88,7 @@ public class RequestRouterTests
         await _router.TryExecuteRequestHandler(httpContext.Object);
 
         _mockedRequestHandlerMock.Verify(x => x.Execute(
-            It.Is<Models.RequestDetails>(r => r.Path == $"/api/{testString}"),
+            It.Is<HttpMock.Models.RequestDetails>(r => r.Path == $"/api/{testString}"),
             It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()));
     }
 
@@ -103,7 +103,7 @@ public class RequestRouterTests
         result.Should().BeTrue();
 
         _unknownCommandHandlerMock.Verify(x => x.Execute(
-            It.Is<Models.CommandRequestDetails>(r => r.HttpMethod == HttpMethodType.Get && r.CommandName == commandName),
+            It.Is<HttpMock.Models.CommandRequestDetails>(r => r.HttpMethod == HttpMethodType.Get && r.CommandName == commandName),
             It.IsAny<HttpResponse>(), It.IsAny<CancellationToken>()));
     }
 

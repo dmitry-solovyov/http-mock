@@ -60,7 +60,7 @@ public class MockedRequestHandler : IMockedRequestHandler
     private static string? GetPayload(RequestDetails requestDetails, EndpointConfiguration endpointConfiguration, List<PathVariable>? foundVariables)
     {
         var payload = endpointConfiguration.Then.Payload;
-        if (!string.IsNullOrWhiteSpace(payload) && payload.IndexOf('@') != -1)
+        if (endpointConfiguration.Then.PayloadContainVariables)
         {
             var payloadRawContent = new StringBuilder(payload);
 
@@ -82,7 +82,7 @@ public class MockedRequestHandler : IMockedRequestHandler
             var varName = endpointConfiguration.When.Path.AsSpan()[variable.Name.Range].ToString();
             var varValue = requestDetails.Path.AsSpan()[variable.Value.Range].ToString();
 
-            payload = payload.Replace(varName, varValue);
+            payload.Replace(varName, varValue);
         }
     }
 

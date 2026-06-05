@@ -2,7 +2,7 @@
 
 public readonly struct StringSegment
 {
-    private static Lazy<StringSegment> EmptySegment = new(() => new(0, 0));
+    private static Lazy<StringSegment> EmptySegment = new(() => default);
 
     public StringSegment()
     {

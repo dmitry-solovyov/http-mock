@@ -11,13 +11,6 @@ public class SplitByBenchmark
 {
     private static readonly string Url = "/part1/part2/part3/part4";
 
-    [Benchmark]
-    public void SplitByOld()
-    {
-        var url = Url.AsSpan();
-        url.SplitByOld('/');
-    }
-
     [Benchmark(Baseline = true)]
     public void SplitBy()
     {

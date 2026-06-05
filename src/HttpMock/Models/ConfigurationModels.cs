@@ -6,28 +6,20 @@ public sealed record class Configuration(EndpointConfiguration[] Endpoints);
 
 public sealed record class EndpointConfiguration(EndpointRequestConfiguration When, EndpointResponseConfiguration Then)
 {
-    public uint CallCounter { get; private set; } = default;
-    public void ResetCounter() { CallCounter = default; }
-    public void IncreaseCounter() { CallCounter = CallCounter < uint.MaxValue ? CallCounter + 1 : 1; }
+    private uint _callCounter = 0;
+    public uint CallCounter => _callCounter;
+    public void ResetCounter() => Interlocked.Exchange(ref _callCounter, 0);
+    public void IncreaseCounter() { Interlocked.Increment(ref _callCounter); }
 }
 
 public sealed record class EndpointRequestConfiguration(HttpMethodType HttpMethod, string Path)
 {
-    private bool _pathPartsInitialized = false;
-    private PathParts _pathParts = default;
-    public PathParts PathParts
+    private readonly Lazy<PathParts> _pathParts = new Lazy<PathParts>(() =>
     {
-        get
-        {
-            if (!_pathPartsInitialized)
-            {
-                var path = Path.AsSpan();
-                _pathParts = PathStringHelper.GetPathParts(in path);
-                _pathPartsInitialized = true;
-            }
-            return _pathParts;
-        }
-    }
+        var p = Path.AsSpan();
+        return PathStringHelper.GetPathParts(in p);
+    });
+    public PathParts PathParts => _pathParts.Value;
 }
 
 public sealed record class EndpointResponseConfiguration(
@@ -35,5 +27,8 @@ public sealed record class EndpointResponseConfiguration(
     string ContentType,
     string? Payload = default,
     ushort Delay = default,
-    IReadOnlyDictionary<string, string?>? Headers = default);
+    IReadOnlyDictionary<string, string?>? Headers = default)
+{
+    public bool PayloadContainVariables => !string.IsNullOrWhiteSpace(Payload) && Payload.IndexOf('@') != -1;
+}
 

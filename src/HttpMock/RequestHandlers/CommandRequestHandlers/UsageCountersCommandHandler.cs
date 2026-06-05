@@ -76,7 +76,7 @@ public class UsageCountersCommandHandler(IConfigurationStorage configurationStor
     {
         var requiredLength = 0;
         foreach (var endpointConfiguration in configuration!.Endpoints)
-            requiredLength += endpointConfiguration.When.Path.Length + 5;
+            requiredLength += endpointConfiguration.When.Path.Length + 15;
 
         return requiredLength;
     }

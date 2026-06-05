@@ -30,8 +30,7 @@
             httpResponse.ContentType = contentType;
             if (!string.IsNullOrEmpty(content))
             {
-                var data = System.Text.Encoding.UTF8.GetBytes(content);
-                await httpResponse.BodyWriter.WriteAsync(data, cancellationToken).ConfigureAwait(false);
+                await httpResponse.WriteAsync(content, cancellationToken).ConfigureAwait(false);
             }
             return httpResponse;
         }
@@ -46,8 +45,7 @@
             httpResponse.ContentType = contentType;
             if (!string.IsNullOrEmpty(content))
             {
-                var buffer = System.Text.Encoding.UTF8.GetBytes(content);
-                await httpResponse.BodyWriter.WriteAsync(buffer, cancellationToken).ConfigureAwait(false);
+                await httpResponse.WriteAsync(content, cancellationToken).ConfigureAwait(false);
             }
 
             return httpResponse;
