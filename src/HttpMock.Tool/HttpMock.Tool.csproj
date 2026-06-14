@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>HttpMock</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
-    <version>1.2.0</version>
+    <Version>2.0.0</Version>
     <PackageReleaseNotes>HttpMock tool</PackageReleaseNotes>
     <StartupObject>HttpMock.Tool.Program</StartupObject>
+    <Authors>Dmytro Solovyov</Authors>
   </PropertyGroup>
 
   <ItemGroup>

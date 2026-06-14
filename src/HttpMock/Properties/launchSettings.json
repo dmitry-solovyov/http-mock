@@ -2,7 +2,15 @@
   "profiles": {
     "http": {
       "commandName": "Project",
-      "commandLineArgs": "port=58888 quiet=0",
+      "commandLineArgs": "--port=58888 --quiet=0",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "http.Help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help",
       "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
@@ -10,8 +18,16 @@
     },
     "http.Quiet": {
       "commandName": "Project",
-      "commandLineArgs": "port=58888 quiet=1",
+      "commandLineArgs": "--port=58888 --quiet=1",
       "launchBrowser": false
+    },
+    "http.NoParameters": {
+      "commandName": "Project",
+      "commandLineArgs": "",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     },
     "IIS Express": {
       "commandName": "IISExpress",

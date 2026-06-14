@@ -144,7 +144,7 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
             return storage;
         }
 
-        private static Models.Configuration CreateMockConfiguration()
+        private static HttpMock.Models.Configuration CreateMockConfiguration()
         {
             EndpointConfiguration[] endpoints =
             [
@@ -177,7 +177,7 @@ namespace HttpMock.Tests.RequestHandlers.MockedRequestHandlers
                 ),
             ];
 
-            var configuration = new Models.Configuration(endpoints);
+            var configuration = new HttpMock.Models.Configuration(endpoints);
             return configuration;
         }
     }

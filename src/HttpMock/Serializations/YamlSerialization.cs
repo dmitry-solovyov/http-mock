@@ -5,6 +5,10 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace HttpMock.Serializations;
 
+[YamlStaticContext]
+[YamlSerializable(typeof(ConfigurationDto))]
+public partial class YamlStaticContext : YamlDotNet.Serialization.StaticContext { }
+
 public class YamlSerialization : ISerialization
 {
     public string SupportedContentType => "application/yaml";
@@ -33,7 +37,7 @@ public class YamlSerialization : ISerialization
 
     private static ISerializer BuildSerializer()
     {
-        var aotContext = new YamlDotNet.Static.StaticContext();
+        var aotContext = new YamlStaticContext();
 
         var builder = new StaticSerializerBuilder(aotContext)
             .WithMaximumRecursion(MaximumRecursion)
@@ -68,7 +72,7 @@ public class YamlSerialization : ISerialization
 
     private static IDeserializer BuildDeserialize()
     {
-        var aotContext = new YamlDotNet.Static.StaticContext();
+        var aotContext = new YamlStaticContext();
 
         var builder = new StaticDeserializerBuilder(aotContext)
             .WithEnumNamingConvention(CamelCaseNamingConvention.Instance)

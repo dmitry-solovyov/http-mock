@@ -4,7 +4,7 @@ function PrepareFilesForTargetEnvironment {
     [string]$PublishFolder
   )
 
-  $TargetFramework = "net8.0"
+  $TargetFramework = "net10.0"
   Write-Host "Publishing project HttpMock.csproj..." -ForegroundColor Yellow
   dotnet publish -r $TargetEnv -f $TargetFramework --self-contained -p:PublishTrimmed=true -p:PublishReadyToRun=true -p:PublishReadyToRunDir="$PublishFolder" "..\src\HttpMock\HttpMock.csproj"
   Write-Host "Done!" -ForegroundColor Green
