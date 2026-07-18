@@ -25,10 +25,10 @@ jobs:
         run: dotnet restore src/HttpMock.Tool/HttpMock.Tool.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-build --verbosity normal
 
       - name: Pack
         run: dotnet pack src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-build --output ./artifacts
