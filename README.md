@@ -1,82 +1,126 @@
-﻿# HttpMock
+# HttpMock
+
+[![.NET](https://github.com/dmitry-solovyov/http-mock/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dmitry-solovyov/http-mock/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/HttpMock.Tool.svg)](https://www.nuget.org/packages/HttpMock.Tool)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 HttpMock replaces external HTTP services with a configurable mocked instance for quick testing scenarios.
-A set of the endpoints can be configured through the HTTP request. The mocked endpoint can be used instead of the real one.
-The address of the real web service should be replaced with the URL of the mock service.
-The configuration allows the response body, status code and processing delay to be mocked.
-The response can also be provided with a custom header.
-The mock server can be started as a dotnet tool from the command line.
 
-# Local installation of the application as a tool
+- A set of endpoints is configured through an HTTP request; the mocked endpoint is then used instead of the real one.
+- Point the code under test at the mock server's URL instead of the real web service.
+- Each endpoint can mock the response body, status code, processing delay and custom headers.
+- The mock server runs as a .NET global tool from the command line.
 
-## Prerequisites:
+## Table of contents
 
-The application is built on .NET 10.0. The .NET SDK should be installed on the machine.
+- [Prerequisites](#prerequisites)
+- [Quick start](#quick-start)
+- [Installation](#installation)
+  - [Option A: Install from NuGet](#option-a-install-from-nuget)
+  - [Option B: Build and install from source](#option-b-build-and-install-from-source)
+  - [Uninstall](#uninstall)
+- [Running the tool](#running-the-tool)
+- [Configuring the running application](#configuring-the-running-application)
+  - [Configuration schema](#configuration-schema)
+  - [Example configuration](#example-configuration)
+  - [Set the configuration (PUT)](#set-the-configuration-put)
+  - [Review the configuration (GET)](#review-the-configuration-get)
+  - [Test a mocked endpoint](#test-a-mocked-endpoint)
+- [License](#license)
 
-## Install from NuGet
+## Prerequisites
+
+The application targets .NET 10.0. The .NET SDK must be installed on the machine.
+
+## Quick start
+
+```powershell
+# 1. Install the tool
+dotnet tool install -g HttpMock.Tool
+
+# 2. Run it on port 58888
+httpMock port=58888 quiet=0
+
+# 3. In another terminal, configure a /probe endpoint
+$headers = @{ "X-HttpMock-Command" = "configurations" }
+$body = "Endpoints:
+  - Path: /probe
+    Method: get
+    Status: 200
+    Payload: '{\"success\":true}'"
+
+Invoke-RestMethod -Method PUT -Uri "http://localhost:58888" -Headers $headers -Body $body -ContentType 'application/yaml'
+
+# 4. Call it
+Invoke-RestMethod -Method GET -Uri "http://localhost:58888/probe"
+```
+
+## Installation
+
+### Option A: Install from NuGet
 
 ```powershell
 dotnet tool install -g HttpMock.Tool
 ```
 
-## Package the application as a tool
-
-### Build the package
+### Option B: Build and install from source
 
 Working folder: `\src\HttpMock.Tool`
+
+Build the package:
 
 ```powershell
 dotnet pack --output nupkg -p:TargetFrameworks=net10.0 --runtime win-x64 --configuration Release
 ```
 
-The resulted package will be placed in the `/nupkg` directory.
+The resulting package is placed in the `/nupkg` directory.
 
-### Install the tool
+Install it as a global tool (`-g`):
 
 ```powershell
 dotnet tool install -g httpmock.tool --add-source ./nupkg
 ```
 
-Install the application as a global tool (`-g` parameter).
-
-or command line for a specific version `2.0.0`:
+Or install a specific version, e.g. `2.0.0`:
 
 ```powershell
 dotnet tool install -g httpmock.tool --add-source ./nupkg --version 2.0.0
 ```
 
-## Uninstall the tool
+### Uninstall
 
-```
+```powershell
 dotnet tool uninstall -g httpmock.tool
 ```
 
-## Run the application as a tool
-
-Binds the tool to port 58888. Quiet mode (parameter value `1`) allows the tool to run without outputting logs.
+## Running the tool
 
 ```powershell
 httpMock port=58888 quiet=0
 ```
 
-## Configuring running application
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `port`    | —       | Port the mock server listens on. |
+| `quiet`   | `0`     | `0` = log output enabled, `1` = suppress logs. |
 
-The mocked endpoint should be available by the relative address specified in the configuration: `http://0.0.0.0/{mocked-endpoint-path}`.
+## Configuring the running application
 
-### Schema of the configuration payload:
+Once running, mocked endpoints are available at `http://0.0.0.0/{mocked-endpoint-path}`.
 
-```
-Endpoints[]
-  ┝ Path
-  ┝ Method
-  ┝ Status
-  ┝ Delay
-  ┝ Description
-  ┝ Payload
-  └ Headers
-```
+### Configuration schema
 
-Example of the configuration request body:
+| Field         | Type     | Default        | Description |
+|---------------|----------|----------------|-------------|
+| `Path`        | string   | —              | Relative path of the mocked endpoint (required). |
+| `Method`      | string   | `get`          | HTTP method to match. |
+| `Status`      | int      | `200`          | HTTP status code returned. |
+| `Delay`       | int (ms) | `0` (max `60000`) | Artificial processing delay before responding. |
+| `Description` | string   | `""`           | Free-text note describing the endpoint. |
+| `Payload`     | string   | `""`           | Response body. |
+| `Headers`     | map      | `{}`           | Custom response headers. |
+
+### Example configuration
 
 ```yaml
 Endpoints:
@@ -102,20 +146,9 @@ Endpoints:
     Payload: '{"success":true}'
 ```
 
-Default values for the configuration parameters:
+### Set the configuration (PUT)
 
-- `Status` - 200
-- `Delay` - 0 seconds (max 60000)
-- `Description` - empty string
-- `Payload` - empty string
-- `Headers` - empty collection
-- `Method` - get
-
-### Configuration setup request (PUT method)
-
-Setup the configuration of the mocked endpoints:
-
-```Powershell
+```powershell
 $headers = @{
     "X-HttpMock-Command" = "configurations"
 }
@@ -139,11 +172,11 @@ $Response = Invoke-RestMethod @request
 $Response
 ```
 
-### Review configuration request (GET method)
+An invalid configuration payload returns `400 Bad Request`.
 
-Review the configuration of the mocked endpoints:
+### Review the configuration (GET)
 
-```Powershell
+```powershell
 $headers = @{
     "X-HttpMock-Command" = "configurations"
 }
@@ -159,11 +192,11 @@ $Response = Invoke-RestMethod @request
 $Response
 ```
 
-### Test the mocked endpoint
+### Test a mocked endpoint
 
-Invoke `/probe` request configured before:
+Invoke the `/probe` endpoint configured above:
 
-```Powershell
+```powershell
 $request = @{
     Method = 'GET'
     Uri    = "http://localhost:58888/probe"
@@ -172,3 +205,7 @@ $request = @{
 $Response = Invoke-RestMethod @request
 $Response
 ```
+
+## License
+
+Licensed under the [MIT License](https://opensource.org/licenses/MIT).
