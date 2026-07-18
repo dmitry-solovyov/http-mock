@@ -106,7 +106,12 @@ httpMock port=58888 quiet=0
 
 ## Configuring the running application
 
-Once running, mocked endpoints are available at `http://0.0.0.0/{mocked-endpoint-path}`.
+The same server instance and port handle both configuration requests and mocked requests — there is no separate admin port. Which type of request is being made is determined by the presence of the `X-HttpMock-Command` header:
+
+- **Configuration request**: include the `X-HttpMock-Command: configurations` header. Use `PUT` to replace the current set of mocked endpoints, or `GET` to read back the current configuration. The request/response body is a **YAML** document (`ContentType: application/yaml`) describing the list of endpoints, as defined in the [configuration schema](#configuration-schema) below.
+- **Mocked request**: any request without the `X-HttpMock-Command` header is matched against the configured endpoints by `Path` and `Method`, and answered with the configured `Status`, `Payload`, `Delay` and `Headers`.
+
+Once configured, mocked endpoints are available at `http://0.0.0.0/{mocked-endpoint-path}`.
 
 ### Configuration schema
 
