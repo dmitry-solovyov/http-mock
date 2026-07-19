@@ -12,7 +12,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>HttpMock.Server</PackageId>
-    <Version>2.0.2</Version>
+    <Version>2.0.3</Version>
     <Authors>Dmytro Solovyov</Authors>
     <Description>A library for hosting a configurable HTTP mock server in-process. Start and stop the server programmatically (e.g. from a test fixture) and configure endpoints, status codes, response bodies, delays and headers at runtime via HTTP requests.</Description>
     <PackageReleaseNotes>Initial release of the in-process library package.</PackageReleaseNotes>
