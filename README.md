@@ -1,7 +1,8 @@
 # HttpMock
 
 [![.NET](https://github.com/dmitry-solovyov/http-mock/actions/workflows/dotnet.yml/badge.svg)](https://github.com/dmitry-solovyov/http-mock/actions/workflows/dotnet.yml)
-[![NuGet](https://img.shields.io/nuget/v/HttpMock.Tool.svg)](https://www.nuget.org/packages/HttpMock.Tool)
+[![NuGet: HttpMock.Tool](https://img.shields.io/nuget/v/HttpMock.Tool.svg?label=HttpMock.Tool)](https://www.nuget.org/packages/HttpMock.Tool)
+[![NuGet: HttpMock.Server](https://img.shields.io/nuget/v/HttpMock.Server.svg?label=HttpMock.Server)](https://www.nuget.org/packages/HttpMock.Server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 HttpMock replaces external HTTP services with a configurable mocked instance for quick testing scenarios.
@@ -9,7 +10,7 @@ HttpMock replaces external HTTP services with a configurable mocked instance for
 - A set of endpoints is configured through an HTTP request; the mocked endpoint is then used instead of the real one.
 - Point the code under test at the mock server's URL instead of the real web service.
 - Each endpoint can mock the response body, status code, processing delay and custom headers.
-- The mock server runs as a .NET global tool from the command line.
+- Run it as a standalone .NET global/local tool (`HttpMock.Tool`) from the command line, **or** host it in-process as a library (`HttpMock.Server`) — e.g. started and stopped from a test fixture.
 
 ## Table of contents
 
@@ -20,6 +21,7 @@ HttpMock replaces external HTTP services with a configurable mocked instance for
   - [Option B: Build and install from source](#option-b-build-and-install-from-source)
   - [Uninstall](#uninstall)
 - [Running the tool](#running-the-tool)
+- [Use as an in-process library](#use-as-an-in-process-library)
 - [Configuring the running application](#configuring-the-running-application)
   - [Configuration schema](#configuration-schema)
   - [Example configuration](#example-configuration)
@@ -30,7 +32,7 @@ HttpMock replaces external HTTP services with a configurable mocked instance for
 
 ## Prerequisites
 
-The application targets .NET 10.0. The .NET SDK must be installed on the machine.
+The application targets .NET 8.0 and .NET 10.0. A matching .NET SDK (or runtime, for the CLI tool) must be installed on the machine.
 
 ## Quick start
 
@@ -103,6 +105,32 @@ httpMock port=58888 quiet=0
 |-----------|---------|-------------|
 | `port`    | —       | Port the mock server listens on. |
 | `quiet`   | `0`     | `0` = log output enabled, `1` = suppress logs. |
+
+## Use as an in-process library
+
+Instead of running `HttpMock.Tool` as a separate process, the mock server can be started and stopped in-process — useful for spinning it up per test fixture without managing an external process.
+
+Install the `HttpMock.Server` package:
+
+```powershell
+dotnet add package HttpMock.Server
+```
+
+Start and stop it programmatically:
+
+```csharp
+using HttpMock;
+
+var app = Application.CreateWebApplication(new StartupArguments(Port: 58888, IsQuiet: true, IsHelpRequested: false));
+await app.StartAsync();
+
+// ... configure endpoints and exercise the code under test,
+// using the same HTTP-based configuration API described below ...
+
+await app.StopAsync();
+```
+
+`Application.CreateWebApplication` returns a standard `WebApplication`, so it can also be `await`ed with `RunAsync()` if you want it to run until cancelled, or wired into a test fixture's `IAsyncLifetime`/`InitializeAsync`/`DisposeAsync`.
 
 ## Configuring the running application
 

@@ -10,6 +10,27 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>HttpMock.Server</PackageId>
+    <Version>2.0.2</Version>
+    <Authors>Dmytro Solovyov</Authors>
+    <Description>A library for hosting a configurable HTTP mock server in-process. Start and stop the server programmatically (e.g. from a test fixture) and configure endpoints, status codes, response bodies, delays and headers at runtime via HTTP requests.</Description>
+    <PackageReleaseNotes>Initial release of the in-process library package.</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dmitry-solovyov/http-mock</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dmitry-solovyov/http-mock</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mock http testing library dotnet integration-testing stub server</PackageTags>
+    <Copyright>Copyright © Dmytro Solovyov 2024</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <PropertyGroup>
     <InvariantGlobalization>true</InvariantGlobalization>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <PublishAot>false</PublishAot>
@@ -17,8 +38,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
-    <PackageReference Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="18.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Vecc.YamlDotNet.Analyzers.StaticGenerator" Version="18.0.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="YamlDotNet" Version="18.0.0" />
   </ItemGroup>
 

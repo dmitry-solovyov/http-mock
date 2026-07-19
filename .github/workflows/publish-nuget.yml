@@ -1,4 +1,4 @@
-# Publishes the HttpMock.Tool package to NuGet.org.
+# Publishes the HttpMock.Tool (global tool) and HttpMock.Server (in-process library) packages to NuGet.org.
 # Triggered by pushing a version tag (e.g. v2.0.0) or manually from the Actions tab.
 
 name: Publish NuGet Package
@@ -19,18 +19,23 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Restore dependencies
-        run: dotnet restore src/HttpMock.Tool/HttpMock.Tool.csproj
+        run: dotnet restore src/HttpServerMock.sln
 
       - name: Build
-        run: dotnet build src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-restore
+        run: dotnet build src/HttpServerMock.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-build --verbosity normal
+        run: dotnet test src/HttpServerMock.sln --configuration Release --no-build --verbosity normal
 
-      - name: Pack
+      - name: Pack HttpMock.Server
+        run: dotnet pack src/HttpMock/HttpMock.csproj --configuration Release --no-build --output ./artifacts
+
+      - name: Pack HttpMock.Tool
         run: dotnet pack src/HttpMock.Tool/HttpMock.Tool.csproj --configuration Release --no-build --output ./artifacts
 
       - name: Push to NuGet.org
