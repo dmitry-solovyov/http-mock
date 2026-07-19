@@ -30,7 +30,7 @@ jobs:
         run: dotnet build src/HttpServerMock.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test src/HttpServerMock.sln --configuration Release --no-build --verbosity normal
+        run: dotnet test src/HttpMock.Tests/HttpMock.Tests.csproj --configuration Release --no-build --verbosity normal
 
       - name: Pack HttpMock.Server
         run: dotnet pack src/HttpMock/HttpMock.csproj --configuration Release --no-build --output ./artifacts
